@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 0d — Beyond Text</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../ai-engineering-notebook.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="103">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 0 · Chapter 0d</div>
+  <h1>Beyond Text: Images, Audio, and Other Modalities</h1>
+  <p><span class="badge general">General AI Eng</span> a map of the wider GenAI landscape — diffusion models, multimodal models, and where Claude fits</p>
+
+  <div class="callout"><strong>Why this matters.</strong> "GenAI" is bigger than chatbots. Image generators (Midjourney, DALL-E), voice assistants, and video generators (Sora) are all "generative AI" too — but they work on a <em>different core mechanism</em> than the token-by-token prediction from Chapter 0a. You don't need to build these, but you should recognize the landscape, and understand how Claude's own image/vision abilities (used in Chapter 7, Computer Use) fit in.</p>
+
+  <h2>1. Text generation vs. image generation — different core idea</h2>
+  <table>
+    <tr><th></th><th>Text models (Claude, GPT)</th><th>Image models (Midjourney, DALL-E, Stable Diffusion)</th></tr>
+    <tr><td>Core mechanism</td><td>Predict the next <em>token</em>, one at a time</td><td>Start from random noise and <em>gradually remove noise</em> until an image emerges</td></tr>
+    <tr><td>Architecture family</td><td>Transformer</td><td>Diffusion model (often paired with a transformer for understanding the text prompt)</td></tr>
+    <tr><td>Output</td><td>Sequential — one token after another</td><td>The whole image refines together, all at once, over many steps</td></tr>
+  </table>
+
+  <h2>2. How diffusion models work (the "sculpture" analogy)</h2>
+  <div class="analogy">
+    <strong>Analogy:</strong> imagine a sculptor who was trained by watching millions of statues slowly get <em>eroded into a pile of rubble</em>, in reverse slow-motion — and they memorized how to un-erode any pile of rubble back into a statue. Now hand them a completely random pile of rubble (pure noise) and whisper a description ("a golden retriever wearing sunglasses"). They chip away, step by step, undoing "erosion" guided by your description, until a coherent image appears.
+  </div>
+
+  <div class="diagram">Step 0  (pure random noise):     ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  (static, no image)
+Step 10 (rough shapes emerge):   ▓▓░░▓▓░░░░▓▓░░▓▓░░▓▓  (blurry blob)
+Step 30 (more defined):          ░░▒▒▓▓░░▒▒▓▓░░▒▒░░▒▒  (dog-ish shape)
+Step 50 (final, denoised):       🐕‍🦺  (a golden retriever wearing sunglasses)
+
+Each step: "given this noisy image + the text prompt, predict a slightly
+less noisy version." Repeat ~20-50 times.</div>
+
+  <p>Training a diffusion model works in reverse: take real images, progressively add random noise to them until they're pure static, and train a model to predict "what noise was just added, so I can remove it." Do that at scale across millions of image-caption pairs, and the model learns to "un-noise" its way to any image matching a text description.</p>
+
+  <h2>3. Audio and video — same diffusion idea, different data</h2>
+  <table>
+    <tr><th>Modality</th><th>Examples</th><th>Core idea</th></tr>
+    <tr><td>Text-to-speech (TTS)</td><td>ElevenLabs, OpenAI TTS</td><td>Generate audio waveforms — some use diffusion, others use specialized sequence models</td></tr>
+    <tr><td>Speech-to-text (ASR)</td><td>Whisper</td><td>The reverse direction — audio in, tokens out (closer to a transformer, not generative in the "creation" sense)</td></tr>
+    <tr><td>Text-to-video</td><td>Sora, Veo</td><td>Diffusion extended across both space (the image) and time (the sequence of frames) — much more compute-intensive</td></tr>
+  </table>
+
+  <h2>4. Multimodal models — one model, several input/output types</h2>
+  <p>Claude itself is <strong>multimodal</strong>: it can <em>read</em> images (screenshots, diagrams, photos) as input, even though it only <em>generates</em> text as output. This is different from an image generator — Claude isn't drawing pictures, it's understanding ones you show it, using the same transformer/attention mechanism from Chapter 0a, just with images converted into tokens the same way text is.</p>
+
+  <div class="diagram">Image input  →  chopped into patches  →  each patch becomes a "token"
+                                                     │
+                                                     ▼
+                                    fed into the SAME transformer as text tokens
+                                                     │
+                                                     ▼
+                                          text output ("I see a golden retriever...")</div>
+
+  <p>This is exactly what powers Chapter 7 (Computer Use) — when Claude looks at a screenshot and decides where to click, it's using this image-understanding path, not a separate "vision AI." One model, multiple input types, single reasoning process.</p>
+
+  <div class="callout"><strong>Terminology check:</strong> "Claude can see images" (multimodal <em>understanding</em>) is a completely different capability from "generate me an image" (image <em>generation</em>, like DALL-E). Claude does the former, not the latter — if you want Claude to produce images, you'd have it call out to an image-generation API as a tool (Chapter 11: Tool Use), not generate pixels itself.</p>
+
+  <h2>5. Where this fits in your curriculum</h2>
+  <ul>
+    <li><strong>You will build with text models</strong> (Claude) for the vast majority of this course — Parts 1–5 are all about that.</li>
+    <li><strong>You may call image/audio APIs as tools</strong> from an agent (e.g., "generate a thumbnail" → calls an image-gen API) — that's Chapter 11 territory, not a new modality skill you need to learn from scratch.</li>
+    <li><strong>Multimodal input</strong> (showing Claude images/screenshots) is something you already use in Chapter 7 — now you know the mechanism behind it.</li>
+  </ul>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>Image/video generators mostly use <strong>diffusion</strong> — starting from noise and iteratively removing it, guided by a text prompt — a fundamentally different mechanism from token-by-token text generation.</li>
+    <li>Diffusion models are trained by learning to reverse a noise-adding process applied to real images.</li>
+    <li>Audio/video generation extends similar ideas across sound waves or sequences of frames, at much higher compute cost.</li>
+    <li><strong>Multimodal</strong> (Claude reading images) ≠ <strong>image generation</strong> (DALL-E producing images) — different capabilities, easy to conflate.</li>
+    <li>As an AI engineer, you'll mostly consume other modalities via API calls/tools rather than build them yourself.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>Explain in your own words why "starting from noise and removing it" can produce a coherent image, using the sculptor analogy or your own.</li>
+      <li>Look up (or recall from Chapter 7) how Claude in Chrome takes a screenshot and reasons about it — which capability from this chapter does that use?</li>
+      <li><em>Reflect:</em> if you wanted an agent that both writes a blog post <em>and</em> generates a header image for it, would that need one model or two? Why?</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>What's the core mechanism behind most image generators, and how is it different from how Claude generates text? <em>Diffusion — iteratively removing noise from a random starting image, guided by a text prompt — versus text models predicting one next token at a time.</em></li>
+      <li>Is "Claude can read a screenshot" the same capability as "Claude can generate an image"? <em>No — reading/understanding images is multimodal input (still outputs text), while generating images is a separate capability Claude doesn't have natively; you'd call an image-gen API as a tool for that.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch00c-sampling-generation.html">← Chapter 0c</a>
+    <a class="next" href="ch01-claude-code-fundamentals.html">Part 0 complete → Chapter 1: Claude Code Fundamentals</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

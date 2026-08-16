@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 0c — Sampling &amp; Generation Parameters</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../ai-engineering-notebook.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="102">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 0 · Chapter 0c</div>
+  <h1>Sampling &amp; Generation Parameters</h1>
+  <p><span class="badge general">General AI Eng</span> temperature, top-p, top-k — the knobs you actually control via the API</p>
+
+  <div class="callout"><strong>Why this matters.</strong> This is the most <em>practical</em> chapter in Part 0 — unlike training (Ch. 0b), which you never touch, these parameters are ones <strong>you set on every single API call</strong>. Getting them right is the difference between a chatbot that feels robotic/repetitive and one that feels natural, or between a data-extraction pipeline that's reliably consistent and one that randomly breaks.</p>
+
+  <h2>1. Remember from Chapter 0a: the model outputs probabilities, not a word</h2>
+  <p>At each step, the model doesn't directly output "the next word is pizza." It outputs a <strong>probability for every possible next token</strong> — thousands of them. Something has to pick one. That picking process is called <strong>sampling</strong>, and the sampling parameters control how it's done.</p>
+
+  <div class="diagram">Prompt: "My favorite food is"
+
+  Model's raw output (a probability distribution over next tokens):
+  ┌──────────┬────────┐
+  │ "pizza"  │  41%   │  ████████████████████
+  │ "sushi"  │  22%   │  ███████████
+  │ "pasta"  │  15%   │  ███████
+  │ "tacos"  │   9%   │  ████
+  │ "kale"   │   1%   │  ░
+  │ ... (thousands more, tiny probabilities)     │
+  └──────────┴────────┘
+
+  Sampling = "which one do we actually pick?"</div>
+
+  <h2>2. Temperature — how "risky" the pick is</h2>
+  <p><strong>Temperature</strong> reshapes that probability distribution before picking. Low temperature squashes it toward the top choice (more predictable, more repetitive); high temperature flattens it out (more variety, more surprising, occasionally weirder).</p>
+
+  <div class="diagram">temperature = 0        → always pick "pizza" (the single highest-probability token)
+                          (deterministic — same input always gives same output)
+
+temperature = 0.7      → mostly "pizza", sometimes "sushi" or "pasta"
+                          (the sweet spot for most chat/writing use cases)
+
+temperature = 1.5      → distribution flattened — "kale" becomes a real possibility
+                          (creative, unpredictable, sometimes incoherent)</div>
+
+  <div class="analogy">
+    <strong>Analogy:</strong> temperature is like how "adventurous" someone is when picking a restaurant. At temperature 0, they always go to their #1 favorite place, every single time — reliable, boring. At high temperature, they'll sometimes pick their 5th favorite just to mix it up — more interesting, occasionally a bad night.
+  </div>
+
+  <h2>3. Top-p (nucleus sampling) — cut off the long tail</h2>
+  <p>High temperature alone has a problem: it gives real probability to genuinely bad/nonsensical tokens sitting way down in the "long tail." <strong>Top-p</strong> (a.k.a. nucleus sampling) fixes this by only considering the smallest set of top tokens whose probabilities <em>add up</em> to <code>p</code> — then samples (with temperature) only from that shortlist.</p>
+
+  <div class="diagram">top_p = 0.9  → keep adding tokens by probability until we hit 90% of the total mass:
+
+  "pizza" 41% + "sushi" 22% + "pasta" 15% + "tacos" 9% = 87%  → still adding
+  + "kale" 1% + ... more small ones ... = 90%  → STOP, this is our shortlist
+
+  Only these tokens are eligible to be picked — the 1000s of near-zero-probability
+  tokens ("bicycle", "Tuesday", gibberish) are excluded entirely, no matter how high
+  temperature is set.</div>
+
+  <p><strong>Top-k</strong> is the simpler cousin: instead of a probability cutoff, it just keeps the top <code>k</code> tokens by rank (e.g. top-k=40 = only the 40 most likely tokens are eligible). Most APIs, including Claude's, let you set <code>top_p</code>, and some let you set <code>top_k</code> too — you rarely need both at once.</p>
+
+  <h2>4. What this looks like in real code</h2>
+  <p>Here's an actual Claude API call showing where these knobs live:</p>
+  <pre><code>import Anthropic from "@anthropic-ai/sdk";
+const client = new Anthropic();
+
+const response = await client.messages.create({
+  model: "claude-sonnet-5",
+  max_tokens: 500,           // hard cap on reply length (Ch. 15: cost/latency)
+  temperature: 0.7,          // 0 = deterministic, 1 = default variety, up to 1
+  top_p: 0.9,                // optional: nucleus sampling cutoff
+  messages: [
+    { role: "user", content: "Write a one-line tagline for a coffee shop." }
+  ],
+});
+console.log(response.content[0].text);</code></pre>
+
+  <h2>5. Picking the right setting for the job</h2>
+  <table>
+    <tr><th>Use case</th><th>Recommended temperature</th><th>Why</th></tr>
+    <tr><td>Data extraction / structured output (Ch. 9)</td><td>0 – 0.2</td><td>You want the <em>same</em> correct answer every time, not creative variety</td></tr>
+    <tr><td>Classification, routing decisions</td><td>0</td><td>Consistency matters more than anything — same input, same output</td></tr>
+    <tr><td>General chat / assistant</td><td>0.5 – 0.8</td><td>Natural-sounding, not robotic, but still coherent</td></tr>
+    <tr><td>Creative writing, brainstorming</td><td>0.9 – 1.0</td><td>You explicitly want variety and surprise</td></tr>
+  </table>
+
+  <div class="callout"><strong>Common mistake:</strong> setting temperature high "to make it smarter." Temperature does not make the model more capable or more correct — it only makes the output <em>less predictable</em>. For anything where correctness matters (code, math, extracting data), lower temperature is almost always better.</div>
+
+  <h2>6. Other generation controls worth knowing</h2>
+  <table>
+    <tr><th>Parameter</th><th>What it does</th></tr>
+    <tr><td><code>max_tokens</code></td><td>Hard stop — reply is cut off once it hits this many tokens, even mid-sentence</td></tr>
+    <tr><td><code>stop_sequences</code></td><td>Custom strings that immediately end generation if produced (e.g. stop at <code>"\n\n"</code>)</td></tr>
+    <tr><td>Greedy decoding</td><td>The special case of temperature=0: always take the single highest-probability token</td></tr>
+  </table>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>The model outputs a <strong>probability distribution</strong> over next tokens, not a single answer — sampling is how one gets picked.</li>
+    <li><strong>Temperature</strong> controls randomness: 0 = deterministic/repeatable, higher = more variety and risk.</li>
+    <li><strong>Top-p</strong> (nucleus sampling) excludes the improbable long tail before sampling, avoiding truly nonsensical picks even at high temperature.</li>
+    <li>Lower temperature for correctness-sensitive tasks (extraction, classification, code); higher temperature for creative/varied tasks.</li>
+    <li><code>max_tokens</code> and <code>stop_sequences</code> are the other two knobs you'll set on almost every real API call.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>Make the same Claude API call twice with <code>temperature: 0</code> and a factual question — confirm you get (nearly) identical answers both times.</li>
+      <li>Now try the same prompt with <code>temperature: 1</code> three times — compare the variety in the answers.</li>
+      <li><em>Reflect:</em> you're building a pipeline that extracts structured JSON (name, date, amount) from receipts. What temperature would you use, and why?</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>What does temperature actually control? <em>How much the probability distribution is flattened before picking a token — low temperature = more predictable/repeatable, high = more varied/risky. It doesn't make the model "smarter."</em></li>
+      <li>What problem does top-p solve that temperature alone doesn't? <em>It excludes very low-probability ("long tail") tokens from ever being picked, preventing nonsensical outputs even when temperature is high.</em></li>
+      <li>Why would you use temperature=0 for a data-extraction task? <em>You want the same correct, consistent output every time — randomness only hurts reliability when there's one right answer.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch00b-training-lifecycle.html">← Chapter 0b</a>
+    <a class="next" href="ch00d-beyond-text.html">Chapter 0d: Beyond Text →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

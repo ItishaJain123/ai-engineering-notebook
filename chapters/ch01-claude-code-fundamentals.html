@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 1 — Claude Code Fundamentals</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+  kbd{background:var(--bg-alt);border:1px solid var(--border);border-bottom-width:2px;border-radius:4px;padding:1px 6px;font-size:.8em}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../ai-engineering-notebook.html">← All chapters</a></div>
+  <div>
+    <button id="themeBtn">🌙</button>
+    <button class="complete-btn" id="completeBtn" data-ch="1">Mark complete</button>
+  </div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 1 · Chapter 1</div>
+  <h1>Claude Code Fundamentals</h1>
+  <p><span class="badge cc">Claude Code</span> CLAUDE.md · slash commands · hooks · settings · permission modes</p>
+
+  <div class="callout"><strong>Why this chapter exists.</strong> Raw Claude Code has two gaps: (1) it doesn't know <em>your</em> project, and (2) it's powerful, so you need control over what it does automatically. Nearly every feature here solves one of those two problems — keep that lens as you read.</div>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">
+    Think of Claude Code as a <strong>brilliant new contractor</strong> you just hired:
+    <ul>
+      <li><strong>CLAUDE.md</strong> = the onboarding doc ("here's how we do things here").</li>
+      <li><strong>Slash commands</strong> = saved shortcuts for tasks you request repeatedly.</li>
+      <li><strong>Settings</strong> = the employee handbook / configuration.</li>
+      <li><strong>Permission modes</strong> = their keycard access level.</li>
+      <li><strong>Hooks</strong> = automatic office rules that always fire ("every time you touch the code, run the linter").</li>
+    </ul>
+  </div>
+
+  <h2>1. CLAUDE.md — project memory</h2>
+  <p>A plain Markdown file Claude <strong>auto-reads at the start of every session</strong>. Put durable facts here so you never repeat yourself: stack, commands, style, gotchas.</p>
+  <pre><code># Project: My App
+
+## Commands
+- Build: `npm run build`
+- Test:  `npm test`
+- Lint:  `npm run lint`
+
+## Conventions
+- JavaScript (ES modules), never TypeScript here.
+- API routes live in `src/routes/`.
+- Never commit directly to `main`.</code></pre>
+  <p><strong>Locations (most specific wins):</strong> project root <code>./CLAUDE.md</code> (team-shared) → subdirectory <code>CLAUDE.md</code> (folder-specific) → global <code>~/.claude/CLAUDE.md</code> (all your projects). Create one fast with the <code>/init</code> command, which scans the repo and drafts it.</p>
+  <div class="callout"><strong>Good CLAUDE.md hygiene:</strong> keep it short and high-signal. It's loaded into context every session, so bloat costs tokens on <em>every</em> turn. Facts, not essays.</div>
+
+  <h2>2. Slash commands — reusable prompts</h2>
+  <p>Saved prompts invoked with <code>/name</code>, stored as Markdown in <code>.claude/commands/</code>. Built-ins exist, and you write your own.</p>
+
+  <h3>Reference: common built-in slash commands</h3>
+  <p>These ship with Claude Code itself (not ones you write). Run <code>/help</code> any time to see the exact live list for your installed version — commands do get added/renamed over time.</p>
+  <table>
+    <tr><th>Command</th><th>What it does</th></tr>
+    <tr><td><code>/clear</code></td><td>Wipe the conversation and start fresh (Chapter 2)</td></tr>
+    <tr><td><code>/compact</code></td><td>Summarize older context to free up space, keep going (Chapter 2)</td></tr>
+    <tr><td><code>/resume</code></td><td><strong>Reopen a previous session</strong> — pick up an earlier conversation instead of starting cold. Useful when you closed the terminal or switched tasks and want that thread back.</td></tr>
+    <tr><td><code>/init</code></td><td>Scan the repo and draft a starter <code>CLAUDE.md</code></td></tr>
+    <tr><td><code>/help</code></td><td>List available commands and get help using Claude Code</td></tr>
+    <tr><td><code>/config</code></td><td>View/change settings (theme, model, etc.) interactively</td></tr>
+    <tr><td><code>/model</code></td><td>Switch which model Claude Code uses for the session</td></tr>
+    <tr><td><code>/agents</code></td><td>View/manage available subagents (Chapter 5)</td></tr>
+    <tr><td><code>/mcp</code></td><td>List connected MCP servers and their tools (Chapter 4)</td></tr>
+    <tr><td><code>/permissions</code></td><td>View/edit tool permission rules (allow/deny lists)</td></tr>
+    <tr><td><code>/memory</code></td><td>Open/edit CLAUDE.md memory files directly</td></tr>
+    <tr><td><code>/cost</code></td><td>Show token usage / cost so far this session</td></tr>
+    <tr><td><code>/doctor</code></td><td>Diagnose Claude Code installation/config issues</td></tr>
+    <tr><td><code>/bug</code></td><td>Report a bug directly to Anthropic</td></tr>
+    <tr><td><code>/review</code></td><td>Review a GitHub pull request</td></tr>
+    <tr><td><code>/pr_comments</code></td><td>Pull in a PR's review comments</td></tr>
+    <tr><td><code>/add-dir</code></td><td>Grant Claude access to an additional working directory</td></tr>
+    <tr><td><code>/login</code> / <code>/logout</code></td><td>Manage your Anthropic account session</td></tr>
+    <tr><td><code>/vim</code></td><td>Toggle vim-style keybindings for the input editor</td></tr>
+    <tr><td><code>/terminal-setup</code></td><td>Configure terminal integration (e.g. Shift+Enter for newlines)</td></tr>
+  </table>
+
+  <h3>Reference: handy keyboard shortcuts</h3>
+  <table>
+    <tr><th>Shortcut</th><th>What it does</th></tr>
+    <tr><td><kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>Cycle permission mode (default → acceptEdits → plan → …)</td></tr>
+    <tr><td><kbd>Esc</kbd></td><td>Interrupt Claude mid-response/mid-tool-call</td></tr>
+    <tr><td><kbd>Esc</kbd> <kbd>Esc</kbd> (double-tap)</td><td>Jump back and edit a previous message ("rewind")</td></tr>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd></td><td>Cancel current input / exit (press twice to quit)</td></tr>
+    <tr><td>Up / Down arrows</td><td>Cycle through input history</td></tr>
+    <tr><td><kbd>Shift</kbd>+<kbd>Enter</kbd></td><td>Insert a newline without submitting (after <code>/terminal-setup</code>)</td></tr>
+  </table>
+  <div class="callout"><strong><code>/resume</code> vs. <code>/clear</code> vs. <code>/compact</code>:</strong> these three get confused because they all touch "the conversation," but they do opposite things. <code>/clear</code> throws history away to start a <em>new</em> task. <code>/compact</code> shrinks history but <em>keeps going</em> on the <em>same</em> task. <code>/resume</code> goes the other direction — it brings <em>old, already-ended</em> sessions back so you can continue them later.</div>
+
+  <pre><code>&lt;!-- .claude/commands/review-pr.md --&gt;
+Review the current git diff for bugs, security issues, and style.
+Group findings by severity. Suggest concrete fixes.</code></pre>
+  <p>Now typing <code>/review-pr</code> runs that prompt. You can pass arguments with <code>$ARGUMENTS</code> and even run shell inside the command. It's a saved macro for work you repeat.</p>
+
+  <h2>3. Settings — configuration (settings.json)</h2>
+  <p>JSON files controlling permissions, environment variables, hooks, and model. Three levels of precedence:</p>
+  <table>
+    <tr><th>File</th><th>Scope</th><th>Committed?</th></tr>
+    <tr><td><code>~/.claude/settings.json</code></td><td>You, everywhere</td><td>No</td></tr>
+    <tr><td><code>.claude/settings.json</code></td><td>This project, whole team</td><td>Yes</td></tr>
+    <tr><td><code>.claude/settings.local.json</code></td><td>This project, just you</td><td>No (gitignored)</td></tr>
+  </table>
+  <pre><code>{
+  "permissions": {
+    "allow": ["Bash(npm run test:*)", "Read(*)"],
+    "deny":  ["Bash(rm -rf *)"]
+  }
+}</code></pre>
+
+  <h2>4. Permission modes — how much it does without asking</h2>
+  <p>Controls the approval prompts. Cycle modes with <kbd>Shift</kbd>+<kbd>Tab</kbd>.</p>
+  <table>
+    <tr><th>Mode</th><th>Behavior</th><th>Use when</th></tr>
+    <tr><td><strong>default</strong></td><td>Asks before edits &amp; commands</td><td>Normal work</td></tr>
+    <tr><td><strong>acceptEdits</strong></td><td>Auto-accepts file edits; still asks for commands</td><td>You trust the edit plan, want speed</td></tr>
+    <tr><td><strong>plan</strong></td><td>Read-only; proposes a plan, changes nothing until you approve</td><td>Big or risky changes; research first</td></tr>
+    <tr><td><strong>bypassPermissions</strong></td><td>Asks for nothing ("yolo")</td><td>Sandboxes/throwaway only — dangerous</td></tr>
+  </table>
+
+  <h2>5. Hooks — automatic, deterministic rules</h2>
+  <p>Shell commands the harness runs automatically at lifecycle events (<code>PreToolUse</code>, <code>PostToolUse</code>, <code>Stop</code>, etc.). <strong>Key insight: a hook is guaranteed code, not a polite request to the model.</strong> If you <em>need</em> the linter to run after every edit, a hook guarantees it; a line in CLAUDE.md only asks nicely.</p>
+  <pre><code>{
+  "hooks": {
+    "PostToolUse": [{
+      "matcher": "Edit|Write",
+      "hooks": [{ "type": "command", "command": "npm run lint --silent" }]
+    }]
+  }
+}</code></pre>
+  <p>Because the harness (not the model) executes hooks, they're how you enforce <em>“from now on, every time X, do Y.”</em> A hook's output/exit code can even block a tool call.</p>
+
+  <h2>The one mental model to keep</h2>
+  <p>There is a spectrum from <strong>suggestion → guarantee</strong>:</p>
+  <div class="callout" style="text-align:center">
+    <code>CLAUDE.md</code> (usually followed) → <code>slash command</code> (you choose to invoke) → <code>permission settings</code> (Claude <em>cannot</em> cross) → <code>hook</code> (<em>always</em> runs)
+  </div>
+  <p>When you want a behavior, ask: <em>“Does this need to be guaranteed, or just encouraged?”</em> That answer picks the tool.</p>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>CLAUDE.md = auto-loaded project memory; keep it short and high-signal.</li>
+    <li>Slash commands = saved, reusable prompts for repeated tasks.</li>
+    <li>Settings live at user / project / local levels (local overrides project overrides user).</li>
+    <li>Permission modes trade safety for speed; <strong>plan mode</strong> is read-only research.</li>
+    <li>Hooks are deterministic guarantees run by the harness — use them for “always do X”.</li>
+    <li>Mental model: suggestion → guarantee. Pick the weakest tool that still guarantees what you need.</li>
+    <li>Built-in commands worth knowing beyond the basics: <code>/resume</code> (reopen an old session), <code>/cost</code>, <code>/mcp</code>, <code>/agents</code>, <code>/permissions</code>, <code>/model</code> — run <code>/help</code> for the full live list.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <p>In the project root, create a <code>CLAUDE.md</code> containing:</p>
+    <ol>
+      <li>A one-line description (your AI engineering learning workspace).</li>
+      <li>A <strong>Conventions</strong> section: JavaScript only (never Python); examples live alongside the notebook.</li>
+      <li>One <strong>gotcha</strong> you want the tutor to always respect.</li>
+    </ol>
+    <p><em>Stretch:</em> add a <code>settings.json</code> permission rule that allows <code>npm test</code> without prompting.</p>
+  </div>
+
+  <details><summary>Understanding check (try before peeking)</summary>
+    <ol>
+      <li>Core difference between a rule in CLAUDE.md vs. a hook? <br><em>CLAUDE.md is a suggestion the model usually follows; a hook is deterministic code the harness always runs.</em></li>
+      <li>Research a big change but touch no files until approved — which mode? <br><em>Plan mode.</em></li>
+      <li>You closed your terminal yesterday mid-task and want that exact conversation back — which command? <br><em>/resume — /clear would erase it, /compact only shrinks an active session.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch00d-beyond-text.html">← Chapter 0d: Beyond Text</a>
+    <a class="next" href="ch02-context-management.html">Chapter 2: Context Management →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;
+  let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};
+  paint();
+</script>
+</body>
+</html>

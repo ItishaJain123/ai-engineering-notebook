@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 3 — Skills vs. Plugins</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../ai-engineering-notebook.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="3">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 1 · Chapter 3</div>
+  <h1>Skills vs. Plugins</h1>
+  <p><span class="badge cc">Claude Code</span> what each is · when to use which · structure &amp; packaging</p>
+
+  <div class="callout"><strong>Why this matters.</strong> As you customize Claude Code, you'll accumulate prompts, scripts, and knowledge. <strong>Skills</strong> and <strong>Plugins</strong> are the two ways to package that customization so it's reusable and shareable. Confusing them is common; the distinction is really "knowledge" vs. "distribution."</div>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">A <strong>Skill</strong> is a <em>recipe card</em> — a focused how-to Claude reads only when the dish is ordered. A <strong>Plugin</strong> is a <em>boxed kit</em> you hand a friend: it can contain several recipe cards (skills), custom kitchen tools (MCP servers), shortcut buttons (slash commands), and specialist helpers (subagents), all installed together.</div>
+
+  <h2>What a Skill is</h2>
+  <p>A Skill is a folder with a <code>SKILL.md</code> file: a name, a description, and instructions/knowledge for a specific task. Its superpower is <strong>progressive disclosure</strong> — only the short <em>description</em> sits in context normally; the full body loads <em>only when the task matches</em>. So you can have many skills without bloating every prompt.</p>
+  <pre><code>my-skill/
+├── SKILL.md          # required: frontmatter + instructions
+├── reference.md      # optional supporting files
+└── scripts/
+    └── helper.js</code></pre>
+  <pre><code>---
+name: pdf-invoices
+description: Extract line items from PDF invoices into JSON.
+  Use when the user mentions invoices, receipts, or billing PDFs.
+---
+
+# Extracting invoice data
+1. Read the PDF text.
+2. Identify vendor, date, line items, totals.
+3. Output JSON matching the schema in reference.md.</code></pre>
+  <p>The <code>description</code> is critical: it's how Claude decides whether to pull the skill in. Write it as "what it does + when to use it."</p>
+
+  <h2>What a Plugin is</h2>
+  <p>A Plugin is a <strong>distribution package</strong> — a bundle you install (often from a marketplace/repo) that can include any mix of:</p>
+  <ul>
+    <li><strong>Skills</strong> (knowledge)</li>
+    <li><strong>Slash commands</strong> (saved prompts)</li>
+    <li><strong>MCP servers</strong> (new tools/integrations — Chapter 4)</li>
+    <li><strong>Subagents</strong> (specialist agents — Chapter 5)</li>
+    <li><strong>Hooks</strong> (automation)</li>
+  </ul>
+  <pre><code>my-plugin/
+├── .claude-plugin/plugin.json   # manifest
+├── skills/
+├── commands/
+├── agents/
+└── hooks/</code></pre>
+  <div class="callout"><strong>The clean distinction:</strong> a <em>Skill</em> is one capability (knowledge Claude loads on demand). A <em>Plugin</em> is a <em>shipping container</em> that can hold skills <em>and</em> commands <em>and</em> MCP servers <em>and</em> hooks, installed as a unit.</div>
+
+  <h2>When to use which</h2>
+  <table>
+    <tr><th>You want to…</th><th>Reach for</th></tr>
+    <tr><td>Teach Claude a repeatable procedure/knowledge</td><td>Skill</td></tr>
+    <tr><td>Add a personal shortcut for a repeated prompt</td><td>Slash command (may live in a plugin)</td></tr>
+    <tr><td>Add a brand-new tool/integration (DB, API)</td><td>MCP server (Chapter 4)</td></tr>
+    <tr><td>Share a whole toolkit with your team</td><td>Plugin bundling all of the above</td></tr>
+  </table>
+
+  <h2>Skills vs. plugins vs. CLAUDE.md vs. slash commands</h2>
+  <table>
+    <tr><th>Mechanism</th><th>Loaded</th><th>Best for</th></tr>
+    <tr><td>CLAUDE.md</td><td>Always (every turn)</td><td>Small, always-relevant project facts</td></tr>
+    <tr><td>Slash command</td><td>When you type it</td><td>On-demand repeated prompts</td></tr>
+    <tr><td>Skill</td><td>Auto, when description matches</td><td>Larger task knowledge, loaded only when needed</td></tr>
+    <tr><td>Plugin</td><td>Installed; its parts load per their own rules</td><td>Packaging &amp; sharing many of the above</td></tr>
+  </table>
+  <p>Note the token angle (ties to Chapter 2): CLAUDE.md always costs tokens; a Skill costs almost nothing until triggered. So big knowledge belongs in a Skill, not CLAUDE.md.</p>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>Skill = one on-demand capability (knowledge) via <code>SKILL.md</code>; progressive disclosure keeps it cheap.</li>
+    <li>Plugin = a distribution bundle that can contain skills, commands, MCP servers, subagents, hooks.</li>
+    <li>The <code>description</code> field decides when a skill triggers — write it as "what + when."</li>
+    <li>Put big knowledge in Skills (loaded on demand), not CLAUDE.md (loaded always).</li>
+    <li>Use a Plugin when you want to share a whole toolkit as one install.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>Sketch a <code>SKILL.md</code> (frontmatter + 3–5 steps) for a skill YOU would use — e.g. "explain-this-code" or "js-code-review." Focus on writing a great <code>description</code> ("what it does + when to use it").</li>
+      <li>Then decide: would you ship it alone as a skill, or bundle it in a plugin with a slash command? Justify in one sentence.</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>Why put large task knowledge in a Skill instead of CLAUDE.md? <em>Skills load on demand (cheap); CLAUDE.md loads every turn (costs tokens always).</em></li>
+      <li>One-line difference between a skill and a plugin? <em>A skill is one capability; a plugin is a package that can contain many skills plus commands, MCP servers, and hooks.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch02-context-management.html">← Chapter 2</a>
+    <a class="next" href="ch04-mcp.html">Chapter 4: MCP →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

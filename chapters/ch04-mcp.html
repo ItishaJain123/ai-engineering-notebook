@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 4 — MCP (Model Context Protocol)</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../ai-engineering-notebook.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="4">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 1 · Chapter 4</div>
+  <h1>MCP — Model Context Protocol</h1>
+  <p><span class="badge general">General AI Eng</span><span class="badge cc">Claude Code</span> build a server from scratch · connect it to Claude Code</p>
+
+  <div class="callout" style="border-left:4px solid var(--accent)">
+    <strong>🟢 MCP in plain English (read this first)</strong>
+    <p>Claude is smart, but by itself it's stuck in a box — it can only <em>talk</em>. It can't check the weather, read your database, or send an email on its own. To let it actually <em>do</em> things, you give it <strong>tools</strong> (like handing a helper a phone and a calculator).</p>
+    <p><strong>MCP is just a standard way to plug a tool into an AI.</strong> That's the whole idea.</p>
+    <p><strong>The phone-charger analogy 🔌:</strong> phones used to have a different charger each — total mess. Then USB-C gave us <em>one plug shape</em> that works with everything. MCP is USB-C for AI tools:</p>
+    <ul>
+      <li>An <strong>MCP server</strong> = the device (a weather checker, a database reader).</li>
+      <li>The <strong>AI app</strong> (Claude Code) = the laptop you plug it into.</li>
+      <li>Both speak MCP (the same "plug shape"), so they just work together.</li>
+    </ul>
+    <p><strong>Tiny example:</strong> you write a little program that knows how to check the weather and announce "I offer a tool called <code>get_weather</code>." You plug it into Claude Code. Now when you ask "what's the weather in London?", Claude uses that tool and gives you a real answer — instead of "I can't check live weather."</p>
+    <p><strong>Remember 3 things:</strong> (1) AI alone can only talk — tools let it <em>do</em> things. (2) MCP is a standard "plug shape" for connecting tools to AI. (3) Build the tool once → reuse it in any AI app.</p>
+    <p style="margin-bottom:0"><em>Everything below (stdio, JSON schema, config files) is just <strong>how</strong> you build the plug. Skim it — it clicks once you build one in the exercise.</em></p>
+  </div>
+
+  <div class="callout"><strong>Why this matters (the technical version).</strong> An LLM can only do what its tools let it do. Before MCP, every app wired up integrations in its own bespoke way — N apps × M tools = chaos. MCP is an <strong>open standard</strong> (from Anthropic, now widely adopted) so any AI client can talk to any tool through one protocol. Build an MCP server once; it works in Claude Code, the desktop app, and other MCP clients.</div>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">MCP is the <strong>USB-C of AI tools</strong>. Before USB-C, every device had its own cable. Now one standard port fits everything. An <strong>MCP server</strong> is a device (a database, GitHub, your file system); the <strong>MCP client</strong> (Claude Code) is the laptop. As long as both speak MCP, they connect — no custom cable.</div>
+
+  <h2>The mental model</h2>
+  <ul>
+    <li><strong>Host / Client</strong> = the AI app (Claude Code). It discovers and calls capabilities.</li>
+    <li><strong>Server</strong> = your program exposing capabilities.</li>
+    <li>A server exposes three kinds of things:
+      <ul>
+        <li><strong>Tools</strong> — actions the model can call (e.g. <code>create_issue</code>). Most common.</li>
+        <li><strong>Resources</strong> — read-only data the client can fetch (e.g. a file, a row).</li>
+        <li><strong>Prompts</strong> — prewritten prompt templates the user can invoke.</li>
+      </ul>
+    </li>
+    <li><strong>Transport</strong> = how they talk: <strong>stdio</strong> (local process, most common for CLI) or <strong>HTTP/SSE</strong> (remote).</li>
+  </ul>
+
+  <h2>Build a minimal MCP server in JavaScript</h2>
+  <p>We'll expose one tool: <code>add_numbers</code>. Uses the official SDK over stdio.</p>
+  <pre><code><span>// 1) Setup</span>
+mkdir weather-mcp && cd weather-mcp
+npm init -y
+npm install @modelcontextprotocol/sdk zod
+<span># add "type":"module" to package.json for ES imports</span></code></pre>
+
+  <pre><code><span>// server.js</span>
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { z } from "zod";
+
+const server = new McpServer({ name: "math-mcp", version: "1.0.0" });
+
+<span>// Register a tool: name, schema, handler</span>
+server.registerTool(
+  "add_numbers",
+  {
+    title: "Add numbers",
+    description: "Add two numbers and return the sum.",
+    inputSchema: { a: z.number(), b: z.number() }
+  },
+  async ({ a, b }) =&gt; ({
+    content: [{ type: "text", text: String(a + b) }]
+  })
+);
+
+<span>// Start over stdio (Claude Code launches this process and pipes JSON-RPC)</span>
+const transport = new StdioServerTransport();
+await server.connect(transport);</code></pre>
+
+  <p>Three things every tool needs: a <strong>name</strong>, an <strong>inputSchema</strong> (so the model knows what args to send — validated for you), and a <strong>handler</strong> that returns a <code>content</code> array. This mirrors the raw tool-use shape you'll meet in Chapter 11.</p>
+
+  <h2>Connect it to Claude Code</h2>
+  <p>Register the server (writes to your MCP config):</p>
+  <pre><code>claude mcp add math -- node /abs/path/to/weather-mcp/server.js</code></pre>
+  <p>Or add it to <code>.mcp.json</code> in the project (shareable with the team):</p>
+  <pre><code>{
+  "mcpServers": {
+    "math": { "command": "node", "args": ["./weather-mcp/server.js"] }
+  }
+}</code></pre>
+  <p>Then verify inside Claude Code with <code>/mcp</code> — you should see <code>math</code> connected and the <code>add_numbers</code> tool available. Ask Claude to "add 21 and 21 using the math tool."</p>
+  <div class="callout"><strong>Debug tip:</strong> stdio servers must keep <strong>stdout clean</strong> — it's the JSON-RPC channel. Never <code>console.log</code> to stdout in a stdio server; log to <code>console.error</code> (stderr) instead, or you'll corrupt the protocol.</div>
+
+  <h2>⭐ Raw API tool use vs. MCP — the main difference</h2>
+  <p>People treat these as rivals; they're not at the same layer. Hold it this way:</p>
+  <ul>
+    <li><strong>Raw API tool use (function calling)</strong> is a <em>feature of a single API call</em>. In your app you describe some tools in JSON; the model replies "call <code>getWeather('London')</code>"; then <strong>your own code runs that function</strong> and returns the result. The tools live <strong>inside your application</strong> — only that app can use them.</li>
+    <li><strong>MCP</strong> is a <em>protocol</em> — a standardized client/server contract. The tools live in a <strong>separate server process</strong> that <em>any</em> MCP client (Claude Code, the desktop app, your SDK agent) can discover and call. Write the server <strong>once</strong>, reuse it <strong>everywhere</strong>.</li>
+  </ul>
+  <div class="analogy"><strong>Analogy:</strong> raw API tool use is an appliance <em>hardwired</em> into one house. MCP is a <em>USB device</em> — plug the same one into any computer.</div>
+  <table>
+    <tr><th></th><th>Raw API tool use</th><th>MCP</th></tr>
+    <tr><td>What it is</td><td>A feature of one API request</td><td>A client–server protocol</td></tr>
+    <tr><td>Where tools live</td><td>Inside your app's code</td><td>In a standalone server</td></tr>
+    <tr><td>Who executes the tool</td><td>Your app</td><td>The MCP server</td></tr>
+    <tr><td>Reuse across apps</td><td>No — locked to your app</td><td>Yes — any MCP client</td></tr>
+    <tr><td>Tool discovery</td><td>You hardcode the tool list</td><td>Client asks the server "what do you offer?"</td></tr>
+  </table>
+  <div class="callout"><strong>The punchline:</strong> MCP is usually built <em>on top of</em> raw API tool use. An MCP client still relies on the model's function-calling ability under the hood — MCP just standardizes <em>where tools come from and how they're delivered</em>, making them portable instead of bespoke. So it's not "API <em>or</em> MCP" — it's "handle tools myself in one app" vs. "expose tools through a standard any app can reuse." (You'll build raw tool use directly in Chapter 11.)</div>
+
+  <h2>🟢 "AI vs. MCP" — the question people actually mean to ask</h2>
+  <p>"AI vs MCP" isn't really a fair fight — the AI is the <strong>brain</strong>, MCP is a <strong>plug for its hands</strong>. They're different layers, not alternatives. But there <em>is</em> a real, useful comparison hiding inside that question: <strong>"should the AI just wing it itself (e.g. by clicking around a website), or should it use an MCP tool built for the job?"</strong> That's the comparison worth learning.</p>
+
+  <div class="analogy">
+    <strong>Think of it as: doing a task yourself by hand vs. using a proper tool for it.</strong>
+    <ul>
+      <li><strong>AI acting alone / driving a browser</strong> (Chapter 7's "Claude in Chrome") = a person walking into a kitchen with no recipe, reading the menu on the wall, and cooking it themselves by trial and error. Works <em>anywhere</em>, even with no instructions — but slow, and easy to knock something over.</li>
+      <li><strong>AI using an MCP tool</strong> = calling the restaurant and ordering exactly what you want by name. Fast, precise, and the restaurant (the tool) does the actual work correctly every time.</li>
+    </ul>
+  </div>
+
+  <h3>Worked example: using GitHub with Claude</h3>
+  <p>Say you want Claude to manage issues on your GitHub repo. You have two real options:</p>
+  <ol>
+    <li><strong>Log into GitHub in Chrome</strong> and let Claude click around the website — the <em>Claude in Chrome</em> approach from Chapter 7.</li>
+    <li><strong>Connect a GitHub MCP server</strong> that talks straight to GitHub's API.</li>
+  </ol>
+  <p>Both technically "work." Here's why the MCP wins almost every time:</p>
+  <table>
+    <tr><th></th><th>Claude in Chrome (clicking GitHub.com)</th><th>GitHub MCP server</th></tr>
+    <tr><td>How it works</td><td>Looks at the page, finds buttons, clicks, screenshots, repeats</td><td>Calls GitHub's API directly: "give me all open issues"</td></tr>
+    <tr><td>Speed for 20 issues</td><td>20 rounds of screenshot → find button → click → wait</td><td>A handful of direct calls, no screenshots</td></tr>
+    <tr><td>Token cost (Ch. 2)</td><td>High — every screenshot is expensive</td><td>Low — just structured data</td></tr>
+    <tr><td>Reliability</td><td>Breaks when GitHub redesigns a button/page</td><td>Stable — talks to the underlying data, not pixels</td></tr>
+    <tr><td>Safety</td><td>Has your <em>whole logged-in account</em>; a malicious page could try to trick it (prompt injection, Ch. 26)</td><td>Uses a <strong>scoped token</strong> — e.g. "read issues only," can't delete a repo even by mistake</td></tr>
+    <tr><td>Use when…</td><td>No API exists, or it's a quick one-off, or you need a visual check</td><td>An API exists — which GitHub has, so use it</td></tr>
+  </table>
+  <div class="callout"><strong>The rule that ties it all together:</strong> if a clean tool/API already exists for the job (like GitHub's), give Claude an <strong>MCP tool</strong> for it — faster, more reliable, and you can limit exactly what it's allowed to do. Only fall back to driving a browser by hand (Chapter 7) when <em>no API exists</em> for that website.</div>
+
+  <h2>MCP vs. the alternatives</h2>
+  <table>
+    <tr><th>Approach</th><th>Reuse across clients</th><th>Best for</th></tr>
+    <tr><td>MCP server</td><td>High — any MCP client</td><td>Integrations you'll reuse or share</td></tr>
+    <tr><td>Raw API tool-use (Chapter 11)</td><td>Locked to your app</td><td>One app, tight control</td></tr>
+    <tr><td>CC slash command / skill</td><td>Claude Code only</td><td>Prompt-level helpers, not live integrations</td></tr>
+  </table>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>MCP is an open standard so any AI client can use any tool ("USB-C for AI").</li>
+    <li>Servers expose <strong>tools</strong> (actions), <strong>resources</strong> (read-only data), <strong>prompts</strong> (templates).</li>
+    <li>Transport is usually <strong>stdio</strong> locally; keep stdout clean (log to stderr).</li>
+    <li>A tool = name + input schema + handler returning a <code>content</code> array.</li>
+    <li>Register with <code>claude mcp add …</code> or a project <code>.mcp.json</code>; verify with <code>/mcp</code>.</li>
+    <li>Choose MCP for reusable integrations; raw tool-use for one locked-in app.</li>
+    <li><strong>API vs. MCP:</strong> raw API tool use = tools live in your app, your code runs them (one app only). MCP = tools live in a standalone server any client can reuse. MCP is usually built <em>on top of</em> function calling.</li>
+    <li><strong>"AI vs. MCP" really means</strong> "should Claude wing it by hand (drive a browser) or use a proper tool built for the job?" — prefer an MCP tool whenever one exists; it's faster, more reliable, and safely scoped (e.g. a read-only GitHub token vs. full account access in Chrome).</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise (real build)</strong>
+    <ol>
+      <li>Build the <code>math-mcp</code> server above and add a second tool <code>multiply</code>.</li>
+      <li>Register it with Claude Code and confirm it appears under <code>/mcp</code>.</li>
+      <li>Ask Claude to multiply two numbers <em>using your tool</em> and confirm it calls the server (not mental math).</li>
+      <li><em>Stretch:</em> add a tool that reads a real thing — e.g. current time, or a line count of a file you pass in.</li>
+    </ol>
+    <p>Paste your <code>server.js</code> and I'll review the schema design and error handling.</p>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>Why is MCP better than hard-coding an integration into one app? <em>Write once, reuse in any MCP client; standard protocol instead of bespoke wiring.</em></li>
+      <li>What are the three things a tool registration needs? <em>Name, input schema, handler.</em></li>
+      <li>Why never console.log to stdout in a stdio server? <em>stdout is the JSON-RPC channel; logging corrupts it.</em></li>
+      <li>Main difference between raw API tool use and MCP? <em>Raw API tool use keeps tools in your app and your code executes them (locked to that app); MCP puts tools in a standalone server any MCP client can reuse. MCP is built on top of function calling.</em></li>
+      <li>You want Claude to close 50 old GitHub issues. Chrome-click through the website, or use a GitHub MCP tool — and why? <em>GitHub MCP: it's dozens of fast direct API calls instead of 50 rounds of expensive screenshots, it won't break if GitHub redesigns a button, and a scoped token limits Claude to only what you allow instead of full account access.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch03-skills-vs-plugins.html">← Chapter 3</a>
+    <a class="next" href="ch05-subagents.html">Chapter 5: Subagents →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

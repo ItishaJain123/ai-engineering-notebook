@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 5 — Subagents / Agent Tool</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../ai-engineering-notebook.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="5">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 1 · Chapter 5</div>
+  <h1>Subagents / Agent (Task) Tool</h1>
+  <p><span class="badge cc">Claude Code</span> how delegation works · when to delegate vs. do inline</p>
+
+  <div class="callout"><strong>Why this matters.</strong> A single agent's context window is finite (Chapter 2). Big jobs — "search the whole repo," "review 30 files" — would flood it. <strong>Subagents</strong> let the main agent spin up a helper with its <em>own fresh context</em>, hand it a task, and get back only a short summary. The bulk of the work never pollutes your main whiteboard.</p></div>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">You're a <strong>manager</strong> on a deadline. Instead of reading 500 pages yourself, you send an <strong>intern</strong> to read them and report back one paragraph. You stay focused; the reading happened elsewhere. The catch: briefing and debriefing the intern takes effort, so you only delegate when the task is big enough to be worth it.</div>
+
+  <h2>How delegation works in Claude Code</h2>
+  <ul>
+    <li>The main agent calls the <strong>Agent (Task) tool</strong>, giving a subagent a <em>type</em> and a <em>prompt</em>.</li>
+    <li>The subagent runs its own plan→act→observe loop with a <strong>separate context window</strong> and its own tool set.</li>
+    <li>It cannot see your conversation; it only knows what you put in its prompt. <strong>Its final message is the only thing returned</strong> to the main agent (the user doesn't see its internal steps).</li>
+    <li>A fresh <code>Agent</code> call starts cold; some setups let you continue an existing subagent to reuse its context.</li>
+  </ul>
+
+  <h2>Built-in subagent types (examples)</h2>
+  <table>
+    <tr><th>Type</th><th>Good for</th></tr>
+    <tr><td><strong>Explore</strong></td><td>Read-only fan-out search across many files; returns conclusions, not file dumps</td></tr>
+    <tr><td><strong>Plan</strong></td><td>Designing an implementation strategy before coding</td></tr>
+    <tr><td><strong>general-purpose</strong></td><td>Multi-step research/tasks when you're unsure where the answer lives</td></tr>
+  </table>
+  <p>You can also define <strong>custom subagents</strong> (a Markdown file with name, description, allowed tools, and a system prompt) in <code>.claude/agents/</code> — e.g. a "js-test-writer" specialist.</p>
+  <pre><code>---
+name: js-test-writer
+description: Writes Vitest unit tests for JS modules. Use when asked to add tests.
+tools: Read, Grep, Edit
+---
+You are a testing specialist. Given a module, write thorough Vitest tests
+covering happy paths and edge cases. Follow existing test style.</code></pre>
+
+  <h2>When to delegate vs. do inline</h2>
+  <table>
+    <tr><th>Delegate to a subagent</th><th>Do it inline</th></tr>
+    <tr><td>Wide search / reading many files</td><td>You already know the file</td></tr>
+    <tr><td>Big result you only need summarized</td><td>You need the raw detail in context</td></tr>
+    <tr><td>Parallelizable independent chunks</td><td>Tightly coupled, back-and-forth edits</td></tr>
+    <tr><td>Isolating a noisy task to protect context</td><td>Quick, small task (delegation overhead not worth it)</td></tr>
+  </table>
+  <div class="callout"><strong>The core tradeoff:</strong> a subagent <em>saves your context</em> but <em>costs a round-trip and loses shared state</em> (it can't see your conversation). Delegate when context savings &gt; briefing cost. For a two-line grep, just do it inline.</div>
+
+  <h2>Two key limits</h2>
+  <ul>
+    <li><strong>No shared memory.</strong> Everything the subagent needs must be in its prompt. Vague briefs → wrong results.</li>
+    <li><strong>Only the final summary returns.</strong> Design the task so the useful output <em>is</em> that final message.</li>
+  </ul>
+  <p>This is the CC-native version of <strong>multi-agent orchestration</strong> (Chapter 24): an orchestrator delegating to workers. Same pattern, bigger scale later.</p>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>Subagents run in a <strong>separate context</strong> and return only a final summary.</li>
+    <li>Use them to keep heavy reading/search out of your main context window.</li>
+    <li>They can't see your conversation — brief them fully in the prompt.</li>
+    <li>Delegate when context savings beat the round-trip + briefing cost; otherwise inline.</li>
+    <li>Custom subagents live in <code>.claude/agents/</code> with their own tools + system prompt.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>Name two tasks in a real codebase you'd delegate to an <strong>Explore</strong> subagent, and two you'd keep inline. Justify each with the context-vs-briefing tradeoff.</li>
+      <li>Draft the frontmatter (name + description + tools) for a custom subagent you'd want — e.g. "explain-diff" or "js-refactorer."</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>Why does delegating a big repo search protect your main session? <em>The subagent reads in its own context and returns a short summary; the raw content never enters your window.</em></li>
+      <li>What's the main risk of a vague subagent prompt? <em>It can't see your conversation, so missing context → wrong or incomplete results.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch04-mcp.html">← Chapter 4</a>
+    <a class="next" href="ch06-agent-sdk.html">Chapter 6: Claude Agent SDK →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

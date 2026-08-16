@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 0a — How LLMs Actually Work</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../ai-engineering-notebook.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="100">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 0 · Chapter 0a</div>
+  <h1>How LLMs Actually Work</h1>
+  <p><span class="badge general">General AI Eng</span> tokens, embeddings, and the transformer — explained with zero jargon first</p>
+
+  <div class="callout"><strong>Why this matters.</strong> You've been using Claude for a while now without knowing what's happening under the hood — and that's totally fine for building things. But once you know <em>how</em> the model actually turns your prompt into a reply, a bunch of "weird" behaviors stop being mysterious: why it sometimes hallucinates, why longer prompts cost more, why it can "forget" things from earlier in a long chat, why it's bad at counting letters in a word. This chapter is the missing foundation.</p>
+
+  <p class="label">The one-sentence version</p>
+  <div class="analogy">
+    <strong>An LLM is a very, very good next-word guesser.</strong> That's it. Give it some text, and it predicts — one word-piece at a time — what's statistically most likely to come next, based on patterns it saw in a huge amount of text during training. Do that thousands of times in a row, feeding each guess back in as new input, and you get a paragraph, an essay, or code.
+  </div>
+
+  <h2>1. It doesn't see words — it sees "tokens"</h2>
+  <p>Before any of the "smart" stuff happens, your text gets chopped into small pieces called <strong>tokens</strong>. A token is usually a word, part of a word, or a punctuation mark — not always a whole word.</p>
+
+  <div class="diagram">Text:    "unbelievable pizza!"
+Tokens:  [ "un" | "believ" | "able" | " pizza" | "!" ]
+IDs:     [ 359  |  8271   |  822   |  12045   | 0   ]   ← just numbers to the model</div>
+
+  <p>Why chop words into pieces instead of using whole words? Two reasons: (1) there'd be millions of possible whole words/names across every language — too many to handle efficiently, and (2) breaking rare words into familiar pieces (like <code>un</code> + <code>believ</code> + <code>able</code>) lets the model handle words it's never seen before, the same way you can guess "unfrogable" is about frogs even though it's not a real word.</p>
+
+  <div class="callout"><strong>Try it yourself:</strong> this is why Claude is sometimes bad at "how many letters are in strawberry?" — it never actually sees the letters s-t-r-a-w-b-e-r-r-y. It sees 1–2 tokens that represent the whole chunk "strawberry." Spelling-out-loud is not what the model was optimized to do.</div>
+
+  <p>Here's roughly what tokenization looks like in code (this is a simplified idea, not the real algorithm):</p>
+  <pre><code>// Real tokenizers use a learned algorithm (Byte-Pair Encoding / BPE),
+// but conceptually: build a vocabulary of common chunks, then
+// greedily match the longest known chunk at each position.
+function toyTokenize(text, vocab) {
+  const tokens = [];
+  let i = 0;
+  while (i &lt; text.length) {
+    let match = text[i]; // fallback: single character
+    for (let len = 8; len &gt;= 1; len--) {
+      const piece = text.slice(i, i + len);
+      if (vocab.has(piece)) { match = piece; break; }
+    }
+    tokens.push(match);
+    i += match.length;
+  }
+  return tokens;
+}</code></pre>
+  <p>This is also literally what you're paying for and budgeting when we talk about "tokens" in Chapter 2 (context management) and Chapter 15 (cost optimization) — every token in your prompt <em>and</em> every token in the reply costs money and counts against the context window.</p>
+
+  <h2>2. Each token becomes a list of numbers ("embedding")</h2>
+  <p>Computers don't understand the word "cat" — they understand numbers. So every token gets converted into a long list of numbers (usually hundreds to thousands of them) called an <strong>embedding</strong> or <strong>vector</strong>. Think of it as coordinates that place the word in a giant "meaning space."</p>
+
+  <div class="analogy">
+    <strong>Analogy:</strong> imagine a huge 3D map where similar things are placed near each other — "cat" and "dog" are close together (both pets), "cat" and "kitten" are even closer, and "cat" and "spreadsheet" are far apart. A real embedding isn't 3 dimensions, it's hundreds of dimensions, but the idea is identical: <em>closeness in this space = closeness in meaning</em>.
+  </div>
+
+  <div class="diagram">          "king"  →  [ 0.91, -0.22, 0.05, ... ]   (e.g. 1536 numbers)
+          "queen" →  [ 0.89, -0.19, 0.44, ... ]
+          "pizza" →  [-0.12,  0.77, -0.61, ... ]
+
+  king is close to queen in this space, far from pizza.
+  Famous trick: king − man + woman ≈ queen  (the math of meaning!)</div>
+
+  <p>This is the exact same idea used in Chapter 16 (Embeddings Deep-Dive) for RAG/search — a search engine that finds documents "similar in meaning" to your question is just measuring distance between embedding vectors.</p>
+
+  <h2>3. The transformer: every word "looks at" every other word</h2>
+  <p>Now for the actual engine: the <strong>transformer</strong> architecture. Its key trick is called <strong>attention</strong> — for every token, the model asks "which other tokens in this text are relevant to understanding <em>me</em> right now?" and weighs them accordingly.</p>
+
+  <div class="analogy">
+    <strong>Analogy:</strong> imagine reading the sentence "The trophy didn't fit in the suitcase because <strong>it</strong> was too big." To know what "it" refers to (the trophy? the suitcase?), you unconsciously glance back at earlier words and weigh them by relevance. Attention is that glancing-back process, done mathematically, for every single word, looking at every other word, simultaneously.
+  </div>
+
+  <div class="diagram">Sentence: "The trophy didn't fit in the suitcase because it was too big"
+
+  Attention weights for the word "it":
+  The       ░░
+  trophy    ████████████████   ← strongly attends to "trophy"
+  didn't    ░░
+  fit       ███
+  suitcase  ██████              ← some attention here too
+  because   ░
+  it        (itself)
+  was       ░
+  too       ░
+  big       ██                  ← "big" hints it's the trophy, not the suitcase</div>
+
+  <p>A transformer stacks many of these attention layers on top of each other (often dozens), each one refining the model's understanding a little more, mixed with simple "feed-forward" math layers in between.</p>
+
+  <div class="diagram">   Input tokens → Embeddings
+        │
+        ▼
+   ┌─────────────────────────┐
+   │   Attention layer #1     │   "who should I pay attention to?"
+   │   Feed-forward layer #1  │   "process that information"
+   └─────────────────────────┘
+        │
+        ▼            ...repeat N times (often 32, 64, 96+ layers)...
+        │
+        ▼
+   ┌─────────────────────────┐
+   │   Attention layer #N     │
+   │   Feed-forward layer #N  │
+   └─────────────────────────┘
+        │
+        ▼
+   Probability over "what token comes next?"
+   e.g. { "pizza": 0.41, "sushi": 0.22, "salad": 0.09, ... }</div>
+
+  <h2>4. Putting it together: one token at a time</h2>
+  <p>The model doesn't write your whole answer in one shot. It predicts <strong>one next token</strong>, adds it to the text, and runs the <em>entire process again</em> on the new, slightly longer text — over and over — until it decides to stop.</p>
+
+  <div class="diagram">Step 1:  "I love"                → predicts → "eating"
+Step 2:  "I love eating"         → predicts → "pizza"
+Step 3:  "I love eating pizza"   → predicts → "."
+Step 4:  "I love eating pizza."  → predicts → &lt;stop&gt;</div>
+
+  <p>This is why streaming responses (Chapter 13) look the way they do — you're literally watching this loop happen live, one token at a time. It's also why longer replies take proportionally longer: each token requires a full pass through the whole network.</p>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li><strong>Tokens</strong>, not words or letters, are the model's smallest unit — this explains token costs and "letter counting" failures.</li>
+    <li><strong>Embeddings</strong> turn tokens into numbers that encode meaning as position in space — the same concept powers RAG/search (Ch. 16).</li>
+    <li><strong>Attention</strong> lets every token weigh every other token's relevance — this is what lets the model resolve context like pronouns.</li>
+    <li>The model generates <strong>one token at a time</strong>, feeding its own output back in as input — this is why responses stream token-by-token.</li>
+    <li>None of this is Claude-specific — every modern LLM (GPT, Gemini, Llama) is built on this same transformer idea.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>Take the sentence "The animal didn't cross the street because it was too tired." — which word does "it" refer to? Now change "tired" to "wide" — does the answer flip? This is exactly the kind of attention-weighing the model does.</li>
+      <li>Open any Claude conversation and ask it to spell a long unusual word backwards, one letter at a time. Notice how it can struggle — now you know why (tokens, not letters).</li>
+      <li><em>Reflect:</em> why would doubling the length of your prompt roughly increase both cost <em>and</em> response time?</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>What is a token, and why isn't it the same as a word? <em>The smallest chunk of text the model processes — often a word-piece, chosen so the model can represent any word (even unseen ones) from a manageable-sized vocabulary of common pieces.</em></li>
+      <li>What does "attention" let the model do? <em>For every token, decide how much to weigh every other token when interpreting it — e.g. resolving what a pronoun refers to.</em></li>
+      <li>Why does the model generate text one token at a time instead of all at once? <em>Each next-token prediction depends on everything generated so far, so it re-runs the whole model on the growing sequence at every step.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="../ai-engineering-notebook.html">← All chapters</a>
+    <a class="next" href="ch00b-training-lifecycle.html">Chapter 0b: Training Lifecycle →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

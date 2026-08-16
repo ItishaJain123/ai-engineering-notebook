@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 0b — Training Lifecycle</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../ai-engineering-notebook.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="101">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 0 · Chapter 0b</div>
+  <h1>Training Lifecycle: How a Model Like Claude Gets Made</h1>
+  <p><span class="badge general">General AI Eng</span> pretraining → fine-tuning → RLHF, explained without the math</p>
+
+  <div class="callout"><strong>Why this matters.</strong> You will never personally train a model like Claude — that costs hundreds of millions of dollars and needs data-center-scale hardware. But knowing the three stages it went through explains a lot of its behavior: why it "knows" so much, why it follows instructions instead of just rambling, and why it refuses certain requests. This is 100% background knowledge, not a skill you'll practice — it's here so the rest of the curriculum makes sense.</p>
+
+  <p class="label">The analogy for this whole chapter</p>
+  <div class="analogy">
+    Think of training a model like <strong>raising and educating a brilliant but very naive person</strong>:
+    <ol>
+      <li><strong>Pretraining</strong> = reading almost the entire internet, cover to cover, absorbing patterns, facts, and how language works — but with no one telling them what's true, helpful, or appropriate.</li>
+      <li><strong>Fine-tuning (SFT)</strong> = a tutor sitting with them, showing worked examples: "here's a good question, and here's how a helpful assistant should answer it."</li>
+      <li><strong>RLHF / preference tuning</strong> = getting feedback on their own answers ("this response was better than that one") and adjusting their behavior to match what people actually prefer.</li>
+    </ol>
+  </div>
+
+  <div class="diagram">┌───────────────┐     ┌──────────────────┐     ┌─────────────────────┐
+│  PRETRAINING  │ ──▶ │  FINE-TUNING/SFT │ ──▶ │  RLHF / PREFERENCE   │ ──▶  Deployed model
+│  "read the    │     │  "here's how to  │     │  TUNING              │      (what you call
+│   internet"   │     │   be an assistant"│    │  "here's what humans │       via the API)
+└───────────────┘     └──────────────────┘     │   actually prefer"   │
+                                                 └─────────────────────┘</div>
+
+  <h2>1. Pretraining — the expensive, general part</h2>
+  <p>The model starts as random noise — it knows nothing. It's shown trillions of words of text (books, websites, code, papers) and given one simple job over and over: <strong>predict the next token</strong>. When it guesses wrong, its internal numbers (called "weights") get nudged slightly to make the correct answer a bit more likely next time. Repeat that trillions of times and it slowly learns grammar, facts, reasoning patterns, and coding — purely as a side effect of getting extremely good at next-token prediction.</p>
+
+  <pre><code>// The core training loop, wildly simplified
+for (const batch of trainingData) {         // billions of batches
+  const prediction = model.predictNext(batch.input);
+  const loss = compareToActualNextToken(prediction, batch.actualNext);
+  model.weights = nudgeWeightsToReduceLoss(model.weights, loss);
+}
+// After enough repetitions → the "base model" / "pretrained model"</code></pre>
+
+  <p>The result of this stage alone is called a <strong>base model</strong>. It's genuinely smart, but it isn't well-behaved — ask it a question and it might continue with more questions (because that's a common pattern in its training data) instead of answering. It has no concept of "be a helpful assistant to this specific user."</p>
+
+  <h2>2. Fine-tuning (SFT) — teaching it to be an assistant</h2>
+  <p><strong>SFT = Supervised Fine-Tuning.</strong> Humans (or high-quality AI-generated examples) write out thousands of examples of <em>good instruction-following behavior</em>: "Question → ideal answer" pairs. The model is trained again — much more lightly than pretraining — on just this curated data, so it learns the pattern "when someone asks me something, respond helpfully and directly," instead of just continuing text.</p>
+
+  <div class="diagram">Pretraining data (internet-scale, messy):
+  "...the capital of france is often a trivia question, and other
+   european capitals include..."
+
+SFT data (curated, example-driven):
+  User: "What's the capital of France?"
+  Assistant: "The capital of France is Paris."          ← model learns THIS shape</div>
+
+  <p>This is the stage that turns a raw text-predictor into something that <em>feels</em> like it's talking to you.</p>
+
+  <h2>3. RLHF / preference tuning — polishing based on what humans actually like</h2>
+  <p><strong>RLHF = Reinforcement Learning from Human Feedback.</strong> At this point the model can follow instructions, but its answers might still be too long, too short, unclear, or subtly unsafe. So:</p>
+  <ol>
+    <li>The model generates multiple different answers to the same prompt.</li>
+    <li>Humans (or a trained "reward model" standing in for human judgment) rank which answer is better.</li>
+    <li>The model is nudged to produce more answers like the ones ranked highly, and fewer like the ones ranked poorly.</li>
+  </ol>
+
+  <div class="diagram">Prompt: "Explain photosynthesis"
+
+  Answer A: [3 clear paragraphs with an analogy]     👍 ranked better
+  Answer B: [a wall of dense jargon, no structure]    👎 ranked worse
+
+  → model weights nudged to produce more "Answer A"-style responses</div>
+
+  <p>This stage is also where a lot of <strong>safety behavior</strong> gets shaped — refusing harmful requests, avoiding certain topics, being careful with sensitive advice. Anthropic's specific approach also uses techniques like <strong>Constitutional AI</strong>, where the model critiques and improves its own answers against a written set of principles, reducing how much raw human labeling is needed. You don't need the details — just know that "why did Claude refuse that" or "why did Claude phrase it so carefully" traces back to this stage, not the pretraining stage.</p>
+
+  <h2>Where you fit in</h2>
+  <div class="callout">As an AI engineer using the Claude API, <strong>you never touch any of these three stages</strong> — Anthropic already did them, and you're consuming the finished model. But you do influence behavior at a much lighter level, without retraining anything, and it's worth seeing how these map:</div>
+  <table>
+    <tr><th>Stage</th><th>Who does it</th><th>Analogy</th></tr>
+    <tr><td>Pretraining, SFT, RLHF</td><td>Anthropic (before you ever call the API)</td><td>The whole education of the assistant</td></tr>
+    <tr><td>System prompt (Ch. 8)</td><td>You, at request time</td><td>Giving the assistant a job description for this specific task</td></tr>
+    <tr><td>Few-shot examples (Ch. 8)</td><td>You, in the prompt</td><td>Showing 2–3 examples of the exact output shape you want</td></tr>
+    <tr><td>Tool definitions (Ch. 11)</td><td>You, in the prompt</td><td>Handing the assistant specific tools it's allowed to use</td></tr>
+  </table>
+  <p>None of these change the model's weights — they just steer the already-trained model's behavior for your specific use case. That's most of what "prompt engineering" (Chapter 8) really is.</p>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li><strong>Pretraining</strong>: massive, expensive, next-token prediction on huge text corpora — produces a "base model" that's knowledgeable but not well-behaved.</li>
+    <li><strong>SFT (fine-tuning)</strong>: lighter training on curated instruction→answer examples, teaches the model to act like a helpful assistant.</li>
+    <li><strong>RLHF / preference tuning</strong>: humans rank multiple answers, model is nudged toward the preferred style — this is also where most safety behavior comes from.</li>
+    <li>As an API user, you don't retrain anything — you steer the finished model with system prompts, examples, and tools instead.</li>
+    <li>This explains real behavior: refusals and careful phrasing = RLHF; broad knowledge = pretraining; instruction-following = SFT.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>Next time Claude refuses or hedges on something, ask yourself: is this a knowledge gap (pretraining), a formatting quirk (SFT), or a safety/preference behavior (RLHF)? Which stage is most likely responsible?</li>
+      <li>Write down, in your own words, why a "base model" (pretraining only, no SFT/RLHF) would be a bad chatbot even if it knows a lot.</li>
+      <li><em>Reflect:</em> why is it much cheaper to change model behavior with a system prompt than by retraining?</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>What does the model learn to do during pretraining? <em>Predict the next token over massive amounts of text — this is where most of its "knowledge" and language ability comes from.</em></li>
+      <li>What problem does SFT solve that pretraining alone doesn't? <em>A pretrained base model just continues text in whatever pattern is statistically likely; SFT teaches it the specific "answer helpfully as an assistant" behavior.</em></li>
+      <li>Where does most of a model's safety/refusal behavior come from? <em>RLHF / preference tuning, where human (or reward-model) feedback ranks answers and nudges the model toward preferred, safer responses.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch00a-how-llms-work.html">← Chapter 0a</a>
+    <a class="next" href="ch00c-sampling-generation.html">Chapter 0c: Sampling &amp; Generation Parameters →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

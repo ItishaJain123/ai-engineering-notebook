@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Engineering Notebook</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-alt: #f6f8fa;
+    --bg-card: #ffffff;
+    --text: #1f2328;
+    --text-muted: #656d76;
+    --border: #d0d7de;
+    --accent: #6b4fbb;
+    --accent-soft: #efeaff;
+    --code-bg: #f6f8fa;
+    --code-text: #24292f;
+    --done: #1a7f37;
+    --done-soft: #dafbe1;
+    --sidebar-w: 300px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --radius: 10px;
+  }
+  [data-theme="dark"] {
+    --bg: #0d1117;
+    --bg-alt: #161b22;
+    --bg-card: #161b22;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --border: #30363d;
+    --accent: #a78bfa;
+    --accent-soft: #1e1b32;
+    --code-bg: #161b22;
+    --code-text: #e6edf3;
+    --done: #3fb950;
+    --done-soft: #10281a;
+    --shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 16px;
+    transition: background 0.2s, color 0.2s;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Layout */
+  .app { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    background: var(--bg-alt);
+    border-right: 1px solid var(--border);
+    padding: 20px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .content {
+    flex: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 48px 120px;
+    width: 100%;
+  }
+
+  /* Sidebar */
+  .brand { font-size: 1.15rem; font-weight: 700; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
+  .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); display: inline-block; }
+  .tagline { font-size: 0.78rem; color: var(--text-muted); margin: 0 0 16px; }
+  .controls { display: flex; gap: 8px; margin-bottom: 14px; }
+  .controls button {
+    flex: 1; cursor: pointer; border: 1px solid var(--border);
+    background: var(--bg-card); color: var(--text); border-radius: 6px;
+    padding: 6px 8px; font-size: 0.8rem; transition: background 0.15s;
+  }
+  .controls button:hover { background: var(--accent-soft); }
+  .search {
+    width: 100%; padding: 8px 10px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--bg-card);
+    color: var(--text); font-size: 0.85rem; margin-bottom: 14px;
+  }
+  .progress-wrap { margin-bottom: 16px; }
+  .progress-label { font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .progress-bar { height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.3s; }
+
+  .part-title {
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text-muted); margin: 16px 0 6px; font-weight: 700;
+  }
+  .nav-list { list-style: none; padding: 0; margin: 0; }
+  .nav-list li a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 6px; color: var(--text);
+    font-size: 0.83rem; line-height: 1.3;
+  }
+  .nav-list li a:hover { background: var(--accent-soft); text-decoration: none; }
+  .nav-list li a.active { background: var(--accent-soft); font-weight: 600; }
+  .nav-check {
+    width: 15px; height: 15px; border-radius: 4px; border: 1.5px solid var(--border);
+    flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; color: #fff;
+  }
+  .nav-check.done { background: var(--done); border-color: var(--done); }
+  .nav-num { color: var(--text-muted); font-variant-numeric: tabular-nums; min-width: 18px; }
+
+  /* Chapter cards */
+  .chapter {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px 32px; margin-bottom: 28px;
+    box-shadow: var(--shadow); scroll-margin-top: 20px;
+  }
+  .chapter.hidden { display: none; }
+  .chapter-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+  .chapter h2 { margin: 0 0 4px; font-size: 1.4rem; }
+  .chapter .ch-meta { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 6px; }
+  .badge {
+    display: inline-block; font-size: 0.68rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 999px; margin-right: 6px;
+    background: var(--accent-soft); color: var(--accent);
+  }
+  .badge.general { background: #e7f3ff; color: #0969da; }
+  .badge.cc { background: #fff1e5; color: #bc4c00; }
+  [data-theme="dark"] .badge.general { background: #0c2d48; color: #6cb6ff; }
+  [data-theme="dark"] .badge.cc { background: #3a2008; color: #f0883e; }
+
+  .complete-btn {
+    cursor: pointer; border: 1px solid var(--border); background: var(--bg);
+    color: var(--text); border-radius: 6px; padding: 6px 12px; font-size: 0.8rem;
+    white-space: nowrap; flex-shrink: 0; transition: all 0.15s;
+  }
+  .complete-btn.done { background: var(--done-soft); border-color: var(--done); color: var(--done); }
+
+  .placeholder { color: var(--text-muted); font-style: italic; padding: 12px 0; }
+  .open-link {
+    display: inline-block; padding: 8px 16px; border-radius: 8px;
+    background: var(--accent-soft); color: var(--accent); font-weight: 600;
+    border: 1px solid var(--accent);
+  }
+  .open-link:hover { text-decoration: none; background: var(--accent); color: #fff; }
+
+  /* Content pieces */
+  .section-label {
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--accent); font-weight: 700; margin: 22px 0 6px;
+  }
+  .analogy {
+    background: var(--accent-soft); border-left: 3px solid var(--accent);
+    padding: 12px 16px; border-radius: 6px; margin: 8px 0;
+  }
+  .exercise {
+    background: var(--done-soft); border-left: 3px solid var(--done);
+    padding: 12px 16px; border-radius: 6px; margin: 8px 0;
+  }
+  .takeaways { padding-left: 20px; }
+  .takeaways li { margin: 4px 0; }
+
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; overflow-x: auto; margin: 8px 0;
+    font-size: 0.85rem; line-height: 1.5;
+  }
+  code {
+    font-family: "SF Mono", "Cascadia Code", Consolas, Menlo, monospace;
+    font-size: 0.88em;
+  }
+  p code, li code {
+    background: var(--code-bg); padding: 1px 5px; border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  /* minimal syntax highlight */
+  .tok-kw { color: #cf222e; } .tok-str { color: #0a3069; }
+  .tok-com { color: #6e7781; font-style: italic; } .tok-fn { color: #8250df; }
+  .tok-num { color: #0550ae; }
+  [data-theme="dark"] .tok-kw { color: #ff7b72; }
+  [data-theme="dark"] .tok-str { color: #a5d6ff; }
+  [data-theme="dark"] .tok-com { color: #8b949e; }
+  [data-theme="dark"] .tok-fn { color: #d2a8ff; }
+  [data-theme="dark"] .tok-num { color: #79c0ff; }
+
+  details { margin: 10px 0; border: 1px solid var(--border); border-radius: 8px; padding: 0 14px; }
+  details summary { cursor: pointer; padding: 10px 0; font-weight: 600; }
+  details[open] { padding-bottom: 12px; }
+
+  .hero { margin-bottom: 28px; }
+  .hero h1 { font-size: 2rem; margin: 0 0 8px; }
+  .hero p { color: var(--text-muted); margin: 4px 0; }
+
+  .menu-toggle { display: none; }
+  @media (max-width: 820px) {
+    .sidebar {
+      position: fixed; left: -100%; z-index: 50; transition: left 0.25s; width: 82%;
+      box-shadow: var(--shadow);
+    }
+    .sidebar.open { left: 0; }
+    .content { padding: 24px 18px 100px; }
+    .menu-toggle {
+      display: inline-flex; position: fixed; top: 12px; left: 12px; z-index: 60;
+      background: var(--accent); color: #fff; border: none; border-radius: 8px;
+      width: 42px; height: 42px; font-size: 1.2rem; cursor: pointer; align-items: center; justify-content: center;
+    }
+    .hero h1 { margin-top: 40px; }
+  }
+</style>
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle" aria-label="Menu">☰</button>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><span class="dot"></span> AI Eng Notebook</div>
+    <p class="tagline">Learn by building — Claude Code &amp; the AI engineering stack.</p>
+    <div class="controls">
+      <button id="themeBtn">🌙 Theme</button>
+      <button id="resetBtn">↺ Reset</button>
+    </div>
+    <input class="search" id="search" placeholder="🔍 Filter chapters..." />
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Progress</span><span id="progressText">0 / 31</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+
+  <main class="content" id="content">
+    <div class="hero">
+      <h1>AI Engineering Notebook</h1>
+      <p>A living, personal reference. Each chapter fills in as we build it together.</p>
+      <p style="font-size:0.85rem;">
+        <span class="badge general">General AI Eng</span> = transferable knowledge &nbsp;
+        <span class="badge cc">Claude Code</span> = CC-specific
+      </p>
+    </div>
+    <div id="chapters"></div>
+  </main>
+</div>
+
+<script>
+// ---- Curriculum data. content:null => "coming soon" placeholder. ----
+const PARTS = [
+  { title: "Part 0 — GenAI Foundations", chapters: [100,101,102,103] },
+  { title: "Part 1 — Claude Code & Anthropic Platform", chapters: [1,2,3,4,5,6,7] },
+  { title: "Part 2 — Core LLM Engineering", chapters: [8,9,10,11,12,13,14,15] },
+  { title: "Part 3 — RAG & Retrieval", chapters: [16,17,18,19,20,21] },
+  { title: "Part 4 — Orchestration Frameworks", chapters: [22,23,24] },
+  { title: "Part 5 — Safety, Evaluation & Production", chapters: [25,26,27,28,29,30,31] },
+];
+
+const CH = {
+  100: { t: "How LLMs Actually Work", tag: "general", num: "0a", d: "Tokens, embeddings, attention — plain-language + diagrams", file: "chapters/ch00a-how-llms-work.html" },
+  101: { t: "Training Lifecycle", tag: "general", num: "0b", d: "Pretraining, fine-tuning (SFT), RLHF — how a model like Claude gets made", file: "chapters/ch00b-training-lifecycle.html" },
+  102: { t: "Sampling & Generation Parameters", tag: "general", num: "0c", d: "Temperature, top-p, top-k, max_tokens — the knobs you control via API", file: "chapters/ch00c-sampling-generation.html" },
+  103: { t: "Beyond Text", tag: "general", num: "0d", d: "Diffusion models, image/audio/video gen, multimodal vs. generation", file: "chapters/ch00d-beyond-text.html" },
+  1:  { t: "Claude Code Fundamentals", tag: "cc", d: "CLAUDE.md, slash commands, hooks, settings, permission modes", file: "chapters/ch01-claude-code-fundamentals.html" },
+  2:  { t: "Context Management", tag: "cc", d: "Compaction, /clear, long sessions, token budgeting", file: "chapters/ch02-context-management.html" },
+  3:  { t: "Skills vs. Plugins", tag: "cc", d: "What each is, when to use which, structure & packaging", file: "chapters/ch03-skills-vs-plugins.html" },
+  4:  { t: "MCP (Model Context Protocol)", tag: "cc", d: "Build an MCP server from scratch, connect to Claude Code", file: "chapters/ch04-mcp.html" },
+  5:  { t: "Subagents / Agent (Task) Tool", tag: "cc", d: "How delegation works, when to delegate vs. do inline", file: "chapters/ch05-subagents.html" },
+  6:  { t: "Claude Agent SDK", tag: "cc", d: "Building standalone agents outside the CLI", file: "chapters/ch06-agent-sdk.html" },
+  7:  { t: "Computer Use / Browser Automation", tag: "cc", d: "Driving a browser and screen with Claude", file: "chapters/ch07-computer-use.html" },
+  8:  { t: "Prompt Engineering", tag: "general", d: "System prompts, few-shot, role design", content: null },
+  9:  { t: "Structured Output", tag: "general", d: "JSON mode, tool-forced schemas, Pydantic/Instructor", content: null },
+  10: { t: "Prompt Caching", tag: "general", d: "How it works, cache breakpoints, vs. semantic caching", content: null },
+  11: { t: "Tool Use / Function Calling", tag: "general", d: "Designing tool schemas, error handling, result formatting", content: null },
+  12: { t: "Extended Thinking / Reasoning", tag: "general", d: "When to use, cost tradeoffs", content: null },
+  13: { t: "Streaming", tag: "general", d: "Token streaming, SSE, partial UI updates", content: null },
+  14: { t: "Agent Loop Engineering", tag: "general", d: "Plan → act → observe → repeat; context engineering", content: null },
+  15: { t: "Cost & Latency Optimization", tag: "general", d: "Token budgeting, model routing, batching", content: null },
+  16: { t: "Embeddings Deep-Dive", tag: "general", d: "Models, dimensions, similarity metrics", content: null },
+  17: { t: "Chunking Strategies", tag: "general", d: "Why chunking matters and how to do it well", content: null },
+  18: { t: "Vector Stores", tag: "general", d: "pgvector, Chroma, Qdrant, Pinecone — tradeoffs", content: null },
+  19: { t: "Retrieval Strategies", tag: "general", d: "Hybrid search, reranking", content: null },
+  20: { t: "Advanced RAG", tag: "general", d: "Agentic RAG, GraphRAG", content: null },
+  21: { t: "RAG vs. Fine-tuning vs. Prompting", tag: "general", d: "When to use which", content: null },
+  22: { t: "LangChain", tag: "general", d: "Chains, memory, retrievers — overlap with native tool use", content: null },
+  23: { t: "LangGraph", tag: "general", d: "Graph orchestration, state machines, cycles, human-in-the-loop", content: null },
+  24: { t: "Multi-Agent Systems", tag: "general", d: "Orchestrator/worker patterns, communication protocols", content: null },
+  25: { t: "Guardrails", tag: "general", d: "Input/output validation, content filtering, schema enforcement", content: null },
+  26: { t: "Prompt Injection Defense", tag: "general", d: "Injection & jailbreak resistance for agents & RAG", content: null },
+  27: { t: "PII Redaction & Data Governance", tag: "general", d: "Detecting and redacting sensitive data", content: null },
+  28: { t: "Evals", tag: "general", d: "Test sets, LLM-as-judge, regression testing", content: null },
+  29: { t: "Observability & Tracing", tag: "general", d: "LangSmith, Langfuse, OpenTelemetry for LLMs", content: null },
+  30: { t: "Red-Teaming / Adversarial Testing", tag: "general", d: "Systematically attacking your own system", content: null },
+  31: { t: "Deployment Patterns", tag: "general", d: "Serving, rate limits, retries, fallbacks", content: null },
+};
+
+const TOTAL = Object.keys(CH).length;
+const LS_DONE = "aien_done_v1";
+const LS_THEME = "aien_theme_v1";
+
+let done = JSON.parse(localStorage.getItem(LS_DONE) || "[]");
+
+function isDone(n){ return done.includes(n); }
+
+function badgeHtml(tag){
+  return tag === "cc"
+    ? '<span class="badge cc">Claude Code</span>'
+    : '<span class="badge general">General AI Eng</span>';
+}
+
+// ---- Render sidebar nav ----
+function renderNav(filter=""){
+  const nav = document.getElementById("nav");
+  nav.innerHTML = "";
+  PARTS.forEach(part => {
+    const visible = part.chapters.filter(n => {
+      const c = CH[n];
+      return (c.t + " " + c.d).toLowerCase().includes(filter.toLowerCase());
+    });
+    if(!visible.length) return;
+    const h = document.createElement("div");
+    h.className = "part-title";
+    h.textContent = part.title;
+    nav.appendChild(h);
+    const ul = document.createElement("ul");
+    ul.className = "nav-list";
+    visible.forEach(n => {
+      const c = CH[n];
+      const li = document.createElement("li");
+      const href = c.file ? c.file : `#ch${n}`;
+      li.innerHTML = `<a href="${href}" data-ch="${n}">
+        <span class="nav-check ${isDone(n)?'done':''}">${isDone(n)?'✓':''}</span>
+        <span class="nav-num">${c.num || n}.</span><span>${c.t}</span></a>`;
+      ul.appendChild(li);
+    });
+    nav.appendChild(ul);
+  });
+}
+
+// ---- Render chapters ----
+function renderChapters(filter=""){
+  const wrap = document.getElementById("chapters");
+  wrap.innerHTML = "";
+  Object.keys(CH).forEach(k => {
+    const n = +k, c = CH[n];
+    const match = (c.t + " " + c.d).toLowerCase().includes(filter.toLowerCase());
+    const el = document.createElement("section");
+    el.className = "chapter" + (match ? "" : " hidden");
+    el.id = "ch" + n;
+    el.innerHTML = `
+      <div class="chapter-head">
+        <div>
+          <div class="ch-meta">Chapter ${c.num || n}</div>
+          <h2>${c.t}</h2>
+          <div>${badgeHtml(c.tag)}</div>
+          <p style="color:var(--text-muted);margin:8px 0 0;">${c.d}</p>
+        </div>
+        <button class="complete-btn ${isDone(n)?'done':''}" data-ch="${n}">
+          ${isDone(n)?'✓ Completed':'Mark complete'}
+        </button>
+      </div>
+      <div class="ch-body">
+        ${c.file
+          ? `<p><a class="open-link" href="${c.file}">📖 Open Chapter ${n} →</a></p>`
+          : '<p class="placeholder">🚧 Coming soon — we\'ll fill this chapter in when we build it together.</p>'}
+      </div>`;
+    wrap.appendChild(el);
+  });
+  bindCompleteButtons();
+}
+
+function bindCompleteButtons(){
+  document.querySelectorAll(".complete-btn").forEach(btn => {
+    btn.onclick = () => {
+      const n = +btn.dataset.ch;
+      if(isDone(n)) done = done.filter(x => x !== n);
+      else done.push(n);
+      localStorage.setItem(LS_DONE, JSON.stringify(done));
+      refresh();
+    };
+  });
+}
+
+function updateProgress(){
+  const pct = Math.round(done.length / TOTAL * 100);
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("progressText").textContent = `${done.length} / ${TOTAL}`;
+}
+
+function refresh(){
+  const f = document.getElementById("search").value;
+  renderNav(f); renderChapters(f); updateProgress();
+}
+
+// ---- Theme ----
+function applyTheme(t){
+  document.documentElement.setAttribute("data-theme", t);
+  document.getElementById("themeBtn").textContent = t === "dark" ? "☀️ Theme" : "🌙 Theme";
+  localStorage.setItem(LS_THEME, t);
+}
+document.getElementById("themeBtn").onclick = () => {
+  const cur = document.documentElement.getAttribute("data-theme");
+  applyTheme(cur === "dark" ? "light" : "dark");
+};
+document.getElementById("resetBtn").onclick = () => {
+  if(confirm("Reset all completion progress?")){
+    done = []; localStorage.setItem(LS_DONE, "[]"); refresh();
+  }
+};
+document.getElementById("search").oninput = e => refresh();
+
+// mobile menu
+document.getElementById("menuToggle").onclick = () =>
+  document.getElementById("sidebar").classList.toggle("open");
+document.querySelectorAll(".nav-list a").forEach(a =>
+  a.addEventListener("click", () => document.getElementById("sidebar").classList.remove("open")));
+
+// scroll-spy active state
+window.addEventListener("scroll", () => {
+  let cur = null;
+  document.querySelectorAll(".chapter:not(.hidden)").forEach(s => {
+    if(s.getBoundingClientRect().top < 120) cur = s.id;
+  });
+  document.querySelectorAll("#nav a").forEach(a => {
+    a.classList.toggle("active", a.getAttribute("href") === "#" + cur);
+  });
+});
+
+// init
+applyTheme(localStorage.getItem(LS_THEME) || "light");
+refresh();
+</script>
+</body>
+</html>
