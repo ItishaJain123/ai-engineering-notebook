@@ -209,6 +209,15 @@
       width: 42px; height: 42px; font-size: 1.2rem; cursor: pointer; align-items: center; justify-content: center;
     }
     .hero h1 { margin-top: 40px; }
+    .chapter { padding: 18px 18px; }
+    .chapter-head { flex-wrap: wrap; }
+    .chapter h2 { font-size: 1.2rem; }
+    .controls { flex-wrap: wrap; }
+    table { display: block; overflow-x: auto; white-space: nowrap; }
+  }
+  @media (max-width: 420px) {
+    .chapter-head { flex-direction: column; align-items: stretch; }
+    .complete-btn { align-self: flex-start; }
   }
 </style>
 </head>
