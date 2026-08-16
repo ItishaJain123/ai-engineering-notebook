@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 12 — Extended Thinking / Reasoning</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../index.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="12">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 2 · Chapter 12</div>
+  <h1>Extended Thinking / Reasoning</h1>
+  <p><span class="badge general">General AI Eng</span> giving the model a scratchpad to reason in before it commits to an answer</p>
+
+  <div class="callout"><strong>Why this matters.</strong> Chapter 8 showed that asking a model to "think step by step" in the prompt improves accuracy on hard problems. <strong>Extended thinking</strong> is a built-in, more powerful version of that same idea — the model generates a visible reasoning trace in a dedicated "thinking" block before its actual answer, with a controllable token budget. It's the right tool for genuinely hard problems, and the wrong tool (too slow, too expensive) for simple ones.</p>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">
+    Chain-of-thought prompting (Ch. 8) is like asking someone to "show your work" on a math test — they write it in the same notebook as their final answer. Extended thinking is more like giving them dedicated scratch paper explicitly separate from their answer sheet, and telling them how much scratch paper they're allowed to use before they must commit to a final answer.
+  </div>
+
+  <h2>1. What actually happens</h2>
+  <div class="diagram">Normal response:
+┌────────────────────────────────────┐
+│ Final answer, straight away          │
+└────────────────────────────────────┘
+
+Extended thinking:
+┌────────────────────────────────────┐┌──────────────────────┐
+│ THINKING BLOCK (internal reasoning)  ││ Final answer,          │
+│ "Let me work through this... first   ││ informed by the        │
+│  I need to check X, then Y implies   ││ reasoning above         │
+│  Z, so the answer should be..."      ││                        │
+└────────────────────────────────────┘└──────────────────────┘
+   costs tokens, not shown to end-user
+   by default (you choose whether to surface it)</div>
+
+  <h2>2. Code example</h2>
+  <pre><code>const response = await client.messages.create({
+  model: "claude-sonnet-5",
+  max_tokens: 2000,
+  thinking: {
+    type: "enabled",
+    budget_tokens: 1024, <span class="tok-com">// max tokens the model can spend "thinking"</span>
+  },
+  messages: [{
+    role: "user",
+    content: "A train leaves station A at 60mph, another leaves station B " +
+              "(300 miles away) at 40mph toward A, 30 minutes later. When do they meet?",
+  }],
+});
+
+<span class="tok-com">// response.content contains both a "thinking" block and the final "text" block</span>
+const thinking = response.content.find(b => b.type === "thinking");
+const answer = response.content.find(b => b.type === "text");</code></pre>
+
+  <h2>3. When to turn it on</h2>
+  <table>
+    <tr><th>Good fit</th><th>Not worth it</th></tr>
+    <tr><td>Multi-step math, logic puzzles, complex planning</td><td>Simple factual lookups ("what's the capital of X")</td></tr>
+    <tr><td>Code that requires reasoning through edge cases</td><td>Short creative writing or casual chat</td></tr>
+    <tr><td>Ambiguous requests needing careful disambiguation</td><td>High-volume, latency-sensitive endpoints (Ch. 15)</td></tr>
+    <tr><td>Tasks where being wrong is costly (financial, legal analysis)</td><td>Anything where a fast, "good enough" answer is fine</td></tr>
+  </table>
+
+  <div class="callout"><strong>The tradeoff, in one line:</strong> extended thinking spends more tokens (cost) and time (latency) to buy higher accuracy on hard problems. Turning it on for every request is like hiring a careful auditor to double-check your grocery list — technically thorough, but wasteful for the task.</div>
+
+  <h2>4. Extended thinking vs. the agent loop (Ch. 14)</h2>
+  <p>Don't confuse these: extended thinking is reasoning <em>within a single model turn</em>, before it writes its answer. The agent loop (Chapter 14) is reasoning <em>across multiple turns</em>, interleaved with actual tool calls and real-world observations. A complex agent can use both — thinking carefully within each step, while also looping across several steps.</p>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>Extended thinking gives the model a dedicated reasoning trace, generated before its final answer, with a controllable <code>budget_tokens</code>.</li>
+    <li>It's a more structured, built-in version of "think step by step" chain-of-thought prompting (Ch. 8).</li>
+    <li>Use it for genuinely hard, multi-step, or high-stakes problems — not for simple lookups or casual chat.</li>
+    <li>The cost is real: more tokens spent, more latency — always a deliberate tradeoff, not a default-on setting.</li>
+    <li>It reasons within one turn; the agent loop (Ch. 14) reasons across multiple turns with real tool calls.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>Pick a multi-step logic puzzle and ask Claude to solve it with extended thinking enabled vs. disabled — compare the reasoning quality and final answers.</li>
+      <li>List two features in a product you use that would benefit from extended thinking, and two that clearly wouldn't (and would just waste latency/cost).</li>
+      <li><em>Reflect:</em> why would you generally want thinking <em>disabled</em> for a real-time customer support chat widget?</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>What's the tradeoff extended thinking makes? <em>Higher accuracy on hard, multi-step problems, at the cost of more tokens and higher latency — not worth it for simple tasks.</em></li>
+      <li>How is extended thinking different from the multi-turn agent loop? <em>Extended thinking is internal reasoning within a single model response; the agent loop spans multiple turns interleaved with real tool calls and observations.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch11-tool-use.html">← Chapter 11</a>
+    <a class="next" href="ch13-streaming.html">Chapter 13: Streaming →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

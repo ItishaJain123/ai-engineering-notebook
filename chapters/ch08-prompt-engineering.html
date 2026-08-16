@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 8 — Prompt Engineering</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../index.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="8">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 2 · Chapter 8</div>
+  <h1>Prompt Engineering</h1>
+  <p><span class="badge general">General AI Eng</span> the highest-leverage skill in this whole curriculum — steering a model's behavior with words alone</p>
+
+  <div class="callout"><strong>Why this matters.</strong> You don't retrain the model (Ch. 0b) and you don't fine-tune it for most tasks — you write a prompt. Prompt engineering is simply the practice of writing that prompt well enough that the model reliably does what you want, on the first try, every time. It's cheap to iterate on, and it's the first lever you should pull before reaching for anything more complex (RAG, fine-tuning, more tools).</p>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">
+    Think of the model as a brilliant new hire on day one — extremely capable, but with zero context about your company, your preferences, or what "good" looks like for this specific task. A vague prompt is like saying "handle the customer emails" and walking away. A well-engineered prompt is a proper onboarding doc: here's your role, here's the format we expect, here are two examples of great work, here's what to do when you're unsure.
+  </div>
+
+  <h2>1. The four ingredients of a strong prompt</h2>
+  <table>
+    <tr><th>Ingredient</th><th>What it does</th></tr>
+    <tr><td><strong>Role / system prompt</strong></td><td>Sets who the model is being for this task ("You are a senior code reviewer...") — shapes tone and priorities for the whole conversation</td></tr>
+    <tr><td><strong>Task</strong></td><td>The specific, concrete instruction — the more specific, the less room for the model to guess wrong</td></tr>
+    <tr><td><strong>Format</strong></td><td>Exactly how you want the output shaped (bullet list, JSON, a specific length) — don't assume the model will guess your preferred format</td></tr>
+    <tr><td><strong>Examples (few-shot)</strong></td><td>1–3 worked examples of ideal input → output — often more effective than paragraphs of instructions</td></tr>
+  </table>
+
+  <div class="diagram">┌─────────────────────────────────────────────────────────┐
+│ SYSTEM PROMPT (role)                                     │
+│ "You are a strict JSON-only API. Never add commentary."  │
+├─────────────────────────────────────────────────────────┤
+│ FEW-SHOT EXAMPLES (2-3 input→output pairs)                │
+│ Input: "Meeting Tues 3pm with Sam" →                      │
+│ Output: {"date":"Tuesday","time":"15:00","with":"Sam"}    │
+├─────────────────────────────────────────────────────────┤
+│ ACTUAL TASK (the real user input)                          │
+│ "Lunch Friday noon with the design team"                   │
+└─────────────────────────────────────────────────────────┘
+                         │
+                         ▼
+        Model has seen the pattern 2-3 times → follows it reliably</div>
+
+  <h2>2. System prompt vs. user message</h2>
+  <p>The <strong>system prompt</strong> sets standing behavior for the whole conversation (role, tone, rules that shouldn't change turn to turn). The <strong>user message</strong> is the actual, specific ask. Mixing them up is a common beginner mistake — putting task-specific instructions in the system prompt makes them harder to change per-request; putting persistent rules in every user message is repetitive and wastes tokens (see prompt caching, Ch. 10, for why that also costs money).</p>
+
+  <pre><code>import Anthropic from "@anthropic-ai/sdk";
+const client = new Anthropic();
+
+const response = await client.messages.create({
+  model: "claude-sonnet-5",
+  max_tokens: 300,
+  system: "You are a senior code reviewer. Be direct and specific. " +
+          "Flag bugs and security issues first, style nits last. " +
+          "Never say 'looks good' without giving at least one concrete observation.",
+  messages: [
+    { role: "user", content: "Review this function:\n\n" + codeSnippet }
+  ],
+});</code></pre>
+
+  <h2>3. Few-shot examples: show, don't just tell</h2>
+  <p>Telling the model "respond concisely" is weaker than <em>showing</em> it two concise responses. The model pattern-matches on structure far more reliably than it follows abstract adjectives like "concise," "professional," or "friendly" — those words mean different things to different people, and the model has to guess which meaning you intend.</p>
+
+  <pre><code>const messages = [
+  { role: "user", content: "Summarize: 'The quarterly report shows revenue up 12%...'" },
+  { role: "assistant", content: "Revenue +12% QoQ, driven by enterprise segment." },
+  { role: "user", content: "Summarize: 'Customer churn increased due to pricing changes...'" },
+  { role: "assistant", content: "Churn up — pricing changes cited as primary driver." },
+  <span class="tok-com">// Now the real task — model has seen the exact output shape twice</span>
+  { role: "user", content: "Summarize: '" + longReportText + "'" },
+];</code></pre>
+
+  <h2>4. Chain-of-thought: let it think before it answers</h2>
+  <p>For anything involving multi-step reasoning (math, logic, multi-part analysis), asking the model to reason step-by-step <em>before</em> giving a final answer measurably improves accuracy — it gives the model "room" to work through the problem instead of jumping straight to a guess. (Extended thinking, Ch. 12, is a more structured, built-in version of this same idea.)</p>
+
+  <div class="diagram">Weak prompt:      "What's 17% of 340, minus half of 58?"
+                   → model may jump straight to a (sometimes wrong) number
+
+Chain-of-thought:  "Work through this step by step, then give the final
+                    answer on its own line: What's 17% of 340, minus
+                    half of 58?"
+                   → 17% of 340 = 57.8
+                     half of 58 = 29
+                     57.8 - 29 = 28.8
+                   Final answer: 28.8</div>
+
+  <h2>5. Common mistakes</h2>
+  <table>
+    <tr><th>Mistake</th><th>Fix</th></tr>
+    <tr><td>Vague adjectives ("be helpful", "be smart")</td><td>Give concrete, checkable instructions ("cite the source for every claim")</td></tr>
+    <tr><td>No format specified</td><td>State the exact output shape, or provide a schema (Ch. 9)</td></tr>
+    <tr><td>Burying the real task under paragraphs of preamble</td><td>Put the most important instructions first and last — models weight both ends of a long prompt more heavily</td></tr>
+    <tr><td>One giant prompt for everything</td><td>Split distinct behaviors into different system prompts / calls rather than one prompt trying to do it all</td></tr>
+  </table>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>A strong prompt has four ingredients: <strong>role, task, format, examples</strong> — examples are often the highest-leverage of the four.</li>
+    <li><strong>System prompt</strong> = standing behavior for the whole session; <strong>user message</strong> = the specific ask — don't mix them up.</li>
+    <li><strong>Few-shot examples</strong> teach output shape more reliably than abstract instructions like "be concise."</li>
+    <li><strong>Chain-of-thought</strong> prompting ("think step by step") improves accuracy on multi-step reasoning tasks.</li>
+    <li>Prompt engineering is the cheapest lever to pull — try it before reaching for RAG, fine-tuning, or more tools.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>Take a vague prompt like "write a product description" and rewrite it with all four ingredients (role, task, format, one example).</li>
+      <li>Test the same math/logic question with and without "think step by step" — compare accuracy.</li>
+      <li><em>Reflect:</em> why might putting critical instructions at both the start <em>and</em> end of a long prompt help, rather than just once?</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>Why are few-shot examples often more effective than descriptive instructions? <em>The model pattern-matches on concrete structure more reliably than it interprets subjective adjectives like "professional" or "concise," which can mean different things.</em></li>
+      <li>What's the difference between a system prompt and a user message? <em>System prompt sets standing role/behavior for the whole conversation; user message is the specific, per-turn request.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="../index.html">← All chapters</a>
+    <a class="next" href="ch09-structured-output.html">Chapter 9: Structured Output →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

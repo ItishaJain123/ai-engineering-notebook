@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 14 — Agent Loop Engineering</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../index.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="14">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 2 · Chapter 14</div>
+  <h1>Agent Loop Engineering</h1>
+  <p><span class="badge general">General AI Eng</span> the pattern that turns single tool calls (Ch. 11) into an agent that completes real multi-step tasks</p>
+
+  <div class="callout"><strong>Why this matters.</strong> Every "AI agent" you've used — Claude Code included — is built around one core pattern repeated over and over: <strong>plan, act, observe, repeat</strong>. Understanding this loop demystifies what an "agent" actually is (it's not magic — it's a while-loop around a model with tools) and is the foundation for building your own.</p>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">
+    Think of a chef cooking a dish they've never made before, from a recipe card with steps but no fixed order guaranteed to work: taste (observe), decide what's missing (plan), add an ingredient (act), taste again (observe), repeat — until the dish is done. A single tool call (Ch. 11) is one "taste and add ingredient." The agent loop is the chef doing that <em>repeatedly</em>, using each result to decide the next move, until the dish is actually finished.
+  </div>
+
+  <h2>1. The loop, step by step</h2>
+  <div class="diagram">        ┌─────────────────────────────────────────┐
+        │                                             │
+        ▼                                             │
+  1. PLAN — model decides what to do next             │
+        │ (answer now? or use a tool?)                │
+        ▼                                             │
+  2. ACT — if a tool is needed, your code executes it  │
+        │                                             │
+        ▼                                             │
+  3. OBSERVE — tool result is sent back to the model    │
+        │                                             │
+        ▼                                             │
+  4. Model decides: task complete? ── NO ──────────────┘
+        │
+       YES
+        ▼
+  5. Return final answer to the user</div>
+
+  <h2>2. A minimal agent loop in code</h2>
+  <pre><code>async function runAgent(userTask, tools, toolHandlers) {
+  let messages = [{ role: "user", content: userTask }];
+  const MAX_STEPS = 10; <span class="tok-com">// always cap it — see "stopping conditions" below</span>
+
+  for (let step = 0; step < MAX_STEPS; step++) {
+    const response = await client.messages.create({
+      model: "claude-sonnet-5",
+      max_tokens: 1000,
+      tools,
+      messages,
+    });
+
+    messages.push({ role: "assistant", content: response.content });
+
+    const toolUse = response.content.find(b => b.type === "tool_use");
+    if (!toolUse) {
+      <span class="tok-com">// no tool requested → model is done, this is the final answer</span>
+      return response.content.find(b => b.type === "text").text;
+    }
+
+    <span class="tok-com">// OBSERVE: run the tool, feed the result back in, loop again</span>
+    const result = await toolHandlers[toolUse.name](toolUse.input);
+    messages.push({
+      role: "user",
+      content: [{ type: "tool_result", tool_use_id: toolUse.id, content: JSON.stringify(result) }],
+    });
+  }
+  throw new Error("Agent exceeded max steps without finishing");
+}</code></pre>
+
+  <h2>3. Stopping conditions — don't let it run forever</h2>
+  <table>
+    <tr><th>Condition</th><th>Why it matters</th></tr>
+    <tr><td><strong>Max steps</strong> (like <code>MAX_STEPS</code> above)</td><td>Prevents infinite loops from a confused or stuck agent — always set a hard ceiling</td></tr>
+    <tr><td><strong>No tool_use in response</strong></td><td>The natural "done" signal — the model believes it has a final answer</td></tr>
+    <tr><td><strong>Max token/cost budget</strong></td><td>Caps runaway spending on a single task (ties into Ch. 15)</td></tr>
+    <tr><td><strong>Explicit "give up" tool</strong></td><td>Some agents get a tool like <code>ask_human</code> or <code>report_blocked</code> so they can stop gracefully instead of looping uselessly</td></tr>
+  </table>
+
+  <h2>4. Context engineering: the loop's context grows every step</h2>
+  <p>Notice that <code>messages</code> keeps growing — every tool call and result gets appended. Left unmanaged, a long-running agent will eventually blow through the context window (Chapter 2). "Context engineering" is the practice of deliberately managing what stays in that growing list: summarizing old steps, dropping large tool outputs once they're no longer needed, or compacting history — the same ideas from Chapter 2, applied specifically to an agent's working memory instead of a chat conversation.</p>
+
+  <h2>5. This is what Claude Code and subagents already do for you</h2>
+  <div class="callout">You've been using an agent loop this whole time without writing one — Claude Code's own interaction model <em>is</em> this loop (plan → call a tool like Read/Edit/Bash → observe the result → repeat), and subagents (Ch. 5) run their own independent copy of it. This chapter is what's happening under the hood every time Claude Code reads a file, runs a command, and decides what to do next based on the result.</p>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>The agent loop is <strong>plan → act → observe → repeat</strong> — a while-loop wrapped around the single tool-use round trip from Chapter 11.</li>
+    <li>The loop ends when the model responds with no further tool requests, or when a stopping condition (max steps, budget) is hit.</li>
+    <li>Always set a <strong>hard step/cost ceiling</strong> — an unattended loop can run indefinitely or expensively without one.</li>
+    <li><strong>Context engineering</strong> — managing the growing message history — becomes essential for any agent that runs more than a few steps.</li>
+    <li>Claude Code itself, and every subagent (Ch. 5) it spawns, is an implementation of exactly this loop.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>Trace through the minimal agent loop code above by hand for a task needing 2 tool calls — write out what <code>messages</code> looks like after each step.</li>
+      <li>Add a step counter that logs "Step N: called tool X" to the loop, so you can watch an agent's reasoning unfold.</li>
+      <li><em>Reflect:</em> what's a realistic failure mode of an agent with no max-step limit, working on an ambiguous task?</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>What are the four steps of the agent loop? <em>Plan (decide what to do), act (execute a tool if needed), observe (feed the result back), and repeat until no more tool calls are requested.</em></li>
+      <li>Why is a max-step limit essential in any real agent loop? <em>Without one, a confused or stuck agent can loop indefinitely, burning time and cost with no natural stopping point.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch13-streaming.html">← Chapter 13</a>
+    <a class="next" href="ch15-cost-latency.html">Chapter 15: Cost & Latency Optimization →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>
