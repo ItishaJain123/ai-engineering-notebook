@@ -340,8 +340,9 @@ function renderNav(filter=""){
 function renderChapters(filter=""){
   const wrap = document.getElementById("chapters");
   wrap.innerHTML = "";
-  Object.keys(CH).forEach(k => {
-    const n = +k, c = CH[n];
+  // Iterate in PARTS order so Part 0 renders first, then Parts 1-5.
+  PARTS.forEach(part => part.chapters.forEach(n => {
+    const c = CH[n];
     const match = (c.t + " " + c.d).toLowerCase().includes(filter.toLowerCase());
     const el = document.createElement("section");
     el.className = "chapter" + (match ? "" : " hidden");
@@ -360,11 +361,11 @@ function renderChapters(filter=""){
       </div>
       <div class="ch-body">
         ${c.file
-          ? `<p><a class="open-link" href="${c.file}">📖 Open Chapter ${n} →</a></p>`
+          ? `<p><a class="open-link" href="${c.file}">📖 Open Chapter ${c.num || n} →</a></p>`
           : '<p class="placeholder">🚧 Coming soon — we\'ll fill this chapter in when we build it together.</p>'}
       </div>`;
     wrap.appendChild(el);
-  });
+  }));
   bindCompleteButtons();
 }
 
