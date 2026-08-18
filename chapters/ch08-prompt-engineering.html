@@ -73,6 +73,22 @@
     Think of the model as a brilliant new hire on day one — extremely capable, but with zero context about your company, your preferences, or what "good" looks like for this specific task. A vague prompt is like saying "handle the customer emails" and walking away. A well-engineered prompt is a proper onboarding doc: here's your role, here's the format we expect, here are two examples of great work, here's what to do when you're unsure.
   </div>
 
+  <h2>0. Types of prompt engineering — the map before the detail</h2>
+  <p>"Prompt engineering" isn't one trick — it's a toolbox of techniques you reach for depending on the task. Here's the full list; the rest of this chapter dives deep into the starred ones.</p>
+  <table>
+    <tr><th>Type</th><th>What it means</th><th>Example</th></tr>
+    <tr><td><strong>Zero-shot</strong></td><td>Just ask directly, no examples given</td><td>"Summarize this article in 3 bullet points."</td></tr>
+    <tr><td>★ <strong>Few-shot</strong></td><td>Show 2-3 example input→output pairs before the real task, so the model copies the pattern</td><td>See section 3 below</td></tr>
+    <tr><td>★ <strong>Chain-of-thought (CoT)</strong></td><td>Ask it to reason step by step before answering — boosts accuracy on math/logic</td><td>See section 4 below</td></tr>
+    <tr><td>★ <strong>Role / persona prompting</strong></td><td>Assign a role in the system prompt to steer tone and priorities</td><td>"You are a senior security auditor..."</td></tr>
+    <tr><td><strong>Structured-output prompting</strong></td><td>Ask for a specific machine-parseable format instead of free text</td><td>"Respond only in JSON matching this schema" — full chapter: Ch. 9</td></tr>
+    <tr><td>★ <strong>Instruction-based prompting</strong></td><td>Explicitly spell out role, task, format, and constraints — no guessing</td><td>The "four ingredients" framework below</td></tr>
+    <tr><td><strong>Self-consistency</strong></td><td>Generate several answers with different reasoning paths, then pick the most common one</td><td>Ask the same hard question 3 times, take the majority answer</td></tr>
+    <tr><td><strong>Prompt chaining</strong></td><td>Break a big task into smaller prompts run in sequence, each feeding the next</td><td>outline → draft → edit, as three separate calls</td></tr>
+    <tr><td><strong>Meta-prompting</strong></td><td>Ask the model to write or improve a prompt for another task</td><td>"Write me a better system prompt for a support-ticket classifier."</td></tr>
+  </table>
+  <div class="callout"><strong>How to use this table:</strong> you don't pick just one — real prompts usually combine several. A production prompt might use role prompting (persona) + few-shot examples + a structured-output format, all at once. Treat these as ingredients you mix, not a menu you choose one item from.</div>
+
   <h2>1. The four ingredients of a strong prompt</h2>
   <table>
     <tr><th>Ingredient</th><th>What it does</th></tr>

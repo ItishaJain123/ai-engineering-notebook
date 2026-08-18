@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 17 — Chunking Strategies</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+  @media (max-width:640px){
+    .wrap{padding:20px 16px 90px}
+    .topbar{padding:10px 14px}
+    .topbar .left{font-size:.78rem}
+    h1{font-size:1.5rem}
+    h2{font-size:1.12rem;margin:1.5em 0 .4em}
+    h3{font-size:1rem}
+    .diagram,pre{font-size:.72rem;padding:10px 12px}
+    table{display:block;overflow-x:auto;white-space:nowrap}
+    .nav-bottom{flex-direction:column}
+    .analogy,.exercise,.callout{padding:10px 12px}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../index.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="17">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 3 · Chapter 17</div>
+  <h1>Chunking Strategies</h1>
+  <p><span class="badge general">General AI Eng</span> splitting documents into pieces small enough to embed and precise enough to retrieve</p>
+
+  <div class="callout"><strong>Why this matters.</strong> Chapter 16 showed how to turn text into a vector so meaning-similar text ends up numerically close. But you can't hand a 50-page PDF to an embedding model as one unit — most models have a max input length, and even if they didn't, one giant vector representing an entire document is useless for retrieval: it can't tell you <em>which paragraph</em> answers the user's question. So before anything gets embedded, it first gets <strong>chunked</strong> — split into smaller, self-contained pieces. Chunking quality is one of the biggest levers on RAG accuracy, often bigger than which embedding model you pick.</p>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">Think about indexing a book. You wouldn't hand a reader the entire book and say "the answer is in here somewhere" — you'd break it into chapters, then sections, then paragraphs, so a reader (or a search index) can point to the exact passage that answers a question. Cut the book into pieces too large (whole chapters) and the reader still has to hunt. Cut it too small (individual words) and each piece loses all context. Chunking is deciding <em>where to make the cuts</em> so each piece is both findable and still makes sense on its own — like slicing a cake so every slice has some frosting, not just crumbs from a mid-slice cut.</div>
+
+  <h2>1. Why chunking has to happen before embedding</h2>
+  <p>Retrieval works by comparing a query's vector against many stored vectors and returning the closest ones (Ch. 16). If each vector represents an entire document, the best you can retrieve is "this whole 50-page document is somewhat relevant" — not useful when a user needs one specific fact. Chunking splits the document into smaller units first, embeds <em>each chunk separately</em>, and stores them individually. Now retrieval can return just the two or three paragraphs that actually answer the question, instead of dumping the whole document into the model's context window.</p>
+  <div class="diagram">50-page policy document
+        │
+        ▼  chunking
+[chunk 1] [chunk 2] [chunk 3] ... [chunk 140]
+        │
+        ▼  embed each chunk (Ch. 16)
+[vector 1] [vector 2] [vector 3] ... [vector 140]
+        │
+        ▼  store in a vector index (Ch. 18)
+
+User query: "What's the refund window?"
+        │
+        ▼  embed query, compare to all 140 vectors
+        ▼  return only the 2-3 closest chunks — not the whole document</div>
+
+  <h2>2. The main chunking strategies</h2>
+  <table>
+    <tr><th>Strategy</th><th>How it works</th><th>Tradeoff</th></tr>
+    <tr><td><strong>Fixed-size</strong></td><td>Split every N characters or tokens, regardless of content</td><td>Simple and fast, but happily cuts mid-sentence or mid-word — cheapest to implement, lowest quality</td></tr>
+    <tr><td><strong>Sentence / paragraph-based</strong></td><td>Split on natural sentence or paragraph boundaries</td><td>Keeps ideas intact, but chunk sizes become uneven — a one-line paragraph and a 40-line paragraph both become "one chunk"</td></tr>
+    <tr><td><strong>Recursive character splitting</strong></td><td>Try splitting on paragraphs first; if a piece is still too big, fall back to sentences; if still too big, fall back to raw characters</td><td>The practical default in most RAG frameworks — balances respecting structure with guaranteeing a max size</td></tr>
+    <tr><td><strong>Semantic chunking</strong></td><td>Embed sentences, then cut where meaning shifts significantly (using embedding similarity between consecutive sentences)</td><td>Produces the most coherent chunks, but costs extra embedding calls just to decide where to cut — slower and pricier</td></tr>
+    <tr><td><strong>Document-structure-aware</strong></td><td>Respect the document's own structure — markdown headers, code blocks, table boundaries — never splitting inside them</td><td>Best for technical docs, READMEs, and code; requires format-specific parsing logic per document type</td></tr>
+  </table>
+
+  <h2>3. Overlap: why chunks usually share some text</h2>
+  <p>If you cut chunks with zero overlap, a sentence (or the connective idea between two sentences) that straddles a chunk boundary gets silently broken — the end of chunk 1 and the start of chunk 2 each lose context the other one needed. The common fix is <strong>overlap</strong>: each chunk repeats roughly the last 10-20% of the previous chunk, so boundary information survives in at least one complete chunk.</p>
+  <div class="diagram">Text: "...the refund policy allows returns within 30 days of purchase, provided the item is unused and in its original packaging. Exceptions apply to..."
+
+Without overlap:
+  Chunk 1: "...the refund policy allows returns within 30 days of purchase, provided"
+  Chunk 2: "the item is unused and in its original packaging. Exceptions apply to..."
+  → neither chunk alone states the full condition clearly
+
+With ~15% overlap:
+  Chunk 1: "...the refund policy allows returns within 30 days of purchase, provided the item is unused and in its original packaging."
+  Chunk 2: "...provided the item is unused and in its original packaging. Exceptions apply to..."
+  → the boundary sentence appears whole in at least one chunk</div>
+
+  <h2>4. The core tradeoff: chunk size</h2>
+  <table>
+    <tr><th>Chunk size</th><th>Problem</th></tr>
+    <tr><td><strong>Too small</strong></td><td>Each chunk loses surrounding context (a sentence like "it costs $50" is meaningless without knowing what "it" is); you also end up with far more chunks to search through and store.</td></tr>
+    <tr><td><strong>Too large</strong></td><td>The chunk's embedding blurs together multiple unrelated ideas, diluting relevance for any single query; when retrieved, a large chunk wastes context window space (Ch. 15's cost/latency tradeoffs apply directly here); it may also exceed the embedding model's max input length (Ch. 16), causing silent truncation.</td></tr>
+  </table>
+  <p>There's no universal "correct" size — it depends on the embedding model's sweet spot, the document type, and how much surrounding context a good answer typically needs. Many teams start around 300-800 tokens per chunk with ~15% overlap, then tune based on retrieval quality.</p>
+
+  <h2>5. A simple chunker, in JavaScript</h2>
+  <p>Here's an illustrative recursive-ish splitter: it tries to break on paragraph boundaries first, and only falls back to a fixed-size character cut (with overlap) when a paragraph is still too big.</p>
+  <pre><code>function chunkText(text, { maxChars = 800, overlap = 120 } = {}) {
+  const paragraphs = text.split(/\n\s*\n/);  <span class="tok-com">// try paragraph boundaries first</span>
+  const chunks = [];
+  let current = "";
+
+  for (const para of paragraphs) {
+    if ((current + "\n\n" + para).length <= maxChars) {
+      current = current ? current + "\n\n" + para : para;
+    } else {
+      if (current) chunks.push(current);
+      <span class="tok-com">// fall back to fixed-size splitting if a single paragraph is too big</span>
+      if (para.length > maxChars) {
+        chunks.push(...splitFixedSize(para, maxChars, overlap));
+        current = "";
+      } else {
+        current = para;
+      }
+    }
+  }
+  if (current) chunks.push(current);
+  return chunks;
+}
+
+function splitFixedSize(text, maxChars, overlap) {
+  const pieces = [];
+  let start = 0;
+  while (start < text.length) {
+    const end = Math.min(start + maxChars, text.length);
+    pieces.push(text.slice(start, end));
+    if (end === text.length) break;
+    start = end - overlap;  <span class="tok-com">// step back so the next chunk overlaps this one</span>
+  }
+  return pieces;
+}</code></pre>
+  <div class="callout"><strong>Production note.</strong> Real-world libraries (e.g. LangChain's <code>RecursiveCharacterTextSplitter</code>) generalize this idea with a whole list of fallback separators — try <code>"\n\n"</code>, then <code>"\n"</code>, then <code>". "</code>, then <code>" "</code>, then raw characters — and measure size in <em>tokens</em> rather than characters, since that's what actually counts against an embedding model's max input length.</div>
+
+  <h2>6. Common mistakes</h2>
+  <ul>
+    <li><strong>Chunking mid-sentence or mid-code-block</strong> — a fixed-size cut that lands in the middle of a function definition or a sentence produces a chunk that's nonsensical on its own, hurting both embedding quality and readability if it's shown to a user.</li>
+    <li><strong>No overlap</strong> — information sitting right at a chunk boundary gets silently split across two chunks, and neither one alone is likely to match a relevant query.</li>
+    <li><strong>One chunk size for every document type</strong> — dense code, flowing prose, and structured tables all need different treatment; a chunk size tuned for narrative text will mangle a table or a code file, and vice versa.</li>
+  </ul>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>Documents are chunked <em>before</em> embedding so retrieval can return a specific relevant passage instead of an entire document.</li>
+    <li>Strategies range from simple (fixed-size) to structure-aware (recursive, semantic, markdown/code-aware) — recursive splitting is the common practical default.</li>
+    <li>Overlap (~10-20%) prevents context loss at chunk boundaries by letting boundary text appear fully in at least one chunk.</li>
+    <li>Chunk size is a real tradeoff: too small loses context and multiplies chunks to search; too large dilutes relevance, wastes context window, and risks exceeding the embedding model's max input length.</li>
+    <li>Chunking strategy should match the document type — code, prose, and tables each deserve different handling.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>Take a paragraph of your own writing (3-4 sentences) and manually chunk it into two pieces with no overlap. Read each chunk alone — what context did each one lose?</li>
+      <li>Now redo it with ~20% overlap. Does the overlapping sentence make each chunk stand on its own better?</li>
+      <li><em>Reflect:</em> would you use a bigger or smaller chunk size for a codebase's README files versus its raw source code files? Why?</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>Why can't you just embed an entire 50-page document as a single vector for retrieval? <em>Retrieval works by matching a query's vector against stored vectors — a single vector for the whole document can only signal "this whole document is somewhat relevant," not point to the specific passage that answers the question, and it may also exceed the embedding model's max input length.</em></li>
+      <li>What problem does chunk overlap solve, and what's a typical overlap percentage? <em>Without overlap, a sentence or idea that straddles a chunk boundary gets split so that neither chunk alone contains it fully. Overlapping by roughly 10-20% ensures boundary content appears whole in at least one chunk.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch16-embeddings.html">← Chapter 16</a>
+    <a class="next" href="ch18-vector-stores.html">Chapter 18: Vector Stores →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

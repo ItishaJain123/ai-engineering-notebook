@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 18 — Vector Stores</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+  @media (max-width:640px){
+    .wrap{padding:20px 16px 90px}
+    .topbar{padding:10px 14px}
+    .topbar .left{font-size:.78rem}
+    h1{font-size:1.5rem}
+    h2{font-size:1.12rem;margin:1.5em 0 .4em}
+    h3{font-size:1rem}
+    .diagram,pre{font-size:.72rem;padding:10px 12px}
+    table{display:block;overflow-x:auto;white-space:nowrap}
+    .nav-bottom{flex-direction:column}
+    .analogy,.exercise,.callout{padding:10px 12px}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../index.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="18">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 3 · Chapter 18</div>
+  <h1>Vector Stores</h1>
+  <p><span class="badge general">General AI Eng</span> where all those embeddings actually live, and how they get searched fast</p>
+
+  <div class="callout"><strong>Why this matters.</strong> Once you've embedded your chunks (Ch. 16) and split your documents sensibly (Ch. 17), you need somewhere to actually put millions of vectors — and a way to ask "which 5 of these are closest to my query vector?" in milliseconds. A regular SQL <code>WHERE</code> clause can't do that efficiently at scale. That's the entire job of a <strong>vector store</strong>.</p>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">Picture a librarian who doesn't shelve books alphabetically — instead, she organizes the whole library by "which books feel similar to this one," clustering related ideas physically near each other. Hand her any book and she can point you to the 5 most similar ones out of a million almost instantly, because she never has to walk the entire library — she just knows which section to check. A vector store is that librarian, and its smart shelving system is what makes the instant answer possible.</div>
+
+  <h2>1. Why you can't just use a normal database query</h2>
+  <p>Finding the "closest" vectors to a query means comparing your query vector against <em>every single stored vector</em> using something like cosine similarity (Ch. 16) — that's an <strong>exact nearest-neighbor</strong> search. It works fine for a few thousand vectors, but at millions of vectors, comparing against every single one for every single query becomes far too slow for a live application.</p>
+
+  <h2>2. Approximate nearest neighbor (ANN) search</h2>
+  <p>Vector stores solve this with <strong>ANN (approximate nearest neighbor)</strong> algorithms — most commonly <strong>HNSW</strong> (Hierarchical Navigable Small World graphs). Instead of checking every vector, ANN builds an index structure that lets the search "hop" toward the right neighborhood quickly, skipping most of the dataset. The tradeoff: you might occasionally miss the single mathematically-closest vector in favor of one that's 99% as good — a tiny accuracy cost for a massive speed win. For nearly all retrieval-augmented generation use cases, that tradeoff is a clear win.</p>
+  <div class="diagram">Exact search (brute force):
+  query ──compare──▶ vector 1
+        ──compare──▶ vector 2
+        ──compare──▶ vector 3
+        ...
+        ──compare──▶ vector 5,000,000   ← too slow at scale
+
+ANN search (e.g. HNSW):
+  query ──▶ [jump to likely neighborhood] ──▶ [refine] ──▶ top-k results
+        (touches a small fraction of the vectors, nearly as accurate)</div>
+
+  <h2>3. Comparing the major options</h2>
+  <table>
+    <tr><th>Store</th><th>Setup complexity</th><th>Best for</th><th>Hosting</th><th>Notable feature</th></tr>
+    <tr><td><strong>pgvector</strong></td><td>Low if already on Postgres</td><td>Teams already running Postgres who want vectors next to relational data</td><td>Self-hosted or any managed Postgres</td><td>Keeps embeddings, metadata, and normal app tables in one database — simpler ops, one backup/one connection pool</td></tr>
+    <tr><td><strong>Chroma</strong></td><td>Very low</td><td>Local development and quick prototyping</td><td>Embedded/local or lightweight server</td><td>Runs in-process with almost no setup — great for "just get it working" experiments</td></tr>
+    <tr><td><strong>Qdrant</strong></td><td>Medium</td><td>Production workloads needing strong filtering and performance</td><td>Self-hostable (Docker) or Qdrant Cloud</td><td>Purpose-built vector engine with rich, fast metadata filtering alongside similarity search</td></tr>
+    <tr><td><strong>Pinecone</strong></td><td>Very low (fully managed)</td><td>Teams that want zero infrastructure to manage</td><td>Fully managed cloud only</td><td>No servers to run at all — scales automatically, usage-based pricing</td></tr>
+  </table>
+
+  <h2>4. Upserting and querying — illustrative shape</h2>
+  <p>Exact APIs differ, but nearly every vector store follows the same basic shape: <strong>upsert</strong> a vector with an ID and metadata, then <strong>query</strong> with a vector and a <code>topK</code>. This example is generic pseudocode-ish JS/TS — treat it as illustrative of the pattern, not any one provider's exact API.</p>
+  <pre><code><span class="tok-com">// 1. Upsert a vector with metadata attached</span>
+await store.upsert({
+  id: "doc-42-chunk-3",
+  vector: embedding,   <span class="tok-com">// e.g. [0.021, -0.184, ...] from Ch. 16</span>
+  metadata: {
+    source: "handbook.pdf",
+    section: "Refunds",
+    publishedAt: "2024-11-02",
+    userId: "team-acme"
+  }
+});
+
+<span class="tok-com">// 2. Query for the top-k nearest neighbors</span>
+const results = await store.query({
+  vector: queryEmbedding,
+  topK: 5,
+  filter: {
+    userId: "team-acme",
+    publishedAt: { $gte: "2024-01-01" }
+  }
+});
+
+<span class="tok-com">// results: [{ id, score, metadata }, ...] sorted by similarity</span></code></pre>
+
+  <h2>5. Metadata filtering — why it matters</h2>
+  <p>Storing metadata alongside each vector (document source, publish date, owning user, tags, etc.) turns pure "find similar things" into "find similar things <em>that also match these constraints</em>." Without it, you're stuck doing similarity search over your entire index and filtering results yourself afterward — wasteful, and you risk returning fewer than <code>topK</code> usable results after filtering. With metadata filtering pushed into the query itself, you can ask for "find similar <strong>and</strong> published after 2024 <strong>and</strong> owned by this user" in a single fast call — essential for any multi-tenant or access-controlled RAG system.</p>
+
+  <h2>6. When to choose what</h2>
+  <div class="callout">
+    <strong>Decision guide:</strong>
+    <ul>
+      <li>Already on Postgres, modest scale → <strong>pgvector</strong></li>
+      <li>Prototyping locally, want zero friction → <strong>Chroma</strong></li>
+      <li>Need serious filtering/performance and want to self-host → <strong>Qdrant</strong></li>
+      <li>Want zero ops and are fine paying for managed infrastructure → <strong>Pinecone</strong></li>
+    </ul>
+  </div>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>A vector store's job is fast similarity search over millions of vectors — something a normal SQL query can't do efficiently.</li>
+    <li><strong>ANN algorithms (e.g. HNSW)</strong> trade a tiny bit of accuracy for a massive speed win over exact nearest-neighbor search.</li>
+    <li><strong>pgvector, Chroma, Qdrant, and Pinecone</strong> each fit a different point on the setup-complexity vs. ops-ownership spectrum.</li>
+    <li>Storing <strong>metadata</strong> alongside vectors lets you combine similarity search with hard filters like date, source, or user.</li>
+    <li>The right choice depends on your existing stack, scale, and how much infrastructure you want to manage yourself.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>Sketch the metadata fields you'd attach to chunks from a company knowledge base (think: source, department, date, access level). Write one example filtered query you'd want to run against it.</li>
+      <li>You're prototyping a side project alone on your laptop. Which vector store from the table would you pick, and why? Now imagine the same project needs to serve 10 million users next quarter — does your answer change?</li>
+      <li><em>Reflect:</em> why does approximate (rather than exact) nearest-neighbor search remain acceptable for almost all RAG applications, even though it can occasionally return a "slightly wrong" top result?</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>Why can't you just brute-force compare a query vector against every stored vector once you have millions of them? <em>Exact comparison against every vector is too slow at scale — vector stores use ANN algorithms like HNSW instead, which search a smart index structure and touch only a small fraction of the data.</em></li>
+      <li>Why does metadata filtering matter for a vector store, not just the raw vectors? <em>It lets you combine similarity search with hard constraints (date, source, user, access level) in a single fast query, instead of retrieving purely by similarity and filtering afterward, which can leave you with too few relevant results.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch17-chunking.html">← Chapter 17</a>
+    <a class="next" href="ch19-retrieval.html">Chapter 19: Retrieval Strategies →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

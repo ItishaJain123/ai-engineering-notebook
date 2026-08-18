@@ -191,6 +191,43 @@ await server.connect(transport);</code></pre>
   </table>
   <div class="callout"><strong>The rule that ties it all together:</strong> if a clean tool/API already exists for the job (like GitHub's), give Claude an <strong>MCP tool</strong> for it — faster, more reliable, and you can limit exactly what it's allowed to do. Only fall back to driving a browser by hand (Chapter 7) when <em>no API exists</em> for that website.</div>
 
+  <h2>🛠️ Step by step: add any MCP server (not just one you built)</h2>
+  <p>You don't have to write your own server every time — most MCP servers already exist (GitHub, Playwright, Slack, etc.). Here's the general recipe:</p>
+  <ol>
+    <li><strong>Pick the transport.</strong> <code>stdio</code> = a local process (npm package, script) that Claude Code launches for you. <code>http</code>/SSE = a remote, hosted server you just point at a URL.</li>
+    <li><strong>Add it with the CLI:</strong>
+      <pre><code><span>// local process (stdio)</span>
+claude mcp add playwright -- npx -y @playwright/mcp@latest
+
+<span>// hosted service (http)</span>
+claude mcp add --transport http github https://mcp.github.com/mcp</code></pre>
+    </li>
+    <li><strong>...or add it by hand</strong> to <code>.mcp.json</code> at your project root (this is what the CLI command above actually writes for you):
+      <pre><code>{
+  "mcpServers": {
+    "playwright": { "type": "stdio", "command": "npx", "args": ["-y", "@playwright/mcp@latest"] },
+    "github": { "type": "http", "url": "https://mcp.github.com/mcp" }
+  }
+}</code></pre>
+    </li>
+    <li><strong>Choose a scope</strong> — controls who/where it applies:
+      <table>
+        <tr><th>Scope</th><th>Where it lives</th><th>Available to</th></tr>
+        <tr><td><code>local</code> (default)</td><td>your personal config, this project only</td><td>Just you, just this project</td></tr>
+        <tr><td><code>project</code></td><td><code>.mcp.json</code> in the repo</td><td>Everyone who clones the repo (commit it!)</td></tr>
+        <tr><td><code>user</code></td><td>your personal config, global</td><td>Just you, across <em>all</em> your projects</td></tr>
+      </table>
+      <pre><code>claude mcp add --scope user --transport http github https://mcp.github.com/mcp</code></pre>
+    </li>
+    <li><strong>Verify it's actually connected</strong> — don't skip this:
+      <pre><code>claude mcp list        <span>// shows every server + connection status</span>
+claude mcp get github  <span>// details on one server</span></code></pre>
+      Or inside a running session, type <code>/mcp</code> to view and manage servers live.
+    </li>
+    <li><strong>Remove it</strong> if you no longer need it: <code>claude mcp remove github</code>.</li>
+  </ol>
+  <div class="callout"><strong>Rule of thumb:</strong> use <code>project</code> scope (commit <code>.mcp.json</code>) for anything your teammates should also get automatically. Use <code>user</code> scope for personal tools you want everywhere but don't want to force on collaborators.</div>
+
   <h2>MCP vs. the alternatives</h2>
   <table>
     <tr><th>Approach</th><th>Reuse across clients</th><th>Best for</th></tr>

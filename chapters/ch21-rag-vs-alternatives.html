@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 21 — RAG vs. Fine-tuning vs. Prompting</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+  @media (max-width:640px){
+    .wrap{padding:20px 16px 90px}
+    .topbar{padding:10px 14px}
+    .topbar .left{font-size:.78rem}
+    h1{font-size:1.5rem}
+    h2{font-size:1.12rem;margin:1.5em 0 .4em}
+    h3{font-size:1rem}
+    .diagram,pre{font-size:.72rem;padding:10px 12px}
+    table{display:block;overflow-x:auto;white-space:nowrap}
+    .nav-bottom{flex-direction:column}
+    .analogy,.exercise,.callout{padding:10px 12px}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../index.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="21">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 3 · Chapter 21</div>
+  <h1>RAG vs. Fine-tuning vs. Prompting</h1>
+  <p><span class="badge general">General AI Eng</span> a decision framework for picking the cheapest option that actually solves the problem</p>
+
+  <div class="callout"><strong>Why this matters.</strong> By now you have three big tools for getting an LLM to behave the way you want or know what it needs to know: prompting (Ch. 8-15), RAG (Ch. 16-20), and fine-tuning (mentioned back in Ch. 0b as part of the training pipeline). Beginners often reach for the most complex option first — fine-tuning sounds impressive — when a better prompt would have solved the problem in five minutes. This capstone chapter is a decision framework for choosing correctly.</p>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">Think of a new employee at a company. <strong>Prompting</strong> is giving them clear instructions for one task — "write this email in a formal tone, keep it under 200 words." <strong>RAG</strong> is giving them a reference manual and a filing cabinet they can look things up in whenever they need a fact they don't have memorized. <strong>Fine-tuning</strong> is sending them through months of specialized retraining so a skill or style becomes second nature, baked into how they instinctively work. Each has a real cost — instructions are free and instant, the filing cabinet takes some setup, months of retraining is a major investment — and each is the right call in a different situation. You wouldn't send someone through months of retraining just to answer one question they could've looked up.</div>
+
+  <h2>1. What each tool actually changes</h2>
+  <p>The key to choosing correctly is understanding that these three tools change fundamentally different things about the system.</p>
+  <ul>
+    <li><strong>Prompting</strong> changes nothing about the model itself — you're steering behavior per-request through the words you send. It's the cheapest option, the fastest to iterate on (edit text, try again), and needs no persistent storage or infrastructure.</li>
+    <li><strong>RAG</strong> gives the model access to information it doesn't have memorized — fresh, private, or too-large-to-fit-in-training data, retrieved at query time (Ch. 16-20). It doesn't change the model's behavior or style at all — only what facts it can reference when answering.</li>
+    <li><strong>Fine-tuning</strong> actually adjusts the model's weights on a custom dataset — it changes behavior, style, or output format in a way that's baked in, not just what facts are available. It's the most expensive option, the slowest to iterate (retrain, re-evaluate, redeploy), and requires a real labeled training dataset.</li>
+  </ul>
+
+  <div class="diagram">Prompting:    same model weights, same knowledge  →  different words in  →  different behavior out
+RAG:          same model weights, same base behavior  →  + retrieved facts   →  answers grounded in new info
+Fine-tuning:  DIFFERENT model weights                  →  same words in      →  different behavior, baked in</div>
+
+  <h2>2. Comparison table</h2>
+  <table>
+    <tr><th>Dimension</th><th>Prompting</th><th>RAG</th><th>Fine-tuning</th></tr>
+    <tr><td><strong>What it solves</strong></td><td>Steering tone, format, instructions per request</td><td>Model doesn't know a specific fact/document</td><td>Model needs consistently different behavior/style/format</td></tr>
+    <tr><td><strong>Cost to set up</strong></td><td>Very low — just write text</td><td>Moderate — chunking, embeddings, vector store, retrieval pipeline (Ch. 16-20)</td><td>High — labeled dataset, training run, evaluation infra</td></tr>
+    <tr><td><strong>Iteration speed</strong></td><td>Seconds — edit and re-run</td><td>Minutes to hours — re-chunk/re-index, retest retrieval</td><td>Hours to days — retrain, re-evaluate, redeploy</td></tr>
+    <tr><td><strong>Keeps data fresh?</strong></td><td>N/A — no external data</td><td>Yes — re-index anytime, data can update continuously</td><td>No — frozen at training time; stale facts need retraining</td></tr>
+    <tr><td><strong>Needs training data?</strong></td><td>No</td><td>No (needs a document corpus, not labeled examples)</td><td>Yes — a real labeled dataset</td></tr>
+    <tr><td><strong>Changes model behavior/style?</strong></td><td>Per-request only, not persistent</td><td>No — only changes available facts</td><td>Yes — persistently, baked into weights</td></tr>
+  </table>
+
+  <h2>3. A decision flowchart</h2>
+  <div class="diagram">Is this just about phrasing, tone, or instructions?
+  │
+  ├─ Yes ──────────────────────────────────► Prompting. Always try this first (Ch. 8).
+  │
+  └─ No — the model gets facts wrong or doesn't know something
+      │
+      ├─ Does the model already know HOW to do the task,
+      │  it just needs the right facts (fresh, private,
+      │  or too large to fit in training data)?
+      │     │
+      │     └─ Yes ─────────────────────────► RAG (Ch. 16-20).
+      │
+      └─ Does the model need to consistently BEHAVE or
+         FORMAT differently, in a way words alone haven't fixed
+         even after real effort?
+            │
+            └─ Yes ─────────────────────────► Consider fine-tuning —
+                                                but only after trying
+                                                better prompting first.</div>
+
+  <h2>4. The practical order most teams should try things in</h2>
+  <div class="callout">
+    <strong>1. Prompting first.</strong> Cheap, fast, and often sufficient on its own (Ch. 8). Most "the model won't do X" problems are solved by a clearer, more specific prompt — few-shot examples, explicit format instructions, or a better system prompt.<br><br>
+    <strong>2. Add RAG if the failure is "doesn't know this specific fact or document."</strong> If the model is confidently wrong or has no way to know something (Ch. 16-20), that's a retrieval problem, not a prompting or training problem.<br><br>
+    <strong>3. Only consider fine-tuning if failures persist and are about consistent behavior, format, or style</strong> that extensive prompting and RAG genuinely couldn't fix. And even then — try it only after you've quantified the failure rate you're trying to fix, so you can tell afterward whether the expensive investment actually helped.
+  </div>
+
+  <h2>5. They're not mutually exclusive</h2>
+  <p>These tools stack. Production systems very commonly combine <strong>prompting + RAG</strong> together — a well-crafted system prompt that also has retrieved context injected into it. That combination alone handles the vast majority of real-world use cases. Fine-tuning is comparatively rare in production because prompting and RAG solve most problems for a fraction of the cost — reach for it only when you have clear evidence the first two aren't enough.</p>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li><strong>Prompting</strong> changes nothing about the model — it steers behavior per-request through words alone. Cheapest and fastest to iterate.</li>
+    <li><strong>RAG</strong> gives the model facts it doesn't have memorized, retrieved at query time — it doesn't change the model's style or behavior, only what it can reference.</li>
+    <li><strong>Fine-tuning</strong> adjusts the model's weights — it changes behavior/style/format persistently, but is the most expensive and slowest option, and needs real training data.</li>
+    <li>The practical order is: try prompting first, add RAG for missing/fresh facts, and only consider fine-tuning for persistent behavior/format problems that prompting and RAG couldn't fix.</li>
+    <li>These aren't mutually exclusive — prompting + RAG together is the common production pattern; fine-tuning is comparatively rare.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <p>Classify each scenario below as <strong>prompting</strong>, <strong>RAG</strong>, or <strong>fine-tuning</strong> (or "prompting first, fine-tuning if that's not enough"), and explain why:</p>
+    <ol>
+      <li>A customer support bot needs to know today's return policy, which changes weekly.</li>
+      <li>A bot needs to phrase all replies in a specific, consistent empathetic customer-service tone across thousands of replies.</li>
+      <li>A legal contract-review tool needs facts from the specific 200-page contract a user just uploaded.</li>
+      <li><em>Reflect:</em> why is "quantify the failure rate before fine-tuning" good advice, even for a team convinced fine-tuning is necessary?</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>What's the fundamental difference between what RAG changes versus what fine-tuning changes? <em>RAG only changes what facts the model can reference at query time — the model's underlying behavior and style stay the same. Fine-tuning actually adjusts the model's weights, changing its behavior, style, or output format persistently, not just the facts available to it.</em></li>
+      <li>Why should a team try prompting before jumping to fine-tuning, even if they're fairly confident fine-tuning will be needed eventually? <em>Prompting is far cheaper and faster to iterate on, and often solves the problem outright — jumping straight to fine-tuning risks a costly, slow investment in a fix that a much simpler and cheaper approach might have already handled.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch20-advanced-rag.html">← Chapter 20</a>
+    <a class="next" href="../index.html">Part 3 complete → Back to index</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

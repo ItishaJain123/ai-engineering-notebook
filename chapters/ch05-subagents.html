@@ -65,27 +65,30 @@
   <h1>Subagents / Agent (Task) Tool</h1>
   <p><span class="badge cc">Claude Code</span> how delegation works · when to delegate vs. do inline</p>
 
-  <div class="callout"><strong>Why this matters.</strong> A single agent's context window is finite (Chapter 2). Big jobs — "search the whole repo," "review 30 files" — would flood it. <strong>Subagents</strong> let the main agent spin up a helper with its <em>own fresh context</em>, hand it a task, and get back only a short summary. The bulk of the work never pollutes your main whiteboard.</p></div>
+  <div class="callout"><strong>The one-line idea.</strong> A subagent is a helper AI you send off to do a chunk of work in its <em>own</em> separate workspace. It only reports back the final answer — not everything it did to get there.</p></div>
 
-  <p class="label">Real-world analogy</p>
-  <div class="analogy">You're a <strong>manager</strong> on a deadline. Instead of reading 500 pages yourself, you send an <strong>intern</strong> to read them and report back one paragraph. You stay focused; the reading happened elsewhere. The catch: briefing and debriefing the intern takes effort, so you only delegate when the task is big enough to be worth it.</div>
+  <p class="label">Think of your chat as a whiteboard</p>
+  <div class="analogy">Your conversation with Claude is like a whiteboard with limited space (Chapter 2). If you ask "search my whole codebase for every place X is used," reading 50 files onto that whiteboard fills it up fast — no room left for the work you actually care about. A subagent reads those 50 files on <em>its own</em> whiteboard, in a separate room, and hands you back one clean summary.</div>
 
-  <h2>How delegation works in Claude Code</h2>
-  <ul>
-    <li>The main agent calls the <strong>Agent (Task) tool</strong>, giving a subagent a <em>type</em> and a <em>prompt</em>.</li>
-    <li>The subagent runs its own plan→act→observe loop with a <strong>separate context window</strong> and its own tool set.</li>
-    <li>It cannot see your conversation; it only knows what you put in its prompt. <strong>Its final message is the only thing returned</strong> to the main agent (the user doesn't see its internal steps).</li>
-    <li>A fresh <code>Agent</code> call starts cold; some setups let you continue an existing subagent to reuse its context.</li>
-  </ul>
+  <p class="label">The manager & intern analogy</p>
+  <div class="analogy">You're a <strong>manager</strong> on a deadline. Instead of reading 500 pages yourself, you send an <strong>intern</strong> to read them and come back with one paragraph. You never touch the 500 pages — your desk stays clear.<br><br>The catch: you have to brief the intern clearly, because they can't read your mind or see what's already in your head. And getting a paragraph back instead of doing it yourself takes a bit of extra time — so you don't send an intern to fetch you one coffee. Only worth it for big jobs.</div>
 
-  <h2>Built-in subagent types (examples)</h2>
+  <h2>How it actually works, step by step</h2>
+  <ol>
+    <li>The main agent calls the <strong>Task tool</strong>, picks a subagent <em>type</em>, and writes it a <em>prompt</em> — the briefing.</li>
+    <li>That subagent starts <strong>completely fresh</strong>. It has no idea what you and the main agent talked about — only what's in the prompt.</li>
+    <li>It runs its own little loop (search files, read things, reason) in its own private context, with its own tools.</li>
+    <li>When it's done, <strong>only its final message comes back</strong>. All its intermediate scratch-work disappears — you never see the 50 files it read, just the summary.</li>
+  </ol>
+
+  <h2>The 3 built-in types</h2>
   <table>
-    <tr><th>Type</th><th>Good for</th></tr>
-    <tr><td><strong>Explore</strong></td><td>Read-only fan-out search across many files; returns conclusions, not file dumps</td></tr>
-    <tr><td><strong>Plan</strong></td><td>Designing an implementation strategy before coding</td></tr>
-    <tr><td><strong>general-purpose</strong></td><td>Multi-step research/tasks when you're unsure where the answer lives</td></tr>
+    <tr><th>Type</th><th>Use it for</th></tr>
+    <tr><td><strong>Explore</strong></td><td>"Find X across the repo" — read-only search, returns conclusions not file dumps</td></tr>
+    <tr><td><strong>Plan</strong></td><td>"Design how I'd build this" before writing any code</td></tr>
+    <tr><td><strong>general-purpose</strong></td><td>Anything else multi-step, or when you're not sure where the answer lives</td></tr>
   </table>
-  <p>You can also define <strong>custom subagents</strong> (a Markdown file with name, description, allowed tools, and a system prompt) in <code>.claude/agents/</code> — e.g. a "js-test-writer" specialist.</p>
+  <p>You can also build your own <strong>custom subagent</strong> — a specialist with its own name, job description, allowed tools, and instructions — saved as a Markdown file in <code>.claude/agents/</code>. Example: a "test writer" that only ever writes tests.</p>
   <pre><code>---
 name: js-test-writer
 description: Writes Vitest unit tests for JS modules. Use when asked to add tests.
@@ -94,44 +97,138 @@ tools: Read, Grep, Edit
 You are a testing specialist. Given a module, write thorough Vitest tests
 covering happy paths and edge cases. Follow existing test style.</code></pre>
 
-  <h2>When to delegate vs. do inline</h2>
+  <h2>When to delegate vs. just do it yourself</h2>
   <table>
-    <tr><th>Delegate to a subagent</th><th>Do it inline</th></tr>
-    <tr><td>Wide search / reading many files</td><td>You already know the file</td></tr>
-    <tr><td>Big result you only need summarized</td><td>You need the raw detail in context</td></tr>
-    <tr><td>Parallelizable independent chunks</td><td>Tightly coupled, back-and-forth edits</td></tr>
-    <tr><td>Isolating a noisy task to protect context</td><td>Quick, small task (delegation overhead not worth it)</td></tr>
+    <tr><th>Send a subagent</th><th>Do it inline instead</th></tr>
+    <tr><td>Big search / lots of files to read</td><td>You already know exactly which file</td></tr>
+    <tr><td>You only need a summary of a big result</td><td>You need the raw detail yourself</td></tr>
+    <tr><td>Several independent chunks that can run in parallel</td><td>Tightly coupled, back-and-forth edits</td></tr>
+    <tr><td>Keeping a noisy task out of your main context</td><td>Quick, small task — not worth the overhead</td></tr>
   </table>
-  <div class="callout"><strong>The core tradeoff:</strong> a subagent <em>saves your context</em> but <em>costs a round-trip and loses shared state</em> (it can't see your conversation). Delegate when context savings &gt; briefing cost. For a two-line grep, just do it inline.</div>
+  <div class="callout"><strong>Simple rule:</strong> a subagent <em>saves your context</em> but <em>costs a round trip and can't see what you already know</em>. Delegate when the context saved is worth more than the cost of briefing it. For a two-line lookup, just do it yourself.</div>
 
-  <h2>Two key limits</h2>
+  <h2>🛠️ Step by step: build your own custom subagent</h2>
+  <ol>
+    <li><strong>Pick a scope.</strong> <code>.claude/agents/</code> in your project (shared with the team via git) or <code>~/.claude/agents/</code> in your home folder (personal, works in every project you open).</li>
+    <li><strong>Create a Markdown file</strong> in that folder — the filename doesn't matter much, but name it after the agent, e.g. <code>.claude/agents/code-reviewer.md</code>.</li>
+    <li><strong>Write YAML frontmatter + a system prompt:</strong>
+      <pre><code>---
+name: code-reviewer
+description: Reviews code for quality and best practices
+tools: Read, Glob, Grep, Bash
+model: sonnet
+---
+
+You are a senior code reviewer. When invoked:
+1. Run `git diff` to see recent changes
+2. Focus on modified files
+3. Give feedback organized by priority (critical, warnings, suggestions)</code></pre>
+    </li>
+    <li><strong>Know the key fields:</strong>
+      <table>
+        <tr><th>Field</th><th>Required?</th><th>What it does</th></tr>
+        <tr><td><code>name</code></td><td>Yes</td><td>How you or Claude refer to it</td></tr>
+        <tr><td><code>description</code></td><td>Yes</td><td>Tells the main agent <em>when</em> to reach for this one</td></tr>
+        <tr><td><code>tools</code></td><td>No</td><td>Restrict it to only the tools it needs — safer, more focused</td></tr>
+        <tr><td><code>model</code></td><td>No</td><td>Pick a cheaper/faster model for simple jobs, or omit to inherit</td></tr>
+      </table>
+    </li>
+    <li><strong>Invoke it</strong> three ways:
+      <pre><code><span>// let Claude decide when to use it</span>
+"Use the code-reviewer to check my changes"
+
+<span>// force it directly</span>
+@code-reviewer
+
+<span>// make it the default for a whole session</span>
+claude --agent code-reviewer</code></pre>
+    </li>
+  </ol>
+  <div class="callout"><strong>No build step, no registration.</strong> Claude Code just reads the <code>.claude/agents/</code> folder — save the file and it's immediately usable.</div>
+
+  <h2>🛠️ Using the same subagent across multiple projects</h2>
+  <p>Save it in your <strong>user-level</strong> folder instead of a project one:</p>
+  <pre><code>~/.claude/agents/code-reviewer.md</code></pre>
+  <p>Anything here is available in <em>every</em> project you open Claude Code in — no copying files around. A project-level one (<code>.claude/agents/</code> inside a repo) only exists for that repo. If both a user-level and a project-level agent share the same name, the <strong>project-level one wins</strong> in that repo — handy for overriding your personal default on one specific project.</p>
+
+  <h2>🛠️ How to pass it a prompt</h2>
+  <p>The "prompt" is just whatever task text you give it when you invoke it — no separate config step.</p>
   <ul>
-    <li><strong>No shared memory.</strong> Everything the subagent needs must be in its prompt. Vague briefs → wrong results.</li>
-    <li><strong>Only the final summary returns.</strong> Design the task so the useful output <em>is</em> that final message.</li>
+    <li><strong>Natural language</strong> (Claude decides when to delegate, writes the brief itself):
+      <pre><code>"Use the code-reviewer to check my changes for security issues"</code></pre>
+    </li>
+    <li><strong>Direct @-mention</strong> (you control exactly what it gets):
+      <pre><code>@code-reviewer review src/auth.js for SQL injection risks</code></pre>
+      Everything after the mention becomes that subagent's <strong>entire</strong> prompt — its whole context. It can't see the rest of your conversation, so be as specific as you'd be briefing someone who just walked in.
+    </li>
+    <li><strong>From your own code</strong> (Agent SDK, Chapter 6): pass the prompt as a string param when spawning it, e.g. <code>Agent({ description: "...", prompt: "Review src/auth.js for SQL injection, focus on the login handler at line 40" })</code>.</li>
   </ul>
-  <p>This is the CC-native version of <strong>multi-agent orchestration</strong> (Chapter 24): an orchestrator delegating to workers. Same pattern, bigger scale later.</p>
+  <table>
+    <tr><th>Bad brief</th><th>Good brief</th></tr>
+    <tr><td>"check the code"</td><td>"review <code>src/auth.js</code>, flag any place user input reaches a SQL query without parameterization, report file:line for each"</td></tr>
+  </table>
+  <div class="callout"><strong>Remember:</strong> the more concrete detail in the prompt — file paths, what "done" looks like, what to ignore — the better the result, because it's the <em>only</em> input the subagent has.</div>
+
+  <h2>🛠️ Agent View — watching multiple agents at once</h2>
+  <p>So far each subagent you send off is quick — it runs, reports back, and you keep working. But what if you kick off several <strong>long-running background agents</strong> at once (e.g. one researching, one refactoring, one running tests)? You need a way to see all of them without losing your place.</p>
+  <p>That's <strong>Agent View</strong> — a terminal screen for monitoring and managing multiple parallel sessions/background agents:</p>
+  <pre><code>claude agents</code></pre>
+  <ul>
+    <li>Shows a list of every running session — its status, a progress summary, and (if relevant) whether it's opened a PR yet.</li>
+    <li>You can <strong>peek</strong> at any agent's output without interrupting it.</li>
+    <li>You can <strong>reply</strong> to a specific agent, or <strong>attach</strong> to it to take over control directly.</li>
+    <li>You can start new background agents from here, or fork a session with <code>/fork</code> to try a different approach without losing the original.</li>
+  </ul>
+  <div class="analogy"><strong>Analogy:</strong> if a single subagent is one intern reporting back to you, Agent View is the manager's dashboard showing every intern currently out in the field — what they're doing, how far along they are, and a button to walk over and check on any one of them.</div>
+  <div class="callout">Agent View is for <strong>background/parallel</strong> agents specifically — a normal foreground subagent's output just streams straight into your current conversation, no separate view needed.</div>
+
+  <h2>🛠️ Agent Teams — subagents that talk to <em>each other</em></h2>
+  <p>Everything above still has one property: a subagent reports back only to <em>you</em> (or the main agent) — subagents never talk to each other. <strong>Agent Teams</strong> (experimental) removes that limit: several Claude Code instances work together, with one acting as <strong>lead</strong> and the rest as <strong>teammates</strong> that communicate directly with one another, not just upward.</p>
+  <p>It's an experimental feature — enable it in your settings first:</p>
+  <pre><code><span>// .claude/settings.json</span>
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}</code></pre>
+  <p>Then just ask, in plain language:</p>
+  <pre><code>"Spawn 3 teammates to investigate this bug —
+one testing the database hypothesis, one the API hypothesis,
+one the client hypothesis. Have them challenge each other's findings."</code></pre>
+  <table>
+    <tr><th></th><th>Subagents</th><th>Agent Teams</th></tr>
+    <tr><td>Who they report to</td><td>Only the lead/main agent</td><td>Message each other directly, plus a shared task list</td></tr>
+    <tr><td>Coordination</td><td>Lead manages every step</td><td>Teammates self-coordinate</td></tr>
+    <tr><td>Cost</td><td>Lower — brief in, summary out</td><td>Higher — every teammate is a full separate Claude instance</td></tr>
+    <tr><td>Maturity</td><td>Stable, everyday use</td><td>Experimental — known limitations</td></tr>
+  </table>
+  <div class="callout"><strong>Heads up:</strong> Agent Teams is still experimental — sessions with in-process teammates can't always be resumed, task status can lag, and teams can't be nested inside teams. Reach for a normal subagent first; use a team only when tasks genuinely need to debate or cross-check each other's findings.</div>
+
+  <h2>The one thing to remember</h2>
+  <p>Subagents are <strong>blind to your conversation</strong>. If your prompt to them is vague, their answer will be vague or wrong — because they have literally nothing else to go on. A good brief is the whole game.</p>
+  <p>This same pattern — one "manager" agent delegating to several "worker" agents — scales up into full <strong>multi-agent systems</strong>, which you'll see in Chapter 24.</p>
 
   <p class="label">Key takeaways</p>
   <ul>
-    <li>Subagents run in a <strong>separate context</strong> and return only a final summary.</li>
-    <li>Use them to keep heavy reading/search out of your main context window.</li>
-    <li>They can't see your conversation — brief them fully in the prompt.</li>
-    <li>Delegate when context savings beat the round-trip + briefing cost; otherwise inline.</li>
-    <li>Custom subagents live in <code>.claude/agents/</code> with their own tools + system prompt.</li>
+    <li>A subagent works in its <strong>own separate context</strong> and only returns a final summary.</li>
+    <li>Use one to keep heavy reading/search out of your main conversation.</li>
+    <li>It can't see your conversation — you must brief it fully in the prompt.</li>
+    <li>Delegate when the context you save beats the round-trip + briefing cost; otherwise just do it inline.</li>
+    <li>Custom subagents live in <code>.claude/agents/</code> with their own tools and instructions.</li>
   </ul>
 
   <div class="exercise">
     <strong>🎯 Your exercise</strong>
     <ol>
-      <li>Name two tasks in a real codebase you'd delegate to an <strong>Explore</strong> subagent, and two you'd keep inline. Justify each with the context-vs-briefing tradeoff.</li>
-      <li>Draft the frontmatter (name + description + tools) for a custom subagent you'd want — e.g. "explain-diff" or "js-refactorer."</li>
+      <li>Think of a real codebase. Name two tasks you'd send to an <strong>Explore</strong> subagent, and two you'd keep inline. Explain why for each, using the "is it worth the briefing cost?" rule.</li>
+      <li>Sketch the frontmatter (name + description + tools) for one custom subagent you'd actually want — e.g. "explain-diff" or "js-refactorer."</li>
     </ol>
   </div>
 
   <details><summary>Understanding check</summary>
     <ol>
-      <li>Why does delegating a big repo search protect your main session? <em>The subagent reads in its own context and returns a short summary; the raw content never enters your window.</em></li>
-      <li>What's the main risk of a vague subagent prompt? <em>It can't see your conversation, so missing context → wrong or incomplete results.</em></li>
+      <li>Why does delegating a big repo search protect your main conversation? <em>The subagent reads everything in its own separate context; only its short summary comes back to you — the raw files never fill up your window.</em></li>
+      <li>What's the biggest risk of a vague subagent prompt? <em>It can't see your conversation, so anything you didn't explicitly tell it is invisible to it — leading to missing or wrong results.</em></li>
     </ol>
   </details>
 

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 19 — Retrieval Strategies</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+  @media (max-width:640px){
+    .wrap{padding:20px 16px 90px}
+    .topbar{padding:10px 14px}
+    .topbar .left{font-size:.78rem}
+    h1{font-size:1.5rem}
+    h2{font-size:1.12rem;margin:1.5em 0 .4em}
+    h3{font-size:1rem}
+    .diagram,pre{font-size:.72rem;padding:10px 12px}
+    table{display:block;overflow-x:auto;white-space:nowrap}
+    .nav-bottom{flex-direction:column}
+    .analogy,.exercise,.callout{padding:10px 12px}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../index.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="19">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 3 · Chapter 19</div>
+  <h1>Retrieval Strategies</h1>
+  <p><span class="badge general">General AI Eng</span> hybrid search and reranking — getting the right chunks, not just similar ones</p>
+
+  <div class="callout"><strong>Why this matters.</strong> Pure vector/semantic search (Ch. 16-18) is powerful — it finds meaning, not just matching words. But it isn't perfect. It can miss exact keyword matches: a product SKU like <code>SKU-88213</code>, an exact error code like <code>ERR_CONN_RESET</code>, or a person's name — things a plain keyword search would catch instantly, but that an embedding model might blur into "something about products" or "something about errors." Real production retrieval systems usually combine multiple strategies instead of relying on vector search alone.</p>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">Imagine house-hunting. Semantic search is telling an agent "find me neighborhoods that <em>feel</em> like this one I loved" — walkable, quiet, leafy. Keyword search is "it must have exactly 3 bedrooms and be under $500k" — no fuzziness allowed, exact match or nothing. A good agent uses both at once: narrow by the hard requirements, then rank by feel. Retrieval systems face the same split, and the best ones don't pick one — they combine them.</div>
+
+  <h2>1. Three approaches to retrieval</h2>
+  <table>
+    <tr><th>Approach</th><th>How it works</th><th>Strengths</th><th>Weaknesses</th></tr>
+    <tr><td><strong>Keyword / lexical search</strong><br>(e.g. BM25)</td><td>Scores documents by exact term overlap with the query, weighted by how rare/important each term is</td><td>Great for precise terms: product codes, error codes, names, acronyms. Cheap, fast, no model needed.</td><td>Fails on paraphrases — "automobile" won't match a document that only says "car"</td></tr>
+    <tr><td><strong>Semantic / vector search</strong><br>(Ch. 16-18)</td><td>Embeds the query, finds nearest chunk vectors by similarity</td><td>Great at meaning and paraphrase — finds relevant text even with zero shared words</td><td>Can miss exact terms — embeddings can blur specific codes, numbers, or rare names into "roughly similar" territory</td></tr>
+    <tr><td><strong>Hybrid search</strong></td><td>Runs both, then combines the two ranked lists into one</td><td>Gets the best of both — catches exact terms <em>and</em> paraphrases</td><td>More moving parts: two systems to run and a fusion step to tune</td></tr>
+  </table>
+
+  <h2>2. How hybrid search actually combines results</h2>
+  <p>The query runs against both a keyword index and a vector index at the same time. Each returns its own ranked list. Those two lists then get merged into one combined ranking — usually via a <strong>weighted score</strong> (e.g. <code>0.5 * bm25_score + 0.5 * vector_score</code>, after normalizing both to comparable ranges) or <strong>reciprocal rank fusion (RRF)</strong>, which combines results based on their <em>rank position</em> in each list rather than raw scores, making it more robust when the two scoring scales don't line up well.</p>
+  <div class="diagram">                    "SKU-88213 return policy"
+                              │
+              ┌───────────────┴───────────────┐
+              ▼                                ▼
+      BM25 (keyword)                  Vector (semantic)
+      search results                  search results
+      1. doc containing               1. doc about
+         "SKU-88213" exactly             "refund policies"
+      2. doc mentioning "SKU-88..."   2. doc about
+                                          "return windows"
+              │                                │
+              └───────────────┬────────────────┘
+                               ▼
+                    fusion / merge step
+                (weighted score or RRF)
+                               │
+                               ▼
+                  combined ranked list
+              1. doc with "SKU-88213" (exact hit)
+              2. doc about "return windows" (semantic hit)
+              3. doc about "refund policies"
+              ...</div>
+
+  <h2>3. Reranking: a second, more careful pass</h2>
+  <p>Initial retrieval (keyword, vector, or hybrid) is built for speed — it scans potentially millions of chunks and returns, say, the top 50 candidates <em>fast</em> but only <em>approximately</em> ranked. A <strong>reranker</strong> is a separate, more expensive model that looks directly at the query alongside each of those 50 candidates and re-scores them far more precisely — something too slow to run against the whole corpus, but perfectly affordable against a shortlist of 50.</p>
+  <p>Think of it as a two-stage funnel: cheap and broad first, then expensive and precise on a small shortlist.</p>
+  <div class="diagram">Stage 1 — retrieve (cheap, broad)
+  10,000+ chunks  ──►  hybrid search  ──►  top 50 candidates
+
+Stage 2 — rerank (expensive, precise)
+  top 50 candidates  ──►  reranker model  ──►  top 5, precisely ordered
+                           (scores query + each
+                            candidate together)</div>
+  <pre><code><span class="tok-com">// conceptual — actual SDK/API shape varies by reranker provider</span>
+const initialResults = await hybridSearch({
+  query: userQuestion,
+  topK: 50   <span class="tok-com">// cast a wide net cheaply</span>
+});
+
+const reranked = await rerank({
+  query: userQuestion,
+  documents: initialResults,   <span class="tok-com">// only 50 candidates — affordable to score precisely</span>
+  topK: 5                      <span class="tok-com">// keep only the best few</span>
+});
+
+<span class="tok-com">// reranked[0] is now the model's best guess at the single most relevant chunk</span></code></pre>
+
+  <div class="callout"><strong>The practical order of operations end-to-end:</strong>
+    <ol>
+      <li><strong>Hybrid retrieve</strong> — combine keyword + vector search to pull ~50 candidate chunks, cheaply and broadly.</li>
+      <li><strong>Rerank</strong> — run those 50 through a reranker model to precisely re-score and cut down to the top ~5.</li>
+      <li><strong>Generate</strong> — pass only those top 5 chunks into the LLM's context window for the final answer.</li>
+    </ol>
+  </div>
+
+  <h2>4. Is the extra complexity worth it?</h2>
+  <table>
+    <tr><th>Situation</th><th>Recommendation</th></tr>
+    <tr><td>Small dataset (hundreds to low thousands of chunks), precision isn't critical, prototyping</td><td>Plain vector search is enough — skip hybrid + reranking, keep it simple</td></tr>
+    <tr><td>Large dataset, exact terms matter (IDs, codes, names, legal/medical text), precision-critical use case, production system</td><td>Use hybrid search + reranking — the added complexity pays for itself in answer quality</td></tr>
+  </table>
+  <p>A good rule of thumb: add complexity when you can point to a real failure mode it fixes. If users are asking about exact order numbers or specific error codes and vector search keeps missing them, that's your signal to add a keyword layer and a reranker — not before.</p>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>Vector search alone can miss exact-term matches like codes, SKUs, and names — keyword (BM25) search catches those instantly.</li>
+    <li><strong>Hybrid search</strong> runs both and fuses the ranked lists, usually via weighted scoring or reciprocal rank fusion (RRF).</li>
+    <li><strong>Reranking</strong> is a second, more expensive pass that re-scores only a small shortlist (e.g. top 50) for much more precise final ordering.</li>
+    <li>The practical pipeline is a funnel: retrieve broad and cheap (~50) → rerank precise and narrow (~5) → send only those to the LLM.</li>
+    <li>Skip the complexity for small, low-stakes datasets; add it when precision on exact terms genuinely matters at scale.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>Think of a query in your own domain that contains an exact code, ID, or name. Would plain vector search likely find the right chunk? Would BM25 alone?</li>
+      <li>Why does it make sense to rerank only the top 50 candidates instead of running the reranker against your entire document collection?</li>
+      <li><em>Reflect:</em> for a small internal FAQ with 200 chunks, would you bother with hybrid search and reranking? Why or why not?</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>Why can vector search alone fail on a query containing a specific product SKU? <em>Embeddings capture meaning/similarity, not exact tokens — a specific code or ID can get blurred into "something roughly similar" rather than matched exactly, which is exactly what keyword/BM25 search is built to catch.</em></li>
+      <li>Why is reranking applied only to a small shortlist (e.g. top 50) rather than the whole corpus? <em>Rerankers score the query together with each candidate directly, which is far more accurate but also far more computationally expensive — cheap enough for 50 candidates, way too slow to run against millions of chunks.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch18-vector-stores.html">← Chapter 18</a>
+    <a class="next" href="ch20-advanced-rag.html">Chapter 20: Advanced RAG →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

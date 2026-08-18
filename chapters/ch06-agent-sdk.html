@@ -65,34 +65,45 @@
   <h1>Claude Agent SDK</h1>
   <p><span class="badge cc">Claude Code</span><span class="badge general">General AI Eng</span> building standalone agents outside the CLI</p>
 
-  <div class="callout"><strong>Why this matters.</strong> Claude Code the CLI is one product. Under it sits an <strong>agent engine</strong> — the loop, tool use, permissions, subagents, context management — that Anthropic exposes as the <strong>Claude Agent SDK</strong> (TypeScript &amp; Python). It lets you build your <em>own</em> agents (a code-fixing bot in CI, a Slack helper, a background worker) that reuse the same battle-tested machinery instead of writing an agent loop from scratch.</div>
+  <div class="callout" style="border-left:4px solid var(--accent)">
+    <strong>🟢 Agent SDK in plain English (read this first)</strong>
+    <p>Claude Code — the tool you're chatting with right now — isn't magic glued directly to a terminal. Underneath, there's a reusable <strong>agent engine</strong>: the loop that reads your request, decides to use a tool, checks the result, and repeats until done. The <strong>Claude Agent SDK</strong> is Anthropic handing you that same engine, so you can build your <em>own</em> app powered by it — not just use it inside a terminal chat.</p>
+    <p><strong>Tiny example:</strong> imagine you want a bot that runs every night, reads your codebase, fixes lint errors, and opens a pull request — with nobody typing anything into a terminal. You can't use "Claude Code the CLI" for that (it needs a human typing). But you <em>can</em> write a small script using the Agent SDK that does exactly this, unattended.</p>
+    <p><strong>Remember 3 things:</strong> (1) Claude Code CLI = the engine + a terminal chat interface built on top, for humans. (2) Agent SDK = the same engine, without the chat interface, for <em>your own programs</em>. (3) You still get tool use, MCP, subagents, permissions — all of it — just callable from your own code.</p>
+  </div>
+
+  <div class="callout"><strong>Why this matters (the technical version).</strong> Building an agent loop from scratch — deciding when to call a tool, feeding results back, managing context, enforcing permissions — is genuinely hard and easy to get wrong. The Agent SDK (TypeScript &amp; Python) gives you that battle-tested engine as an importable package, so you focus on <em>your product</em> (a CI bot, a Slack helper, a background worker) instead of reinventing the loop.</div>
 
   <p class="label">Real-world analogy</p>
-  <div class="analogy">Claude Code is a finished <strong>car</strong>. The Agent SDK is the <strong>engine + chassis</strong> sold on its own, so you can build a truck, a boat, or a go-kart on the same drivetrain. You skip re-inventing the engine (the agent loop, tool routing, permissions) and focus on the body (your product).</div>
+  <div class="analogy">Claude Code is a finished <strong>car</strong> — engine, seats, steering wheel, ready to drive. The Agent SDK is the <strong>engine + chassis sold on its own</strong>, so you can build a truck, a boat, or a go-kart on the same drivetrain. You skip reinventing the engine (the agent loop, tool routing, permissions) and just build the body — your product.</div>
 
-  <h2>What the SDK gives you</h2>
+  <h2>What the SDK actually gives you</h2>
   <ul>
-    <li>The <strong>agentic loop</strong> (plan → call tools → observe → repeat) managed for you.</li>
-    <li>Built-in tools: file read/write, shell, search — the same ones Claude Code uses.</li>
-    <li><strong>MCP</strong> support (Chapter 4), <strong>subagents</strong> (Chapter 5), <strong>permissions</strong>, hooks, and context/compaction handling.</li>
-    <li>Runs headless (no terminal UI) — perfect for servers, CI, cron jobs.</li>
+    <li>The <strong>agentic loop</strong>, already built: plan → call a tool → look at the result → repeat until done.</li>
+    <li>The same <strong>built-in tools</strong> Claude Code uses — reading/writing files, running shell commands, searching.</li>
+    <li>Everything you've already learned: <strong>MCP</strong> (Chapter 4), <strong>subagents</strong> (Chapter 5), permission controls, and automatic context/compaction handling.</li>
+    <li>It runs <strong>headless</strong> — no chat window, no human needed — which is exactly what a server, a CI pipeline, or a nightly cron job needs.</li>
   </ul>
 
-  <h2>Minimal agent in JavaScript</h2>
+  <h2>A minimal agent, step by step</h2>
+  <p><strong>Step 1 — install it and set your API key:</strong></p>
   <pre><code>npm install @anthropic-ai/claude-agent-sdk
 <span># set ANTHROPIC_API_KEY in your environment</span></code></pre>
+
+  <p><strong>Step 2 — write the agent.</strong> You give it a task (<code>prompt</code>) and some rules (<code>options</code>), then read back what it does as it works:</p>
   <pre><code>import { query } from "@anthropic-ai/claude-agent-sdk";
 
-<span>// query() returns an async stream of messages from the agent loop</span>
+<span>// query() starts the agent loop and streams back messages as it works</span>
 const response = query({
   prompt: "List the .js files in this folder and summarize what each does.",
   options: {
     model: "claude-sonnet-5",
-    allowedTools: ["Read", "Glob", "Grep"],   <span>// least privilege</span>
+    allowedTools: ["Read", "Glob", "Grep"],   <span>// it may ONLY read & search — no editing, no shell</span>
     permissionMode: "acceptEdits"
   }
 });
 
+<span>// stream the agent's replies as they arrive, instead of waiting for everything at once</span>
 for await (const msg of response) {
   if (msg.type === "assistant") {
     for (const block of msg.message.content) {
@@ -100,48 +111,58 @@ for await (const msg of response) {
     }
   }
 }</code></pre>
-  <p>Notice the shape: you give a <strong>prompt</strong> + <strong>options</strong> (model, which tools it may use, permission mode), then <strong>stream</strong> the agent's messages as it works. You control the blast radius with <code>allowedTools</code> — least privilege, just like a hook or MCP scope.</p>
 
-  <h2>Add your own tool</h2>
-  <p>You can register custom in-process tools (or wire an MCP server). Conceptually:</p>
+  <p><strong>What's happening, in order:</strong></p>
+  <ol>
+    <li><code>prompt</code> is the job — plain English, exactly like what you'd type into Claude Code.</li>
+    <li><code>allowedTools</code> is a safety leash — this agent is only allowed to <em>read</em> and <em>search</em> files, never edit or run shell commands. This is the same "least privilege" idea as scoping an MCP server (Chapter 4) or a subagent's <code>tools</code> field (Chapter 5).</li>
+    <li>Calling <code>query(...)</code> kicks off the loop: it may read a file, look at the result, decide to read another, and so on — all without you writing that loop yourself.</li>
+    <li>The <code>for await</code> loop is how you watch it work in real time, message by message, instead of waiting silently until it's fully done.</li>
+  </ol>
+  <div class="callout"><strong>Understanding check yourself:</strong> if you changed <code>allowedTools</code> to just <code>["Read"]</code> (dropped <code>Glob</code> and <code>Grep</code>), the agent could open a file you name — but it could no longer <em>search</em> for which files exist. Same idea as taking away someone's ability to browse a filing cabinet, while still letting them read any specific folder you hand them.</div>
+
+  <h2>Give your agent an MCP tool (reusing Chapter 4)</h2>
+  <p>Remember the little MCP math server you could build in Chapter 4? It drops straight into an SDK agent — no rewrite needed. That's the whole payoff of MCP being a standard: build a tool once, plug it in anywhere.</p>
   <pre><code>options: {
   mcpServers: {
     math: { command: "node", args: ["./math-mcp/server.js"] }  <span>// reuse Ch.4!</span>
   }
 }</code></pre>
-  <p>Your Chapter 4 MCP server drops straight into an SDK agent — that's the payoff of a standard protocol.</p>
 
-  <h2>Agent SDK vs. raw Claude API vs. Claude Code CLI</h2>
+  <h2>Three ways to talk to Claude — which one do you want?</h2>
+  <p>Beginners often mix these three up. Here's the difference in one sentence each:</p>
   <table>
-    <tr><th>Option</th><th>You write</th><th>Best for</th></tr>
-    <tr><td><strong>Raw Claude API</strong> (<code>@anthropic-ai/sdk</code>)</td><td>The whole agent loop yourself</td><td>Full control, simple single-shot calls, custom orchestration</td></tr>
-    <tr><td><strong>Claude Agent SDK</strong></td><td>Just the task + config</td><td>Autonomous agents that use files/tools, headless, in production</td></tr>
-    <tr><td><strong>Claude Code CLI</strong></td><td>Nothing — you drive it</td><td>Interactive dev work in your terminal</td></tr>
+    <tr><th>Option</th><th>In one sentence</th><th>You write</th><th>Best for</th></tr>
+    <tr><td><strong>Raw Claude API</strong></td><td>You send one message, get one reply — you decide what happens next.</td><td>The whole agent loop yourself, if you want one</td><td>Simple single-shot calls, full custom control</td></tr>
+    <tr><td><strong>Claude Agent SDK</strong></td><td>You describe a task; it loops on its own using tools until finished.</td><td>Just the task + a few settings</td><td>Autonomous agents in production — CI bots, background workers</td></tr>
+    <tr><td><strong>Claude Code CLI</strong></td><td>You chat with it directly in your terminal, like right now.</td><td>Nothing — you drive it live</td><td>Interactive coding with a human at the wheel</td></tr>
   </table>
-  <div class="callout"><strong>Rule of thumb:</strong> single request/response → raw API. An autonomous helper that reads files, runs tools, and loops until done → Agent SDK. A human coding interactively → the CLI.</div>
+  <div class="analogy"><strong>Analogy:</strong> raw API is texting a friend one question at a time. Agent SDK is giving an assistant a full task list and letting them work through it unsupervised. Claude Code CLI is sitting next to that assistant, pointing at the screen as they work.</div>
+  <div class="callout"><strong>Simple rule to decide:</strong> need just one answer back? → raw API. Need something that reads files/runs tools/keeps going until the job's done, with nobody watching? → Agent SDK. Are you a person typing into a terminal right now? → CLI (which is what you're using with me).</div>
 
   <p class="label">Key takeaways</p>
   <ul>
-    <li>The Agent SDK exposes Claude Code's engine so you can build custom, headless agents.</li>
-    <li>You provide a prompt + options (model, allowedTools, permissionMode) and stream messages.</li>
-    <li>It reuses MCP, subagents, permissions, and context handling — no DIY agent loop.</li>
-    <li>Scope tools tightly (<code>allowedTools</code>) for safety.</li>
-    <li>Raw API = you build the loop; Agent SDK = loop provided; CLI = interactive use.</li>
+    <li>The Agent SDK is Claude Code's engine, made available for <em>your own</em> programs — no chat window needed.</li>
+    <li>You give it a <code>prompt</code> + <code>options</code> (model, <code>allowedTools</code>, <code>permissionMode</code>), and it streams back messages as it works.</li>
+    <li>It reuses everything you already learned — MCP servers, subagents, permission scoping, context handling — no DIY loop required.</li>
+    <li>Always scope <code>allowedTools</code> as tightly as the task allows — least privilege.</li>
+    <li>One answer back → raw API. Autonomous multi-step work → Agent SDK. A human typing live → the CLI.</li>
   </ul>
 
   <div class="exercise">
     <strong>🎯 Your exercise</strong>
     <ol>
-      <li>Write (on paper or in code) the <code>options</code> object for an agent that may only <em>read</em> files and search — no writing, no shell. Which <code>allowedTools</code>?</li>
-      <li>For each, pick raw API / Agent SDK / CLI and justify: (a) a nightly job that fixes lint errors and opens a PR, (b) a function that classifies a support email's sentiment, (c) you refactoring code live in your terminal.</li>
-      <li><em>Stretch:</em> if you built the Ch.4 MCP server, wire it into an SDK agent via <code>mcpServers</code> and have the agent call it.</li>
+      <li>Write the <code>options</code> object for an agent that may only <em>read</em> files and search — never write, never run shell commands. Which <code>allowedTools</code> array does that?</li>
+      <li>For each of these, pick raw API / Agent SDK / CLI and say why: (a) a nightly job that fixes lint errors and opens a PR, (b) a function that classifies a support email's sentiment in one call, (c) you refactoring code live in your terminal right now.</li>
+      <li><em>Stretch:</em> if you built the Ch.4 MCP math server, wire it into an SDK agent via <code>mcpServers</code> and have it actually call your tool.</li>
     </ol>
   </div>
 
   <details><summary>Understanding check</summary>
     <ol>
-      <li>When would you choose the raw Claude API over the Agent SDK? <em>When you only need a single request/response or want to hand-build a custom loop — no autonomous file/tool looping needed.</em></li>
-      <li>How do you limit what a standalone agent can do? <em>Scope <code>allowedTools</code> and set an appropriate <code>permissionMode</code> (least privilege).</em></li>
+      <li>When would you choose the raw Claude API over the Agent SDK? <em>When you only need one request/response, or want to hand-build your own custom loop — no autonomous multi-step tool use needed.</em></li>
+      <li>How do you limit what a standalone agent is allowed to do? <em>Scope <code>allowedTools</code> to only what's needed, and set an appropriate <code>permissionMode</code> — least privilege.</em></li>
+      <li>Why can't you use the Claude Code CLI for a nightly automated job? <em>The CLI is built for a human typing interactively — an unattended nightly job needs the headless Agent SDK instead.</em></li>
     </ol>
   </details>
 

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 20 — Advanced RAG</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+  @media (max-width:640px){
+    .wrap{padding:20px 16px 90px}
+    .topbar{padding:10px 14px}
+    .topbar .left{font-size:.78rem}
+    h1{font-size:1.5rem}
+    h2{font-size:1.12rem;margin:1.5em 0 .4em}
+    h3{font-size:1rem}
+    .diagram,pre{font-size:.72rem;padding:10px 12px}
+    table{display:block;overflow-x:auto;white-space:nowrap}
+    .nav-bottom{flex-direction:column}
+    .analogy,.exercise,.callout{padding:10px 12px}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../index.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="20">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 3 · Chapter 20</div>
+  <h1>Advanced RAG</h1>
+  <p><span class="badge general">General AI Eng</span> when one retrieval pass isn't enough</p>
+
+  <div class="callout"><strong>Why this matters.</strong> Everything in Chapters 16-19 was "naive RAG" — embed the query, retrieve once, hand the results to the model, get an answer. That works well for simple lookups, but it breaks down on harder questions: <strong>multi-hop</strong> questions that need several pieces of evidence combined, questions where the first retrieval attempt just returns irrelevant chunks, or questions that hinge on how entities <em>relate</em> to each other rather than which text looks similar. Advanced RAG patterns exist to fix specific failure modes of naive RAG — not to replace it wholesale.</p>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">Naive RAG is looking up one fact in an index, once, and reporting back whatever you find. Agentic RAG is a researcher who looks something up, realizes that answer alone doesn't settle the question, figures out what piece is still missing, looks <em>that</em> up too, and keeps going until they actually have enough to answer — an iterative investigation, not a single lookup. GraphRAG is like that researcher having a pre-built map of how every person, company, and citation connects to every other one, so instead of re-discovering relationships from scratch each time, they can just trace a line on the map.</div>
+
+  <h2>1. Agentic RAG: retrieval inside an agent loop</h2>
+  <p>Recall the agent loop from Chapter 14: the model decides an action, observes the result, and decides again — looping until it's done. Agentic RAG is exactly that loop, with "retrieve from the index" as one of the available actions. Instead of a fixed pipeline (retrieve once → stuff into context → answer), the model can retrieve, look at what came back, judge whether that's actually enough to answer, and if not, reformulate the query and retrieve again.</p>
+  <div class="diagram">        ┌─────────────────────────┐
+        │        user query        │
+        └────────────┬─────────────┘
+                      ▼
+              ┌───────────────┐
+      ┌──────▶│    retrieve    │
+      │       └───────┬───────┘
+      │               ▼
+      │       ┌───────────────┐
+      │       │ evaluate: do I │
+      │       │ have "enough"? │
+      │       └───────┬───────┘
+      │           no  │  yes
+      │               │    └────────────┐
+      └── reformulate ─┘                 ▼
+          the query                ┌───────────┐
+                                    │  answer   │
+                                    └───────────┘</div>
+  <p>The key difference from naive RAG is the "evaluate: do I have enough?" step. A naive pipeline never asks that question — it always answers after exactly one retrieval, whether or not the results were any good. An agentic loop can notice "these three chunks don't actually address the question" and try a different query, a different filter, or a different phrasing before giving up and answering with what it has.</p>
+  <div class="callout">This costs more than naive RAG: every extra retrieval round trip is another embedding call, another vector search, and often another LLM call to decide what to do next. You're trading latency and cost for the ability to recover from a bad first guess.</div>
+
+  <h2>2. Multi-hop questions and query decomposition</h2>
+  <p>Some questions can't be answered by any single retrieval, no matter how well-formed the query is, because the answer genuinely requires combining facts that live in different documents. The fix is <strong>query decomposition</strong>: break the complex question into sub-questions, retrieve for each one separately, then combine the results into a final answer.</p>
+  <div class="diagram">"Which company had higher revenue growth: the one founded
+ by Alice, or the one founded by Bob?"
+                      │
+                      ▼  decompose
+        ┌─────────────────────────────┐
+        │ 1. Which company did Alice found?     │
+        │ 2. Which company did Bob found?       │
+        │ 3. What was Company A's revenue growth?│
+        │ 4. What was Company B's revenue growth?│
+        └─────────────────────────────┘
+                      │
+        retrieve separately for each sub-question
+                      │
+                      ▼
+              combine + compare → final answer</div>
+  <p>Notice that sub-questions 3 and 4 can't even be formed until 1 and 2 are answered — this is inherently sequential, which is another reason it's naturally expressed as an agent loop rather than a single batch of parallel retrievals.</p>
+
+  <h2>3. GraphRAG: retrieval that understands relationships</h2>
+  <p>Naive and agentic RAG both rely on text similarity — "which chunks look like they're about the same thing as the query." That's the wrong tool for questions about how entities <em>relate</em> to each other across many documents ("who reports to whom," "which subsidiaries does this holding company own," "which papers cite each other in a chain"). <strong>GraphRAG</strong> addresses this by building a <strong>knowledge graph</strong> — entities as nodes, relationships as edges — from your documents ahead of time, so retrieval can traverse relationships directly instead of hoping similar-looking text happens to contain the connection.</p>
+  <div class="diagram">Plain vector index (text similarity only):
+  query: "who owns Acme Robotics?"
+  → finds chunks that *mention* "Acme Robotics" and "owns"
+  → may miss an answer spread across two unrelated-looking documents
+
+Knowledge graph (built ahead of time):
+  [Acme Robotics] --owned_by--> [Global Holdings Inc.]
+  [Global Holdings Inc.] --owned_by--> [Meridian Capital]
+  → traverse the graph: Acme Robotics is ultimately owned by Meridian Capital,
+    even if no single document states that directly</div>
+  <p>The catch: building and maintaining a knowledge graph — extracting entities, extracting relationships, keeping it in sync as documents change — costs meaningfully more than maintaining a plain vector index. GraphRAG earns its keep in domains genuinely rich in entity relationships, like corporate ownership structures or research citation networks. It's overkill for a FAQ knowledge base where questions are mostly "what does X mean," not "how does X connect to Y."</p>
+
+  <h2>4. Comparing the three approaches</h2>
+  <table>
+    <tr><th>Approach</th><th>How it retrieves</th><th>Best for</th><th>Cost</th></tr>
+    <tr><td><strong>Naive RAG</strong></td><td>One retrieve pass, then answer</td><td>Simple lookups, single-fact questions</td><td>Simple, fast, cheap — but fails on multi-hop/complex questions</td></tr>
+    <tr><td><strong>Agentic RAG</strong></td><td>Iterative: retrieve, evaluate, reformulate, retrieve again</td><td>Complex or multi-hop questions where the first query might miss</td><td>Slower and costlier — multiple LLM + retrieval round trips per answer</td></tr>
+    <tr><td><strong>GraphRAG</strong></td><td>Traverses a pre-built knowledge graph of entities and relationships</td><td>Questions about how things relate across many documents</td><td>Highest setup and maintenance cost — building and updating the graph is real ongoing work</td></tr>
+  </table>
+
+  <div class="callout"><strong>Start with naive RAG.</strong> Only add agentic loops or a graph layer once you've identified a concrete class of questions naive RAG actually fails on — added complexity should solve an observed problem, not a hypothetical one. It's easy to convince yourself you need a knowledge graph before you've even shipped a working baseline; don't.</div>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li><strong>Naive RAG</strong> (Ch. 16-19) does one retrieve-then-answer pass — simple and fast, but it can't recover from a bad first retrieval or combine evidence across multiple lookups.</li>
+    <li><strong>Agentic RAG</strong> wraps retrieval in an agent loop (Ch. 14): retrieve, evaluate whether that's enough, reformulate and retrieve again if not, and only answer once there's sufficient evidence.</li>
+    <li><strong>Query decomposition</strong> breaks a multi-hop question into sequential sub-questions, retrieving separately for each before combining into a final answer.</li>
+    <li><strong>GraphRAG</strong> pre-builds a knowledge graph of entities and relationships so retrieval can traverse connections, not just match similar text — powerful but costly to build and maintain.</li>
+    <li>Add complexity to solve an <em>observed</em> failure mode of naive RAG, not a hypothetical one — start simple.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>Write a multi-hop question about a domain you know well, then manually decompose it into the sub-questions a query-decomposition system would need to retrieve for.</li>
+      <li>Sketch (in words) what a small knowledge graph would look like for your own team or organization — what are the entities, and what are 3-4 relationships between them?</li>
+      <li><em>Reflect:</em> for a project you're familiar with, would agentic RAG actually be worth its extra cost and latency, or would naive RAG be enough? What evidence would convince you either way?</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>What's the one addition that turns naive RAG into agentic RAG? <em>An evaluation step after retrieval that judges whether the results are actually sufficient to answer — and, if not, reformulates the query and retrieves again, looping until there's enough evidence or the agent gives up.</em></li>
+      <li>Why is GraphRAG not always the right choice, even though it can answer relationship questions naive RAG can't? <em>It costs meaningfully more to build and maintain — you have to extract entities and relationships into a graph ahead of time and keep it in sync as documents change — so it only pays off in domains genuinely rich in entity relationships; for text-similarity-style questions, a plain vector index is simpler and cheaper.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch19-retrieval.html">← Chapter 19</a>
+    <a class="next" href="ch21-rag-vs-alternatives.html">Chapter 21: RAG vs. Fine-tuning vs. Prompting →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>
