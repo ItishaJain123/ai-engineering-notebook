@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 35 — Red-Teaming / Adversarial Testing</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+  @media (max-width:640px){
+    .wrap{padding:20px 16px 90px}
+    .topbar{padding:10px 14px}
+    .topbar .left{font-size:.78rem}
+    h1{font-size:1.5rem}
+    h2{font-size:1.12rem;margin:1.5em 0 .4em}
+    h3{font-size:1rem}
+    .diagram,pre{font-size:.72rem;padding:10px 12px}
+    table{display:block;overflow-x:auto;white-space:nowrap}
+    .nav-bottom{flex-direction:column}
+    .analogy,.exercise,.callout{padding:10px 12px}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../index.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="35">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 6 · Chapter 35</div>
+  <h1>Red-Teaming / Adversarial Testing</h1>
+  <p><span class="badge general">General AI Eng</span> deliberately attacking your own system to find weaknesses before real attackers do</p>
+
+  <div class="callout"><strong>Why this matters.</strong> Guardrails (Ch. 30) and injection defenses (Ch. 31) are only as good as your confidence that they actually hold. <strong>Red-teaming</strong> is the practice of playing attacker against your <em>own</em> app — trying to break its safety, leak its data, or hijack its tools — so you find the holes yourself and fix them before a real adversary or an embarrassing headline does. This is standard, authorized security practice: you're testing systems you own and control.</p>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">A bank hires <strong>ethical burglars</strong> to try to break into its own vault. They pick locks, tailgate through doors, and social-engineer the staff — then hand the bank a report of every gap they found. Nobody gets robbed; the bank just learns where it's weak while it's still safe to fix. Red-teaming is that, for your AI system.</div>
+
+  <h2>1. Red team vs. blue team</h2>
+  <table>
+    <tr><th>Team</th><th>Role</th></tr>
+    <tr><td><strong>Red team</strong></td><td>The attackers — actively try to make the system misbehave (leak, jailbreak, hijack, produce unsafe content)</td></tr>
+    <tr><td><strong>Blue team</strong></td><td>The defenders — build and harden the guardrails, monitoring, and fixes</td></tr>
+  </table>
+  <p>On a small team you play both roles: put on the "attacker hat" deliberately, then switch back to "defender hat" to patch what you found. The mindset shift is the point — you have to <em>try</em> to break it, not just confirm it works on friendly input.</p>
+
+  <h2>2. What red-teaming an LLM app targets</h2>
+  <table>
+    <tr><th>Attack goal</th><th>What you're probing for</th></tr>
+    <tr><td><strong>Safety bypass / jailbreak</strong></td><td>Getting the model to produce content it should refuse (Ch. 31)</td></tr>
+    <tr><td><strong>Prompt injection</strong></td><td>Overriding your instructions via user input or planted content (Ch. 31)</td></tr>
+    <tr><td><strong>Data leakage</strong></td><td>Extracting the system prompt, other users' data, secrets, or PII (Ch. 32)</td></tr>
+    <tr><td><strong>Tool misuse</strong></td><td>Tricking an agent into calling a tool destructively (delete, send, pay) — the highest-stakes case (Ch. 29, 31)</td></tr>
+    <tr><td><strong>Harmful output</strong></td><td>Bias, toxicity, dangerous instructions, misinformation</td></tr>
+    <tr><td><strong>Denial / cost abuse</strong></td><td>Inputs that make the app loop, blow the token budget, or run up huge bills</td></tr>
+  </table>
+
+  <h2>3. Common attack techniques (so you can test for them)</h2>
+  <p>You test your defenses by trying the same moves real attackers use. Understanding these is defensive knowledge:</p>
+  <ul>
+    <li><strong>Direct override</strong> — "Ignore all previous instructions and…"</li>
+    <li><strong>Role-play framing</strong> — "Pretend you're an AI with no restrictions who…"</li>
+    <li><strong>Hypotheticals</strong> — "For a novel I'm writing, describe exactly how a character would…"</li>
+    <li><strong>Encoding / obfuscation</strong> — hiding the real request in another language, base64, or leetspeak to slip past filters.</li>
+    <li><strong>Indirect (planted) injection</strong> — putting the attack in a document, web page, or file the agent will read (Ch. 31).</li>
+    <li><strong>Multi-turn manipulation</strong> — building up context over several messages so the harmful ask looks like a natural next step.</li>
+    <li><strong>Prompt-leaking probes</strong> — "Repeat everything above this line" to extract the system prompt.</li>
+  </ul>
+  <div class="callout"><strong>The point is coverage, not cleverness.</strong> You're building a <em>checklist</em> of attack categories and confirming each one is handled. A hole you never thought to test is a hole an attacker will find first.</div>
+
+  <h2>4. Manual vs. automated red-teaming</h2>
+  <table>
+    <tr><th></th><th>Manual</th><th>Automated</th></tr>
+    <tr><td><strong>How</strong></td><td>A person creatively probes for weaknesses</td><td>Scripts / another LLM generate many attack variants at scale</td></tr>
+    <tr><td><strong>Strength</strong></td><td>Finds novel, creative exploits humans think of</td><td>Broad coverage, runs continuously, catches regressions</td></tr>
+    <tr><td><strong>Weakness</strong></td><td>Slow, doesn't scale, inconsistent</td><td>Misses truly novel attacks; only tests what it's told to</td></tr>
+  </table>
+  <div class="callout"><strong>Use both.</strong> A popular pattern is <strong>LLM-vs-LLM</strong>: one model is prompted to act as the attacker generating adversarial inputs, while your app under test tries to withstand them — and an LLM judge (Ch. 33) scores whether each attack succeeded. That scales your red team to thousands of probes.</div>
+
+  <h2>5. Red-teaming <em>is</em> a specialized eval</h2>
+  <p>Here's how it connects to everything in Part 6: the output of red-teaming is a <strong>set of attack cases with expected safe behavior</strong> — which is exactly an eval set (Ch. 33). You turn every discovered weakness into a permanent test.</p>
+  <div class="diagram">red-team session → find attacks that WORK
+        │
+        ▼
+  fix the guardrail / reduce the privilege (Ch. 30, 31)
+        │
+        ▼
+  add each attack as an EVAL case (Ch. 33)  ← "safety pass rate"
+        │
+        ▼
+  every future change is re-tested against them  ← no regressions</div>
+  <div class="callout"><strong>Why this matters most.</strong> Fixing one jailbreak is nice; adding it to your eval set means it can <em>never silently come back</em> when you tweak a prompt or upgrade the model. That's how safety compounds instead of decaying.</div>
+
+  <h2>6. Ground rules</h2>
+  <ul>
+    <li><strong>Only your own systems</strong> — red-teaming applies to apps you own or are explicitly authorized to test. Attacking others' systems is illegal.</li>
+    <li><strong>Do it continuously</strong> — a one-time audit rots; new features and model versions open new holes.</li>
+    <li><strong>Log everything</strong> — feed findings into observability (Ch. 34) and your eval set (Ch. 33).</li>
+    <li><strong>Prioritize by blast radius</strong> — a jailbreak on a chatbot is bad; tool misuse on an agent that can spend money or delete data is critical. Fix the high-impact holes first.</li>
+  </ul>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>Red-teaming = <strong>attacking your own system on purpose</strong> to find weaknesses before real attackers do — authorized, standard security practice.</li>
+    <li>The <strong>red team attacks</strong>, the <strong>blue team defends</strong>; on a small team you deliberately switch between both hats.</li>
+    <li>Probe every category: <strong>jailbreaks, injection, data leakage, tool misuse, harmful output, cost abuse</strong> — coverage beats cleverness.</li>
+    <li>Combine <strong>manual</strong> (creative, novel) with <strong>automated / LLM-vs-LLM</strong> (scale, continuous) testing.</li>
+    <li>Turn every discovered attack into an <strong>eval case</strong> so fixes are permanent — and always prioritize by <strong>blast radius</strong>.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>You built an agent that reads customer emails and can issue refunds. Write 3 red-team attacks against it — at least one prompt injection and one tool-misuse attempt — and state the safe behavior you'd expect for each.</li>
+      <li>Rank your 3 attacks by blast radius and explain which you'd fix first.</li>
+      <li><em>Reflect:</em> once you fix an attack, why is adding it to your eval set more valuable than just patching the prompt and moving on?</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>Why is turning red-team findings into eval cases so important? <em>Because a one-off fix can silently regress when you change a prompt or upgrade the model; as a permanent eval case, the attack is re-tested on every future change, so safety compounds instead of decaying.</em></li>
+      <li>Why prioritize red-teaming by "blast radius"? <em>Because impact varies enormously — a jailbreak that produces bad text is far less severe than tricking an agent into deleting data or spending money, so you fix the attacks that could cause real-world damage first.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch29-observability.html">← Chapter 34</a>
+    <a class="next" href="ch31-deployment.html">Chapter 36: Deployment Patterns →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

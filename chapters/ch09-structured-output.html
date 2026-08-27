@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 9 — Structured Output</title>
+<title>Ch 14 — Structured Output</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -59,14 +59,18 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="9">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="14">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 2 · Chapter 9</div>
+  <div class="ch-meta">Part 3 · Chapter 14</div>
   <h1>Structured Output</h1>
   <p><span class="badge general">General AI Eng</span> forcing a model's free-form text into a schema your code can actually parse</p>
 
   <div class="callout"><strong>Why this matters.</strong> A chatbot can reply in prose. A <em>pipeline</em> — something feeding data into a database, another API, or a UI component — needs the model's output in a fixed, predictable shape. Structured output is what turns "the model said something reasonable-sounding" into "the model returned <code>{name: string, date: string, amount: number}</code> that my code can safely use."</p>
+
+  <div class="callout"><strong>🟢 In plain words.</strong> Free-flowing text is for humans; your code needs predictable fields. Structured output means forcing the model to fill in a fixed <em>form</em> (a schema) — so you always get back something like <code>{vendor, date, amount}</code>, never a surprise paragraph your code can't read.</div>
+
+  <div class="callout"><strong>🔍 The tricky part, in plain language.</strong> When you ask for JSON, the model isn't really "building an object" — it's predicting text, one token at a time, that <em>looks like</em> JSON. Almost always it's perfect. But because it's guessing text, it can occasionally produce <em>almost</em>-valid JSON — a trailing comma, an unclosed brace, a stray word before the <code>{</code> — that then crashes your <code>JSON.parse</code>. Picture asking someone to write JSON out from memory: usually right, sometimes a typo. That's exactly why you <em>enforce</em> the shape (tool use / a response schema) instead of just asking politely, and why you validate before you trust it. <em>Takeaway:</em> "give me JSON" is a prediction, not a guarantee — enforce the shape and validate the result.</div>
 
   <p class="label">Real-world analogy</p>
   <div class="analogy">
@@ -87,7 +91,7 @@
 const data = JSON.parse(response.content[0].text);</code></pre>
 
   <h2>2. The reliable approach: force it through a tool schema</h2>
-  <p>The much more robust technique (this connects directly to Chapter 11, Tool Use) is to define a "tool" whose only purpose is to hold your desired output shape, and force the model to call it. Because tool inputs are validated against a JSON Schema by the API itself, this dramatically reduces malformed output compared to just asking in the prompt.</p>
+  <p>The much more robust technique (this connects directly to Chapter 16, Tool Use) is to define a "tool" whose only purpose is to hold your desired output shape, and force the model to call it. Because tool inputs are validated against a JSON Schema by the API itself, this dramatically reduces malformed output compared to just asking in the prompt.</p>
 
   <pre><code>const response = await client.messages.create({
   model: "claude-sonnet-5",
@@ -119,7 +123,7 @@ You JSON.parse() + hope                 You get a typed object back
 Fails silently on edge cases            API errors loudly if it can't comply</div>
 
   <h2>3. Validating with a schema library (Zod)</h2>
-  <p>Even with tool-forced output, validate on your side too — schemas describe shape, not business rules (like "amount must be positive"). In JS, <code>zod</code> is the standard tool for this, and it's the same library used to define MCP tool schemas back in Chapter 4.</p>
+  <p>Even with tool-forced output, validate on your side too — schemas describe shape, not business rules (like "amount must be positive"). In JS, <code>zod</code> is the standard tool for this, and it's the same library used to define MCP tool schemas back in Chapter 9.</p>
 
   <pre><code>import { z } from "zod";
 
@@ -141,7 +145,7 @@ if (!result.success) {
   <table>
     <tr><th>Strategy</th><th>When to use it</th></tr>
     <tr><td>Retry with the validation error appended to the prompt</td><td>Occasional failures — telling the model exactly what was wrong often fixes it in one more turn</td></tr>
-    <tr><td>Lower temperature (Ch. 0c) toward 0</td><td>If failures seem to come from unnecessary creative variation in formatting</td></tr>
+    <tr><td>Lower temperature (Ch. 3) toward 0</td><td>If failures seem to come from unnecessary creative variation in formatting</td></tr>
     <tr><td>Fall back to a stricter tool schema with fewer optional fields</td><td>If the model keeps omitting or misnaming specific fields</td></tr>
     <tr><td>Route to human review</td><td>High-stakes extraction (financial, medical) where silent bad data is unacceptable</td></tr>
   </table>
@@ -170,9 +174,19 @@ if (!result.success) {
     </ol>
   </details>
 
+  <details><summary>💬 Conceptual questions (the kind interviewers ask)</summary>
+    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 4px">Answer each out loud before peeking. These tie this chapter to real production concerns — cost, latency, failures, and safety.</p>
+    <ol>
+      <li><strong>Tool-forced schemas are already more reliable — so why still validate with Zod on your own side?</strong><br><em>The schema guarantees the <u>shape</u> (types, required fields) but not the <u>business rules</u> (amount must be positive, date must be in the past). Data can be perfectly well-shaped and still wrong — that's what your own validation catches.</em></li>
+      <li><strong>In production, extraction fails validation on ~2% of documents. What's your recovery plan, and which failures are worst?</strong><br><em>Retry with the validation error appended, lower temperature, or fall back to a stricter schema; route high-stakes (financial/medical) failures to human review. The worst outcome is silent bad data passing through — never let that happen.</em></li>
+      <li><strong>Does forcing structured output add cost or latency compared to plain text?</strong><br><em>Roughly the same token cost. The real win is skipping fragile parsing and retry loops — a single retry on malformed JSON is a whole extra round trip, so reliable structure usually <u>saves</u> time overall.</em></li>
+      <li><strong>You're extracting into a database. Why is "just ask for JSON in the prompt" risky at scale even though it works in your tests?</strong><br><em>It's not guaranteed — one edge-case document adds commentary or emits invalid JSON, your <code>JSON.parse</code> throws, and the pipeline breaks. At 10,000 documents, "usually works" means dozens of silent failures a day.</em></li>
+    </ol>
+  </details>
+
   <div class="nav-bottom">
-    <a href="ch08-prompt-engineering.html">← Chapter 8</a>
-    <a class="next" href="ch10-prompt-caching.html">Chapter 10: Prompt Caching →</a>
+    <a href="ch08-prompt-engineering.html">← Chapter 13</a>
+    <a class="next" href="ch10-prompt-caching.html">Chapter 15: Prompt Caching →</a>
   </div>
 </div>
 <script>

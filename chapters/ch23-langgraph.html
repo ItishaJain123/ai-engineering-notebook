@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 28 — LangGraph</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+  @media (max-width:640px){
+    .wrap{padding:20px 16px 90px}
+    .topbar{padding:10px 14px}
+    .topbar .left{font-size:.78rem}
+    h1{font-size:1.5rem}
+    h2{font-size:1.12rem;margin:1.5em 0 .4em}
+    h3{font-size:1rem}
+    .diagram,pre{font-size:.72rem;padding:10px 12px}
+    table{display:block;overflow-x:auto;white-space:nowrap}
+    .nav-bottom{flex-direction:column}
+    .analogy,.exercise,.callout{padding:10px 12px}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../index.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="28">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 5 · Chapter 28</div>
+  <h1>LangGraph</h1>
+  <p><span class="badge general">General AI Eng</span> orchestrating agents as a graph — with loops, branches, state, and human checkpoints</p>
+
+  <div class="callout"><strong>Why this matters.</strong> A plain chain (Ch. 27) runs straight through: step A, then B, then C, done. But real agents need to <em>loop</em> ("use a tool, look at the result, maybe use another"), <em>branch</em> ("if unsure, go retrieve more"), remember <em>state</em> across steps, and sometimes <em>pause for a human</em> to approve. LangGraph is the tool for exactly that — it lets you draw your agent as a <strong>graph of nodes and edges</strong>, which is the honest shape of how agents actually think.</p>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">A chain is a <strong>factory conveyor belt</strong>: parts move one way, station to station, no going back. LangGraph is a <strong>board-game board</strong>: you have squares (nodes), and rules for which square you move to next (edges) — including "roll again," "go back three spaces," and "if you land here, the banker (a human) decides." That ability to loop and branch is the whole point.</div>
+
+  <h2>1. The three words that make up a graph</h2>
+  <table>
+    <tr><th>Term</th><th>What it is</th><th>In plain English</th></tr>
+    <tr><td><strong>State</strong></td><td>A shared object that every step can read and update</td><td>The "shared notebook" the whole agent scribbles in — messages so far, retrieved docs, a counter</td></tr>
+    <tr><td><strong>Node</strong></td><td>A function that does one unit of work and updates the state</td><td>One station: "call the model," "run a tool," "retrieve documents"</td></tr>
+    <tr><td><strong>Edge</strong></td><td>A rule for which node runs next</td><td>The arrow between stations — can be fixed <em>or</em> conditional ("if X, go here; else there")</td></tr>
+  </table>
+  <div class="callout"><strong>The key upgrade over chains.</strong> Edges can point <em>backward</em>. That single ability — an edge that loops a node back to an earlier one — is what turns a straight pipeline into a real agent that can keep trying until the job is done.</div>
+
+  <h2>2. What a ReAct agent looks like as a graph</h2>
+  <p>The classic agent loop from Ch. 19 (reason → act → observe → repeat) is just a tiny graph with one loop in it:</p>
+  <div class="diagram">        ┌──────────────────────────────┐
+        │                              │
+        ▼                              │
+   ┌─────────┐   wants a tool?   ┌──────────┐
+   │  model  │ ───── yes ──────▶ │   tool   │
+   │  node   │                   │   node   │
+   └─────────┘ ◀───── result ────└──────────┘
+        │
+        │ no more tools needed
+        ▼
+      END (final answer)</div>
+  <p>The <strong>conditional edge</strong> after the model node is the brain of the loop: it inspects the state and decides "the model asked for a tool → go to the tool node" or "the model gave a final answer → go to END." After the tool runs, a fixed edge sends control <em>back</em> to the model. That's a cycle — impossible with a plain chain.</p>
+
+  <h2>3. The shortcut: create_react_agent</h2>
+  <p>You rarely wire that loop by hand. LangGraph ships a prebuilt helper that builds the whole model↔tool loop for you — you just supply the model and the tools.</p>
+  <pre><code>import { ChatAnthropic } from "@langchain/anthropic";
+import { createReactAgent } from "@langchain/langgraph/prebuilt";
+import { tool } from "@langchain/core/tools";
+import { z } from "zod";
+
+const model = new ChatAnthropic({ model: "claude-sonnet-4-6" });
+
+<span class="tok-com">// a tool = a function + a described schema so the model knows how to call it</span>
+const getWeather = tool(
+  async ({ city }) =&gt; `It's 22°C and sunny in ${city}.`,
+  {
+    name: "get_weather",
+    description: "Get the current weather for a city.",
+    schema: z.object({ city: z.string() }),
+  }
+);
+
+<span class="tok-com">// this one call builds the entire reason→act→observe graph for you</span>
+const agent = createReactAgent({ llm: model, tools: [getWeather] });
+
+const result = await agent.invoke({
+  messages: [{ role: "user", content: "What's the weather in Tokyo?" }],
+});
+console.log(result.messages.at(-1).content);</code></pre>
+  <div class="callout"><strong>What just happened.</strong> Under the hood, <code>createReactAgent</code> created exactly the graph in §2: a model node, a tool node, and the conditional edge that loops between them until the model stops asking for tools. You get the loop without drawing it.</div>
+
+  <h2>4. Building a custom graph, by hand</h2>
+  <p>When you need branching logic that isn't just "loop until done," you build the graph explicitly. The pattern is always the same three moves: define the state, add nodes, wire edges.</p>
+  <pre><code>import { StateGraph, START, END, Annotation } from "@langchain/langgraph";
+
+<span class="tok-com">// 1. STATE — the shared notebook every node reads &amp; writes</span>
+const State = Annotation.Root({
+  question: Annotation&lt;string&gt;,
+  context:  Annotation&lt;string&gt;,
+  answer:   Annotation&lt;string&gt;,
+});
+
+<span class="tok-com">// 2. NODES — each is just a function that returns a state update</span>
+async function retrieve(state) {
+  const docs = await myRetriever.invoke(state.question);   <span class="tok-com">// Part 4 RAG</span>
+  return { context: docs.map(d =&gt; d.pageContent).join("\n") };
+}
+async function generate(state) {
+  const reply = await model.invoke(
+    `Context:\n${state.context}\n\nQuestion: ${state.question}`
+  );
+  return { answer: reply.content };
+}
+
+<span class="tok-com">// 3. WIRE the graph: START → retrieve → generate → END</span>
+const graph = new StateGraph(State)
+  .addNode("retrieve", retrieve)
+  .addNode("generate", generate)
+  .addEdge(START, "retrieve")
+  .addEdge("retrieve", "generate")
+  .addEdge("generate", END)
+  .compile();
+
+const out = await graph.invoke({ question: "What is chunking?" });
+console.log(out.answer);</code></pre>
+
+  <h2>5. Conditional edges — where the real power lives</h2>
+  <p>A conditional edge is a function that looks at the state and returns the <em>name</em> of the next node. This is how you branch: retry on low confidence, escalate to a bigger model, or stop early.</p>
+  <pre><code><span class="tok-com">// decide the next hop based on what's in the state</span>
+function routeAfterCheck(state) {
+  if (state.confidence &lt; 0.5) return "retrieve_more";  <span class="tok-com">// loop back</span>
+  return "generate";                                    <span class="tok-com">// move on</span>
+}
+
+graph.addConditionalEdges("grade", routeAfterCheck, {
+  retrieve_more: "retrieve",   <span class="tok-com">// map return value → actual node</span>
+  generate: "generate",
+});</code></pre>
+
+  <h2>6. The two features you can't get any other way</h2>
+  <h3>Checkpointing (durable memory)</h3>
+  <p>Attach a <strong>checkpointer</strong> and LangGraph saves the state after every node. That gives you two things at once: (a) <strong>memory</strong> — resume a conversation later using a <code>thread_id</code>, and (b) <strong>durability</strong> — if the process crashes mid-run, it resumes from the last saved step instead of starting over. This is the "persistent state across sessions" the memory chapters hinted at, done properly.</p>
+  <h3>Human-in-the-loop</h3>
+  <p>Because state is saved between nodes, the graph can <strong>pause</strong> at a checkpoint, surface its current state to a human ("about to send this email — approve?"), and resume only after you say yes. This is the safe pattern for any agent that takes real-world actions — the same "confirm before the irreversible step" principle you've seen throughout this notebook, built into the framework.</p>
+
+  <h2>7. Chain vs. graph — when to reach for which</h2>
+  <table>
+    <tr><th></th><th>Plain chain (Ch. 27)</th><th>LangGraph</th></tr>
+    <tr><td><strong>Flow</strong></td><td>Straight line, one direction</td><td>Loops, branches, back-edges</td></tr>
+    <tr><td><strong>State</strong></td><td>Data just passes through</td><td>Shared, inspectable, persisted</td></tr>
+    <tr><td><strong>Good for</strong></td><td>Fixed pipelines (RAG-answer, summarize)</td><td>Agents, retries, multi-step reasoning, approvals</td></tr>
+    <tr><td><strong>Resume after crash</strong></td><td>No</td><td>Yes, with a checkpointer</td></tr>
+    <tr><td><strong>Human approval mid-run</strong></td><td>Awkward</td><td>Built in</td></tr>
+  </table>
+  <div class="callout"><strong>Rule of thumb.</strong> If your flow is "A then B then done," a chain is simpler — don't reach for a graph. The moment you need "keep going until…", "if this then that", memory across sessions, or a human checkpoint, that's LangGraph's home turf.</div>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>LangGraph models an agent as a <strong>graph</strong>: <strong>state</strong> (shared notebook), <strong>nodes</strong> (work steps), <strong>edges</strong> (what runs next).</li>
+    <li>Unlike chains, edges can <strong>loop back and branch</strong> — that's what makes a real reason→act→observe agent possible.</li>
+    <li><code>createReactAgent</code> builds the standard model↔tool loop for you; build a custom <code>StateGraph</code> when you need your own branching.</li>
+    <li><strong>Conditional edges</strong> route based on the current state — the mechanism behind retries, escalation, and early stopping.</li>
+    <li><strong>Checkpointing</strong> gives durable memory and crash-resume; <strong>human-in-the-loop</strong> lets the graph pause for approval before risky actions.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>Draw (on paper) a graph for an agent that answers a question, then <em>grades its own answer</em>, and if the grade is low, retrieves more context and tries again — max 3 attempts. Label the nodes, the conditional edge, and where the loop counter lives.</li>
+      <li>Explain why a plain chain <em>cannot</em> express the "try again up to 3 times" behavior, but a graph can.</li>
+      <li><em>Reflect:</em> for an agent that can send emails or spend money, where exactly in your graph would you insert a human-in-the-loop pause, and why there specifically?</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>What is the one capability an edge in LangGraph has that a step in a plain chain does not? <em>An edge can be conditional and can point backward — letting the flow loop and branch, instead of only moving forward in a straight line.</em></li>
+      <li>What does a checkpointer give you? <em>Two things: durable memory (resume a conversation later via a thread_id) and crash-resume (continue from the last saved node instead of restarting the whole run).</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch22-langchain.html">← Chapter 27</a>
+    <a class="next" href="ch24-multi-agent.html">Chapter 29: Multi-Agent Systems →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

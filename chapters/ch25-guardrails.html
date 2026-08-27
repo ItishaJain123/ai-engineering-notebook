@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 30 — Guardrails</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+  @media (max-width:640px){
+    .wrap{padding:20px 16px 90px}
+    .topbar{padding:10px 14px}
+    .topbar .left{font-size:.78rem}
+    h1{font-size:1.5rem}
+    h2{font-size:1.12rem;margin:1.5em 0 .4em}
+    h3{font-size:1rem}
+    .diagram,pre{font-size:.72rem;padding:10px 12px}
+    table{display:block;overflow-x:auto;white-space:nowrap}
+    .nav-bottom{flex-direction:column}
+    .analogy,.exercise,.callout{padding:10px 12px}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../index.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="30">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 6 · Chapter 30</div>
+  <h1>Guardrails</h1>
+  <p><span class="badge general">General AI Eng</span> the safety checks around your model — validating what goes in and what comes out</p>
+
+  <div class="callout"><strong>Why this matters.</strong> A model will happily accept any input and produce any output — it has no built-in sense of <em>your app's</em> rules. <strong>Guardrails</strong> are the checks <em>you</em> add around the model: reject bad input before it reaches the model, and inspect the model's output before it reaches the user or a downstream system. This is the first chapter of Part 6 (going to production), and it's the difference between a demo and something you'd trust with real users.</p>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">Guardrails are the <strong>bouncer and the quality inspector</strong> of your app. The bouncer checks people at the door (input): no weapons, right age. The inspector checks products before they ship (output): nothing broken, nothing offensive. The model is the party inside — talented, but it needs someone at both doors making sure only safe things pass through.</div>
+
+  <h2>1. Two gates: input and output</h2>
+  <p>Every guardrail sits at one of two points in the flow. Get this mental picture and the rest follows:</p>
+  <div class="diagram">user input
+    │
+    ▼
+[ INPUT GUARDRAIL ]  ← reject/clean before spending a model call
+    │   (too long? off-topic? contains an attack? disallowed request?)
+    ▼
+   MODEL
+    │
+    ▼
+[ OUTPUT GUARDRAIL ] ← inspect before it reaches the user/database/API
+    │   (valid JSON? leaked secrets? unsafe content? made-up facts?)
+    ▼
+user / next system</div>
+
+  <h2>2. Input guardrails</h2>
+  <table>
+    <tr><th>Check</th><th>What it catches</th></tr>
+    <tr><td><strong>Length / size limits</strong></td><td>Runaway inputs that blow your token budget or hit context limits.</td></tr>
+    <tr><td><strong>Topic / scope filtering</strong></td><td>A support bot being asked to write malware or do your taxes — keep it on-mission.</td></tr>
+    <tr><td><strong>Injection detection</strong></td><td>Inputs trying to hijack your instructions ("ignore your rules and…") — the whole of Ch. 31.</td></tr>
+    <tr><td><strong>Disallowed content</strong></td><td>Requests for clearly banned categories, blocked before you even pay for a call.</td></tr>
+    <tr><td><strong>PII in the input</strong></td><td>Users pasting sensitive data you shouldn't store — redact it first (Ch. 32).</td></tr>
+  </table>
+  <div class="callout"><strong>Why check input <em>before</em> the model?</strong> It's cheaper (no wasted model call), faster (instant rejection), and safer (a bad prompt never reaches the model at all). Cheap deterministic checks first, expensive model calls only for what passes.</div>
+
+  <h2>3. Output guardrails</h2>
+  <table>
+    <tr><th>Check</th><th>What it catches</th></tr>
+    <tr><td><strong>Schema / format validation</strong></td><td>You asked for JSON with fields <code>{name, age}</code> — verify it actually parses and matches before using it.</td></tr>
+    <tr><td><strong>Safety / content filtering</strong></td><td>Toxic, unsafe, or policy-violating text before a user ever sees it.</td></tr>
+    <tr><td><strong>PII / secret leakage</strong></td><td>The model echoing back an API key, password, or someone's personal data.</td></tr>
+    <tr><td><strong>Grounding / hallucination checks</strong></td><td>In RAG, verifying the answer is actually supported by the retrieved sources (Part 4).</td></tr>
+    <tr><td><strong>Business rules</strong></td><td>"Never recommend a competitor," "never promise a refund" — your app's specific limits.</td></tr>
+  </table>
+
+  <h2>4. Three ways to implement a guardrail</h2>
+  <table>
+    <tr><th>Type</th><th>How it works</th><th>Trade-off</th></tr>
+    <tr><td><strong>Rule-based (code)</strong></td><td>Plain logic: regex, length checks, JSON schema validation, allow/deny lists</td><td>Fast, cheap, 100% predictable — but only catches what you explicitly wrote</td></tr>
+    <tr><td><strong>Model-based (LLM judge)</strong></td><td>A second model call asks "is this input/output safe & on-topic?"</td><td>Catches fuzzy, nuanced cases — but costs a call, adds latency, and can itself err</td></tr>
+    <tr><td><strong>Dedicated classifiers</strong></td><td>Purpose-built safety/moderation models that score content for known categories</td><td>Fast and specialized — but another dependency to run and tune</td></tr>
+  </table>
+  <div class="callout"><strong>Layer them.</strong> Real systems stack all three: cheap code checks first (reject the obvious), then a classifier or LLM judge for the subtle stuff. Never rely on a single guardrail — defense in depth is the whole idea.</div>
+
+  <h2>5. Schema enforcement — the most common guardrail you'll write</h2>
+  <p>The single most frequent output guardrail is "make sure the JSON is valid and shaped right." Validate it in code; if it fails, retry or fall back — never blindly trust model output feeding a database or API.</p>
+  <pre><code>import { z } from "zod";
+
+<span class="tok-com">// define the shape you REQUIRE from the model</span>
+const Result = z.object({
+  sentiment: z.enum(["positive", "negative", "neutral"]),
+  score: z.number().min(0).max(1),
+});
+
+const raw = await callModel(userText);      <span class="tok-com">// model returns a JSON string</span>
+
+const parsed = Result.safeParse(JSON.parse(raw));
+if (!parsed.success) {
+  <span class="tok-com">// guardrail tripped — retry, ask again, or use a safe default</span>
+  return { sentiment: "neutral", score: 0.5 };
+}
+useIt(parsed.data);                          <span class="tok-com">// now provably the right shape</span></code></pre>
+
+  <h2>6. What to do when a guardrail trips</h2>
+  <p>Blocking is only half the job — you must decide the <em>response</em>. Design this deliberately:</p>
+  <ul>
+    <li><strong>Reject</strong> — return a safe canned message ("I can't help with that").</li>
+    <li><strong>Retry</strong> — ask the model again, often with a corrective note ("return valid JSON only").</li>
+    <li><strong>Sanitize</strong> — strip the offending part (e.g. redact PII) and continue.</li>
+    <li><strong>Escalate</strong> — hand off to a human (ties back to human-in-the-loop, Ch. 28).</li>
+    <li><strong>Log</strong> — always record the trip, so you can measure and improve (Ch. 34, observability).</li>
+  </ul>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>Guardrails are safety checks <em>you</em> add around the model — the model itself doesn't know your app's rules.</li>
+    <li>They sit at two gates: <strong>input</strong> (before the model, cheap to reject early) and <strong>output</strong> (before results reach users or systems).</li>
+    <li>Implement them three ways — <strong>rule-based code, model-based judges, dedicated classifiers</strong> — and <strong>layer</strong> them for defense in depth.</li>
+    <li><strong>Schema validation</strong> is the everyday workhorse: never feed unvalidated model JSON into a database or API.</li>
+    <li>Always define what happens on a trip: reject, retry, sanitize, escalate — and <strong>log every one</strong>.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>You're building a customer-support bot for a bank. List three input guardrails and three output guardrails you'd add, and say whether each is rule-based, model-based, or a classifier.</li>
+      <li>Take the schema example in §5. What are the <em>two</em> distinct failure points it guards against? (Hint: one is about parsing, one is about shape.)</li>
+      <li><em>Reflect:</em> why is "just tell the model in the system prompt to only return JSON" not a sufficient guardrail on its own?</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>Why run input guardrails before the model call rather than after? <em>It's cheaper (no wasted call), faster (instant rejection), and safer — a malicious or invalid prompt never reaches the model at all.</em></li>
+      <li>Why layer multiple guardrail types instead of using one? <em>Defense in depth — cheap code catches the obvious cases, and classifiers/LLM judges catch nuanced ones; no single check is complete, so stacking them covers each other's blind spots.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch24-multi-agent.html">← Chapter 29</a>
+    <a class="next" href="ch26-prompt-injection.html">Chapter 31: Prompt Injection Defense →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

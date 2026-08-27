@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 0b — Training Lifecycle</title>
+<title>Ch 2 — Training Lifecycle</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -59,10 +59,10 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="101">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="2">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 0 · Chapter 0b</div>
+  <div class="ch-meta">Part 1 · Chapter 2</div>
   <h1>Training Lifecycle: How a Model Like Claude Gets Made</h1>
   <p><span class="badge general">General AI Eng</span> pretraining → fine-tuning → RLHF, explained without the math</p>
 
@@ -128,16 +128,39 @@ SFT data (curated, example-driven):
 
   <p>This stage is also where a lot of <strong>safety behavior</strong> gets shaped — refusing harmful requests, avoiding certain topics, being careful with sensitive advice. Anthropic's specific approach also uses techniques like <strong>Constitutional AI</strong>, where the model critiques and improves its own answers against a written set of principles, reducing how much raw human labeling is needed. You don't need the details — just know that "why did Claude refuse that" or "why did Claude phrase it so carefully" traces back to this stage, not the pretraining stage.</p>
 
+  <h2>4. Making models smaller &amp; cheaper: LoRA and quantization</h2>
+  <p>The three stages above produce a big, full-precision model. Two more techniques show up constantly once people want to <em>adapt</em> or <em>run</em> models cheaply — especially open-weight models like Llama or Mistral. You won't apply these to Claude (Anthropic serves it for you), but the terms come up everywhere, so know what they mean.</p>
+
+  <h3>LoRA — cheap fine-tuning (adapt without retraining everything)</h3>
+  <p><strong>LoRA = Low-Rank Adaptation.</strong> Full fine-tuning updates <em>all</em> of a model's billions of weights — slow, expensive, and it produces a whole new copy of the model. LoRA instead <strong>freezes the original weights</strong> and trains a tiny set of extra "adapter" numbers alongside them (often less than 1% of the model's size). You get most of the benefit of fine-tuning for a fraction of the cost and storage.</p>
+  <div class="analogy">Think of the base model as a printed textbook you're not allowed to rewrite. <strong>Full fine-tuning</strong> = reprinting the entire book to change a few chapters. <strong>LoRA</strong> = leaving the book untouched and clipping in a thin packet of sticky-note corrections. Cheap to make, easy to swap out, and you can keep many different note-packets for different tasks.</div>
+  <p><strong>QLoRA</strong> is just LoRA applied on top of a <em>quantized</em> (compressed) base model — so you can even fine-tune large models on a single consumer GPU. It's the reason hobbyists can fine-tune open models at home at all.</p>
+
+  <h3>Quantization — cheap serving (shrink a trained model)</h3>
+  <p>A model's weights are normally stored as high-precision numbers (e.g. 16-bit floats). <strong>Quantization</strong> stores them at lower precision — 8-bit or even 4-bit integers — so the model takes far less memory and runs faster, with only a small drop in quality.</p>
+  <div class="diagram">Full precision (16-bit):   0.8123456   ← accurate, but 2 bytes each × billions
+Quantized (8-bit):         0.81        ← "rounded", 1 byte each  → ½ the memory
+Quantized (4-bit):         0.8         ← rounded harder, ¼ the memory, a bit lossy</div>
+  <p>The trade-off is the familiar one: <strong>smaller + faster + cheaper vs. slightly lower quality</strong>. 8-bit is usually nearly lossless; 4-bit saves the most but you can start to feel it on hard tasks.</p>
+
+  <table>
+    <tr><th></th><th>LoRA / QLoRA</th><th>Quantization</th></tr>
+    <tr><td><strong>What it makes cheaper</strong></td><td>Fine-tuning (adapting) a model</td><td>Storing &amp; running (serving) a model</td></tr>
+    <tr><td><strong>How</strong></td><td>Train a small add-on instead of all weights</td><td>Store weights at lower numeric precision</td></tr>
+    <tr><td><strong>Main cost</strong></td><td>Slightly less capable than full fine-tuning</td><td>Small quality loss, worse at 4-bit than 8-bit</td></tr>
+  </table>
+  <div class="callout"><strong>When does this matter to you?</strong> Only if you <strong>self-host an open-weight model</strong>. With the Claude API you never quantize or LoRA anything — Anthropic runs the model and you just call it. This is also the deeper answer to "use a smaller/cheaper model" back in the cost chapter (Ch. 20): quantization and small fine-tuned models are <em>how</em> open-model providers offer cheap tiers. Fine-tuning-vs-alternatives is revisited in Ch. 26.</div>
+
   <h2>Where you fit in</h2>
   <div class="callout">As an AI engineer using the Claude API, <strong>you never touch any of these three stages</strong> — Anthropic already did them, and you're consuming the finished model. But you do influence behavior at a much lighter level, without retraining anything, and it's worth seeing how these map:</div>
   <table>
     <tr><th>Stage</th><th>Who does it</th><th>Analogy</th></tr>
     <tr><td>Pretraining, SFT, RLHF</td><td>Anthropic (before you ever call the API)</td><td>The whole education of the assistant</td></tr>
-    <tr><td>System prompt (Ch. 8)</td><td>You, at request time</td><td>Giving the assistant a job description for this specific task</td></tr>
-    <tr><td>Few-shot examples (Ch. 8)</td><td>You, in the prompt</td><td>Showing 2–3 examples of the exact output shape you want</td></tr>
-    <tr><td>Tool definitions (Ch. 11)</td><td>You, in the prompt</td><td>Handing the assistant specific tools it's allowed to use</td></tr>
+    <tr><td>System prompt (Ch. 13)</td><td>You, at request time</td><td>Giving the assistant a job description for this specific task</td></tr>
+    <tr><td>Few-shot examples (Ch. 13)</td><td>You, in the prompt</td><td>Showing 2–3 examples of the exact output shape you want</td></tr>
+    <tr><td>Tool definitions (Ch. 16)</td><td>You, in the prompt</td><td>Handing the assistant specific tools it's allowed to use</td></tr>
   </table>
-  <p>None of these change the model's weights — they just steer the already-trained model's behavior for your specific use case. That's most of what "prompt engineering" (Chapter 8) really is.</p>
+  <p>None of these change the model's weights — they just steer the already-trained model's behavior for your specific use case. That's most of what "prompt engineering" (Chapter 13) really is.</p>
 
   <p class="label">Key takeaways</p>
   <ul>
@@ -146,6 +169,7 @@ SFT data (curated, example-driven):
     <li><strong>RLHF / preference tuning</strong>: humans rank multiple answers, model is nudged toward the preferred style — this is also where most safety behavior comes from.</li>
     <li>As an API user, you don't retrain anything — you steer the finished model with system prompts, examples, and tools instead.</li>
     <li>This explains real behavior: refusals and careful phrasing = RLHF; broad knowledge = pretraining; instruction-following = SFT.</li>
+    <li><strong>LoRA</strong> = cheap fine-tuning (train a small add-on, freeze the rest); <strong>quantization</strong> = cheap serving (store weights at lower precision). Both trade a little quality for big savings — and only matter if you self-host open models.</li>
   </ul>
 
   <div class="exercise">
@@ -162,12 +186,13 @@ SFT data (curated, example-driven):
       <li>What does the model learn to do during pretraining? <em>Predict the next token over massive amounts of text — this is where most of its "knowledge" and language ability comes from.</em></li>
       <li>What problem does SFT solve that pretraining alone doesn't? <em>A pretrained base model just continues text in whatever pattern is statistically likely; SFT teaches it the specific "answer helpfully as an assistant" behavior.</em></li>
       <li>Where does most of a model's safety/refusal behavior come from? <em>RLHF / preference tuning, where human (or reward-model) feedback ranks answers and nudges the model toward preferred, safer responses.</em></li>
+      <li>What's the difference between LoRA and quantization? <em>LoRA makes <strong>fine-tuning</strong> cheap (train a small adapter, freeze the original weights); quantization makes <strong>running</strong> the model cheap (store weights at lower precision). One adapts, the other shrinks.</em></li>
     </ol>
   </details>
 
   <div class="nav-bottom">
-    <a href="ch00a-how-llms-work.html">← Chapter 0a</a>
-    <a class="next" href="ch00c-sampling-generation.html">Chapter 0c: Sampling &amp; Generation Parameters →</a>
+    <a href="ch00a-how-llms-work.html">← Chapter 1</a>
+    <a class="next" href="ch00c-sampling-generation.html">Chapter 3: Sampling &amp; Generation Parameters →</a>
   </div>
 </div>
 <script>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 18 — Vector Stores</title>
+<title>Ch 23 — Vector Stores</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -59,20 +59,24 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="18">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="23">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 3 · Chapter 18</div>
+  <div class="ch-meta">Part 4 · Chapter 23</div>
   <h1>Vector Stores</h1>
   <p><span class="badge general">General AI Eng</span> where all those embeddings actually live, and how they get searched fast</p>
 
-  <div class="callout"><strong>Why this matters.</strong> Once you've embedded your chunks (Ch. 16) and split your documents sensibly (Ch. 17), you need somewhere to actually put millions of vectors — and a way to ask "which 5 of these are closest to my query vector?" in milliseconds. A regular SQL <code>WHERE</code> clause can't do that efficiently at scale. That's the entire job of a <strong>vector store</strong>.</p>
+  <div class="callout"><strong>Why this matters.</strong> Once you've embedded your chunks (Ch. 21) and split your documents sensibly (Ch. 22), you need somewhere to actually put millions of vectors — and a way to ask "which 5 of these are closest to my query vector?" in milliseconds. A regular SQL <code>WHERE</code> clause can't do that efficiently at scale. That's the entire job of a <strong>vector store</strong>.</p>
+
+  <div class="callout"><strong>🟢 In plain words.</strong> A vector store is a database built for one trick: "here's a vector — give me the few most similar ones out of millions, fast." A normal SQL <code>WHERE</code> clause can't do that at scale; a vector store does it in milliseconds.</div>
+
+  <div class="callout"><strong>🔍 The tricky part, in plain language.</strong> A regular database finds <em>exact</em> matches ("WHERE name = 'Sam'"). But retrieval needs the <em>closest</em> matches out of millions of vectors — "which 5 points are nearest to this one?" Checking every vector one by one is far too slow at scale, so vector databases use a clever shortcut (ANN, often via HNSW) that pre-builds a map of neighbors so it can jump straight to the likely-closest points without comparing them all. It trades a tiny bit of accuracy for enormous speed. Picture finding the nearest coffee shop: you don't measure the distance to every shop in the country — you look in your own neighborhood first. <em>Takeaway:</em> vector stores exist to answer "what's <em>nearest</em>?" quickly — the one thing normal databases are bad at.</div>
 
   <p class="label">Real-world analogy</p>
   <div class="analogy">Picture a librarian who doesn't shelve books alphabetically — instead, she organizes the whole library by "which books feel similar to this one," clustering related ideas physically near each other. Hand her any book and she can point you to the 5 most similar ones out of a million almost instantly, because she never has to walk the entire library — she just knows which section to check. A vector store is that librarian, and its smart shelving system is what makes the instant answer possible.</div>
 
   <h2>1. Why you can't just use a normal database query</h2>
-  <p>Finding the "closest" vectors to a query means comparing your query vector against <em>every single stored vector</em> using something like cosine similarity (Ch. 16) — that's an <strong>exact nearest-neighbor</strong> search. It works fine for a few thousand vectors, but at millions of vectors, comparing against every single one for every single query becomes far too slow for a live application.</p>
+  <p>Finding the "closest" vectors to a query means comparing your query vector against <em>every single stored vector</em> using something like cosine similarity (Ch. 21) — that's an <strong>exact nearest-neighbor</strong> search. It works fine for a few thousand vectors, but at millions of vectors, comparing against every single one for every single query becomes far too slow for a live application.</p>
 
   <h2>2. Approximate nearest neighbor (ANN) search</h2>
   <p>Vector stores solve this with <strong>ANN (approximate nearest neighbor)</strong> algorithms — most commonly <strong>HNSW</strong> (Hierarchical Navigable Small World graphs). Instead of checking every vector, ANN builds an index structure that lets the search "hop" toward the right neighborhood quickly, skipping most of the dataset. The tradeoff: you might occasionally miss the single mathematically-closest vector in favor of one that's 99% as good — a tiny accuracy cost for a massive speed win. For nearly all retrieval-augmented generation use cases, that tradeoff is a clear win.</p>
@@ -101,7 +105,7 @@ ANN search (e.g. HNSW):
   <pre><code><span class="tok-com">// 1. Upsert a vector with metadata attached</span>
 await store.upsert({
   id: "doc-42-chunk-3",
-  vector: embedding,   <span class="tok-com">// e.g. [0.021, -0.184, ...] from Ch. 16</span>
+  vector: embedding,   <span class="tok-com">// e.g. [0.021, -0.184, ...] from Ch. 21</span>
   metadata: {
     source: "handbook.pdf",
     section: "Refunds",
@@ -161,9 +165,19 @@ const results = await store.query({
     </ol>
   </details>
 
+  <details><summary>💬 Conceptual questions (the kind interviewers ask)</summary>
+    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 4px">Answer each out loud before peeking. These tie this chapter to real production concerns — cost, latency, failures, and safety.</p>
+    <ol>
+      <li><strong>Why can't a normal database do this, and what trick do vector stores use instead?</strong><br><em>Exact nearest-neighbor means comparing the query against every stored vector — too slow at millions. ANN indexes (e.g. HNSW) hop toward the right neighborhood, touching only a fraction of the data, trading a sliver of accuracy for a huge speed win.</em></li>
+      <li><strong>ANN can occasionally miss the truly closest vector. Why is that acceptable for RAG?</strong><br><em>The "second best" chunk is usually 99% as relevant, and the LLM still reasons over several retrieved chunks anyway — the speed win vastly outweighs the rare, tiny miss.</em></li>
+      <li><strong>In a multi-tenant app, how do you stop user A from retrieving user B's documents?</strong><br><em>Store <code>userId</code> (and access level) as metadata and push it into the query as a <u>hard filter</u>, not a post-hoc filter you apply after. Similarity search without a tenant filter is a data leak waiting to happen — this is a safety issue, not just a quality one.</em></li>
+      <li><strong>How do you choose between pgvector, Chroma, Qdrant, and Pinecone?</strong><br><em>Match it to your stack and ops appetite: already on Postgres → pgvector; local prototype → Chroma; self-hosted performance + filtering → Qdrant; zero ops and happy to pay for managed → Pinecone. Don't over-engineer the choice before you've shipped a baseline.</em></li>
+    </ol>
+  </details>
+
   <div class="nav-bottom">
-    <a href="ch17-chunking.html">← Chapter 17</a>
-    <a class="next" href="ch19-retrieval.html">Chapter 19: Retrieval Strategies →</a>
+    <a href="ch17-chunking.html">← Chapter 22</a>
+    <a class="next" href="ch19-retrieval.html">Chapter 24: Retrieval Strategies →</a>
   </div>
 </div>
 <script>

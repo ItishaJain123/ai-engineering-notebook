@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 2 — Context Management</title>
+<title>Ch 7 — Context Management</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -59,10 +59,10 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="2">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="7">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 1 · Chapter 2</div>
+  <div class="ch-meta">Part 2 · Chapter 7</div>
   <h1>Context Management</h1>
   <p><span class="badge cc">Claude Code</span><span class="badge general">General AI Eng</span> compaction · /clear · long sessions · token budgeting</p>
 
@@ -99,12 +99,12 @@
   <p>Treat context like RAM. Practical habits:</p>
   <ul>
     <li><strong>Read narrowly.</strong> Grab the function you need, not the whole 3,000-line file.</li>
-    <li><strong>Delegate heavy reads to subagents.</strong> A subagent (Chapter 5) reads a lot, returns a short summary — the bulk never touches your main context.</li>
+    <li><strong>Delegate heavy reads to subagents.</strong> A subagent (Chapter 10) reads a lot, returns a short summary — the bulk never touches your main context.</li>
     <li><strong>Keep CLAUDE.md lean.</strong> It's re-sent every turn.</li>
     <li><strong>Clear between tasks.</strong> Don't hoard history.</li>
     <li><strong>Watch the context meter.</strong> Compact proactively before it auto-triggers mid-thought.</li>
   </ul>
-  <div class="callout"><strong>Connects forward:</strong> This is the CC-flavored version of a general skill called <em>context engineering</em> (Chapter 14) — deciding what information the model sees at each step. Same idea whether you're in the CLI or building your own agent.</div>
+  <div class="callout"><strong>Connects forward:</strong> This is the CC-flavored version of a general skill called <em>context engineering</em> (Chapter 19) — deciding what information the model sees at each step. Same idea whether you're in the CLI or building your own agent.</div>
 
   <p class="label">Key takeaways</p>
   <ul>
@@ -132,8 +132,8 @@
   </details>
 
   <div class="nav-bottom">
-    <a href="ch01-claude-code-fundamentals.html">← Chapter 1</a>
-    <a class="next" href="ch03-skills-vs-plugins.html">Chapter 3: Skills vs. Plugins →</a>
+    <a href="ch01-claude-code-fundamentals.html">← Chapter 6</a>
+    <a class="next" href="ch03-skills-vs-plugins.html">Chapter 8: Skills vs. Plugins →</a>
   </div>
 </div>
 <script>

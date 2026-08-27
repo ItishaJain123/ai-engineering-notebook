@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 15 — Cost &amp; Latency Optimization</title>
+<title>Ch 20 — Cost &amp; Latency Optimization</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -59,14 +59,18 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="15">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="20">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 2 · Chapter 15</div>
+  <div class="ch-meta">Part 3 · Chapter 20</div>
   <h1>Cost &amp; Latency Optimization</h1>
   <p><span class="badge general">General AI Eng</span> making an LLM-powered feature affordable and fast enough for production, not just a demo</p>
 
-  <div class="callout"><strong>Why this matters.</strong> A prototype that costs $2 and takes 20 seconds per request is fine for a demo. At real usage volume, that same design can bankrupt a product or make it feel broken. This chapter pulls together concepts from earlier in Part 2 (tokens, caching, streaming) into a practical playbook for keeping an LLM feature both cheap and fast.</p>
+  <div class="callout"><strong>Why this matters.</strong> A prototype that costs $2 and takes 20 seconds per request is fine for a demo. At real usage volume, that same design can bankrupt a product or make it feel broken. This chapter pulls together concepts from earlier in Part 3 (tokens, caching, streaming) into a practical playbook for keeping an LLM feature both cheap and fast.</p>
+
+  <div class="callout"><strong>🟢 In plain words.</strong> Match the tool to the job. Don't send every request to your biggest model, don't re-pay for context you already sent, and don't make users wait for work that could run overnight. Get those three right and you've done most of cost and latency work.</div>
+
+  <div class="callout"><strong>🔍 The tricky part, in plain language.</strong> Almost everything about cost and speed comes down to one word: <em>tokens</em> (roughly word-pieces). You pay per token, and time is spent per token. Two things to know: <strong>input tokens</strong> (your prompt) are cheaper than <strong>output tokens</strong> (the model's reply), and output tokens are the big driver of <em>latency</em> because the model generates them strictly one at a time. Picture paying by the word <em>and</em> waiting while each word of the reply is written out by hand — a 5,000-token prompt is read almost instantly, but a 5,000-token answer is produced slowly, word by word. <em>Takeaway:</em> to cut cost, shrink the prompt; to cut latency, shrink the <em>output</em> (or stream it so it at least feels faster).</div>
 
   <p class="label">Real-world analogy</p>
   <div class="analogy">
@@ -88,12 +92,12 @@ Routed: match model to task difficulty
   "Draft a legal risk memo"       → largest/most capable   ✅ worth the cost</div>
 
   <h2>2. Token budgeting</h2>
-  <p>Every token — in your prompt <em>and</em> in the reply — costs money and adds latency (Ch. 0a). The main levers:</p>
+  <p>Every token — in your prompt <em>and</em> in the reply — costs money and adds latency (Ch. 1). The main levers:</p>
   <table>
     <tr><th>Lever</th><th>How it helps</th></tr>
-    <tr><td>Trim unnecessary context</td><td>Don't send an entire document when only one section is relevant (this is part of why RAG, Ch. 16-21, exists)</td></tr>
-    <tr><td><code>max_tokens</code> caps (Ch. 0c)</td><td>Prevents an unexpectedly long reply from blowing the budget on one request</td></tr>
-    <tr><td>Prompt caching (Ch. 10)</td><td>Avoids re-paying full price for large, repeated context on every call</td></tr>
+    <tr><td>Trim unnecessary context</td><td>Don't send an entire document when only one section is relevant (this is part of why RAG, Ch. 21-26, exists)</td></tr>
+    <tr><td><code>max_tokens</code> caps (Ch. 3)</td><td>Prevents an unexpectedly long reply from blowing the budget on one request</td></tr>
+    <tr><td>Prompt caching (Ch. 15)</td><td>Avoids re-paying full price for large, repeated context on every call</td></tr>
     <tr><td>Concise system prompts</td><td>A bloated, redundant system prompt costs tokens on <em>every single request</em> — worth trimming ruthlessly</td></tr>
   </table>
 
@@ -109,10 +113,10 @@ Use batch when: no one is waiting live for the individual answer</div>
   <h2>4. Latency: where the time actually goes</h2>
   <table>
     <tr><th>Latency source</th><th>What helps</th></tr>
-    <tr><td>Time to first token</td><td>Streaming (Ch. 13) — doesn't reduce total time, but the user sees output sooner</td></tr>
-    <tr><td>Total generation time</td><td>Smaller <code>max_tokens</code>, smaller/faster model, avoiding unnecessary extended thinking (Ch. 12)</td></tr>
-    <tr><td>Repeated large-context reprocessing</td><td>Prompt caching (Ch. 10)</td></tr>
-    <tr><td>Multi-step agent loops (Ch. 14)</td><td>Fewer unnecessary tool calls, parallelizing independent steps where possible</td></tr>
+    <tr><td>Time to first token</td><td>Streaming (Ch. 18) — doesn't reduce total time, but the user sees output sooner</td></tr>
+    <tr><td>Total generation time</td><td>Smaller <code>max_tokens</code>, smaller/faster model, avoiding unnecessary extended thinking (Ch. 17)</td></tr>
+    <tr><td>Repeated large-context reprocessing</td><td>Prompt caching (Ch. 15)</td></tr>
+    <tr><td>Multi-step agent loops (Ch. 19)</td><td>Fewer unnecessary tool calls, parallelizing independent steps where possible</td></tr>
   </table>
 
   <h2>5. Retries and fallbacks</h2>
@@ -135,10 +139,10 @@ Use batch when: no one is waiting live for the individual answer</div>
   <h2>6. Putting it together: a checklist</h2>
   <ul>
     <li>Am I using the smallest/cheapest model that reliably handles this specific task? (model routing)</li>
-    <li>Is there large, repeated context I'm re-paying for on every call? (prompt caching, Ch. 10)</li>
+    <li>Is there large, repeated context I'm re-paying for on every call? (prompt caching, Ch. 15)</li>
     <li>Is my system prompt bloated with anything non-essential? (token budgeting)</li>
     <li>Does this need to be real-time, or could it run as an overnight batch? (batching)</li>
-    <li>Am I streaming where perceived latency matters to a real user? (Ch. 13)</li>
+    <li>Am I streaming where perceived latency matters to a real user? (Ch. 18)</li>
     <li>Do I have retry/backoff logic for rate limits, instead of failing outright?</li>
   </ul>
 
@@ -167,9 +171,19 @@ Use batch when: no one is waiting live for the individual answer</div>
     </ol>
   </details>
 
+  <details><summary>💬 Conceptual questions (the kind interviewers ask)</summary>
+    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 4px">This is <em>the</em> chapter interviewers probe hardest — the classic "your AI is in production, now make it work" questions. Answer each out loud before peeking.</p>
+    <ol>
+      <li><strong>An AI agent in production is too slow. Walk through where the bottlenecks are.</strong><br><em>Four places: time-to-first-token (helped by streaming, Ch. 18); total generation time (smaller model, smaller <code>max_tokens</code>, less extended thinking, Ch. 17); repeated large-context reprocessing (prompt caching, Ch. 15); and the number of serial agent steps / tool calls (cut or parallelize them, Ch. 19). Measure first — don't guess which one it is.</em></li>
+      <li><strong>What tradeoff would you make between latency/cost and quality, and how do you decide?</strong><br><em>Route by stakes: a cheap/fast model for high-volume simple steps, the best model only where being wrong is costly. Decide it with evals (Ch. 33) — measure how much quality the cheaper option actually loses, and accept it only if it still clears your bar.</em></li>
+      <li><strong>How would you cut the cost of a high-traffic feature without hurting users?</strong><br><em>Model routing (the biggest lever), prompt caching for shared context, lean system prompts, <code>max_tokens</code> caps, and batching anything that isn't real-time. Attack the largest, most-repeated source of tokens first.</em></li>
+      <li><strong>What happens when the model API actually fails in production, and how do you design for it?</strong><br><em>Rate limits (429s) and transient errors <u>will</u> happen. Handle them with exponential backoff/retries, a fallback model or cached/degraded response, request timeouts, and circuit breakers so one failing dependency doesn't cascade. Never let a 429 take down the whole pipeline.</em></li>
+    </ol>
+  </details>
+
   <div class="nav-bottom">
-    <a href="ch14-agent-loop.html">← Chapter 14</a>
-    <a class="next" href="ch16-embeddings.html">Chapter 16: Embeddings Deep-Dive →</a>
+    <a href="ch14-agent-loop.html">← Chapter 19</a>
+    <a class="next" href="ch16-embeddings.html">Chapter 21: Embeddings Deep-Dive →</a>
   </div>
 </div>
 <script>

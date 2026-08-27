@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 29 — Multi-Agent Systems</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+  @media (max-width:640px){
+    .wrap{padding:20px 16px 90px}
+    .topbar{padding:10px 14px}
+    .topbar .left{font-size:.78rem}
+    h1{font-size:1.5rem}
+    h2{font-size:1.12rem;margin:1.5em 0 .4em}
+    h3{font-size:1rem}
+    .diagram,pre{font-size:.72rem;padding:10px 12px}
+    table{display:block;overflow-x:auto;white-space:nowrap}
+    .nav-bottom{flex-direction:column}
+    .analogy,.exercise,.callout{padding:10px 12px}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../index.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="29">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 5 · Chapter 29</div>
+  <h1>Multi-Agent Systems</h1>
+  <p><span class="badge general">General AI Eng</span> when one agent isn't enough — several specialists working together</p>
+
+  <div class="callout"><strong>Why this matters.</strong> So far, "agent" meant one model in a loop with some tools (Ch. 19, Ch. 28). A <strong>multi-agent system</strong> is several of those working together, each with its own job, its own tools, and its own prompt. You already met a version of this with subagents (Ch. 10) — this chapter gives you the general patterns for <em>how</em> multiple agents coordinate, communicate, and hand off work, and — crucially — <strong>when the added complexity is actually worth it.</strong></p>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">One agent is a <strong>freelancer</strong> doing everything themselves. A multi-agent system is a <strong>small company</strong>: a manager takes the request and delegates, a researcher digs up facts, a writer drafts, an editor reviews. Each person is better because they focus on one thing — but now you also need someone coordinating them, and meetings (communication) cost time. That trade-off is the entire subject of this chapter.</div>
+
+  <h2>1. Why split into multiple agents at all?</h2>
+  <table>
+    <tr><th>Reason</th><th>What it buys you</th></tr>
+    <tr><td><strong>Specialization</strong></td><td>Each agent has a tight, focused prompt and only the tools it needs — sharper and more reliable than one agent juggling everything.</td></tr>
+    <tr><td><strong>Clean context</strong></td><td>A researcher can churn through 50 documents; only its <em>summary</em> reaches the writer — the writer's context stays uncluttered (the same win as subagents in Ch. 10).</td></tr>
+    <tr><td><strong>Parallelism</strong></td><td>Independent subtasks (research three topics at once) can run at the same time instead of one after another.</td></tr>
+    <tr><td><strong>Maintainability</strong></td><td>Fix or upgrade the "reviewer" without touching the "researcher" — smaller, testable pieces.</td></tr>
+  </table>
+  <div class="callout"><strong>Read this before you build one.</strong> Multi-agent adds real cost: more model calls (more money + latency), more places to fail, and harder debugging. <strong>Default to a single agent.</strong> Only split when a task has genuinely distinct skills or needs true parallelism. A single well-prompted agent beats a tangled committee of five almost every time.</div>
+
+  <h2>2. The two core patterns</h2>
+  <h3>Orchestrator / worker (supervisor)</h3>
+  <p>One <strong>orchestrator</strong> agent owns the goal. It breaks the task into pieces and hands each to a specialized <strong>worker</strong>, then combines their results. Workers don't talk to each other — everything flows through the boss. This is the most common, most controllable pattern.</p>
+  <div class="diagram">                ┌─────────────────┐
+                │   ORCHESTRATOR  │  (plans, delegates, combines)
+                └───┬────────┬────┘
+          delegate │        │ delegate
+             ┌──────▼─┐   ┌──▼───────┐   ┌──────────┐
+             │researcher│  │  writer  │  │ reviewer │
+             └────┬─────┘  └────┬─────┘  └────┬─────┘
+                  └── results ──┴─────────────┘
+                         ▲
+                  back to orchestrator → final answer</div>
+
+  <h3>Network / peer-to-peer</h3>
+  <p>Agents talk to each other <em>directly</em>, deciding among themselves who handles what — no central boss. More flexible, but far harder to predict and debug (this is essentially the experimental "Agent Teams" idea from Ch. 10). Use it rarely, and only when a rigid hierarchy genuinely can't express the workflow.</p>
+  <table>
+    <tr><th></th><th>Orchestrator / worker</th><th>Network / peer-to-peer</th></tr>
+    <tr><td><strong>Control</strong></td><td>High — one boss decides everything</td><td>Low — emergent, harder to steer</td></tr>
+    <tr><td><strong>Debuggability</strong></td><td>Clear (trace flows through the boss)</td><td>Hard (many-to-many chatter)</td></tr>
+    <tr><td><strong>Best for</strong></td><td>Most real systems</td><td>Open-ended, exploratory tasks</td></tr>
+  </table>
+
+  <h2>3. How agents actually communicate</h2>
+  <p>Agents don't share thoughts — they pass <strong>messages</strong> (text, or structured data). Three questions define any multi-agent design:</p>
+  <ul>
+    <li><strong>What gets passed?</strong> Usually a compact result, not raw work. The researcher sends a 5-line summary, not all 50 documents — this is the "clean context" win. Passing everything defeats the purpose.</li>
+    <li><strong>Who decides the next agent?</strong> In orchestrator/worker, the boss routes (often the model itself picks the next worker by name). In a network, each agent decides where to hand off.</li>
+    <li><strong>When does it stop?</strong> You must define a clear finish condition ("reviewer approves" or "max 5 hand-offs"), or agents can ping-pong forever, burning tokens.</li>
+  </ul>
+  <div class="callout"><strong>Handoff = a routing decision, not magic.</strong> Concretely, a "handoff" is just: the current agent's output includes <em>which agent goes next</em>, and the orchestration code routes control there. In LangGraph (Ch. 28) each agent is a node, and the edges between them <em>are</em> the communication protocol.</div>
+
+  <h2>4. A supervisor loop, in pseudocode</h2>
+  <pre><code><span class="tok-com">// each specialist is its own ReAct agent (Ch. 28), with its own tools</span>
+const researcher = createReactAgent({ llm: model, tools: [webSearch] });
+const writer     = createReactAgent({ llm: model, tools: [] });
+const reviewer   = createReactAgent({ llm: model, tools: [] });
+
+<span class="tok-com">// the supervisor's ONLY job: read progress, name who goes next</span>
+async function supervisor(state) {
+  const decision = await model.invoke(
+    `Conversation so far:\n${state.log}\n\n` +
+    `Reply with ONE word — researcher, writer, reviewer, or DONE.`
+  );
+  return { next: decision.content.trim() };
+}
+
+<span class="tok-com">// route based on the supervisor's choice; each worker loops back to it</span>
+function route(state) {
+  return state.next === "DONE" ? END : state.next;
+}
+<span class="tok-com">// graph: START → supervisor → (worker) → supervisor → ... → END</span></code></pre>
+  <p>That's the whole idea: a small routing brain, a set of specialists, and edges that always return to the router until it says <code>DONE</code>. Everything else is refining prompts and tools per worker.</p>
+
+  <h2>5. The failure modes to design against</h2>
+  <ul>
+    <li><strong>Infinite loops</strong> — two agents keep handing back to each other. Fix: a hard hand-off cap.</li>
+    <li><strong>Context bloat</strong> — agents forward each other everything, so the shared log explodes. Fix: pass summaries, not raw work.</li>
+    <li><strong>Cost blow-up</strong> — five agents each making several model calls can be 10× the cost of one. Fix: measure, and collapse agents that don't earn their keep.</li>
+    <li><strong>Lost-in-translation</strong> — the writer misreads the researcher's summary. Fix: structured hand-offs (agree on a format) instead of free-form prose.</li>
+    <li><strong>Diffuse responsibility</strong> — when it goes wrong, no single agent "owns" the error. Fix: prefer the orchestrator pattern where the boss is accountable.</li>
+  </ul>
+
+  <h2>6. Single agent vs. multi-agent — the decision</h2>
+  <table>
+    <tr><th>Prefer a single agent when…</th><th>Consider multi-agent when…</th></tr>
+    <tr><td>The task is one coherent job</td><td>The task splits into clearly distinct skills</td></tr>
+    <tr><td>Steps depend on each other in sequence</td><td>Subtasks are independent (can parallelize)</td></tr>
+    <tr><td>You want easy debugging &amp; low cost</td><td>One agent's context gets overwhelmed by everything</td></tr>
+    <tr><td>Latency and simplicity matter most</td><td>Specialization measurably improves quality</td></tr>
+  </table>
+  <div class="callout"><strong>The engineer's mantra.</strong> Start with one agent. Add a second only when you can name the <em>specific</em> problem it solves. Complexity is a cost you pay on every request, forever — make each agent earn its seat.</div>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>A multi-agent system is several focused agents — each with its own prompt, tools, and job — coordinating on one task.</li>
+    <li>The benefits are <strong>specialization, clean context, parallelism, and maintainability</strong>; the costs are <strong>money, latency, and harder debugging</strong>.</li>
+    <li><strong>Orchestrator/worker</strong> (one boss delegates) is controllable and the right default; <strong>network/peer-to-peer</strong> is flexible but hard to steer.</li>
+    <li>Agents coordinate by <strong>passing messages</strong> — send compact results, decide who's next, and always define a clear stop condition.</li>
+    <li><strong>Default to a single agent.</strong> Only split when a task has genuinely distinct skills or needs true parallelism — complexity must earn its place.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>Design a 3-agent system that turns a topic into a published blog post. Name each agent, its one job, its tools, and draw the hand-off order. Where does it stop?</li>
+      <li>Take your design and argue the <em>opposite</em> side: could a single well-prompted agent do the same job acceptably? What would you lose?</li>
+      <li><em>Reflect:</em> pick two failure modes from §5 that your design is most exposed to, and write the exact guardrail you'd add for each.</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>What is the main difference between the orchestrator/worker and network patterns? <em>In orchestrator/worker, one central agent delegates and combines results (high control, easy to debug); in a network, agents talk directly and decide among themselves (flexible but hard to steer and trace).</em></li>
+      <li>Why should you pass summaries rather than raw work between agents? <em>To keep each agent's context clean and costs down — forwarding everything defeats the whole point of splitting the work and bloats the shared log.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch23-langgraph.html">← Chapter 28</a>
+    <a class="next" href="ch25-guardrails.html">Chapter 30: Guardrails →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

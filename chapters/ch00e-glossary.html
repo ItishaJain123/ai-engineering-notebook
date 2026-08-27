@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 0e — Glossary of Terms</title>
+<title>Ch 5 — Glossary of Terms</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -54,14 +54,14 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="104">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="5">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 0 · Chapter 0e</div>
+  <div class="ch-meta">Part 1 · Chapter 5</div>
   <h1>Glossary of Terms</h1>
-  <p><span class="badge general">General AI Eng</span><span class="badge cc">Claude Code</span> every term used across all 31 chapters, in one place — including ones you haven't reached yet</p>
+  <p><span class="badge general">General AI Eng</span><span class="badge cc">Claude Code</span> every term used across all 36 chapters, in one place — including ones you haven't reached yet</p>
 
-  <div class="callout"><strong>How to use this chapter.</strong> This isn't meant to be "learned" top to bottom like the others — it's a lookup reference. Some terms (temperature, transformer, token) you already know from Part 0. Others (cosine similarity, reranking, LoRA, guardrails) belong to chapters you haven't gotten to yet (Parts 2–5) — they're here now as a preview, with a plain-English definition and a pointer to the chapter where you'll actually build with them. Bookmark this page; come back whenever a term shows up mid-lesson and you've forgotten it.</p>
+  <div class="callout"><strong>How to use this chapter.</strong> This isn't meant to be "learned" top to bottom like the others — it's a lookup reference. Some terms (temperature, transformer, token) you already know from Part 1. Others (cosine similarity, reranking, LoRA, guardrails) belong to chapters you haven't gotten to yet (Parts 2–5) — they're here now as a preview, with a plain-English definition and a pointer to the chapter where you'll actually build with them. Bookmark this page; come back whenever a term shows up mid-lesson and you've forgotten it.</p>
 
   <input class="search" id="search" placeholder="🔍 Type to filter terms (e.g. 'temperature', 'RAG', 'hook')..." />
   <div class="glossary-count" id="count"></div>
@@ -80,118 +80,120 @@
 
   <h2 id="sec-arch">🧠 Model &amp; Architecture</h2>
   <table><tbody>
-    <tr><td class="term">Token</td><td>The smallest unit of text a model processes — a word, part of a word, or punctuation mark. Not the same as a letter or a whole word.</td><td class="chref">Ch. 0a</td></tr>
-    <tr><td class="term">Tokenization</td><td>The process of chopping text into tokens before feeding it to the model.</td><td class="chref">Ch. 0a</td></tr>
-    <tr><td class="term">Embedding</td><td>A list of numbers (a vector) that represents the "meaning" of a token, word, sentence, or document as a position in space.</td><td class="chref">Ch. 0a, 16</td></tr>
-    <tr><td class="term">Vector</td><td>Just a list of numbers — the mathematical form an embedding takes (e.g. <code>[0.12, -0.98, 0.44, ...]</code>).</td><td class="chref">Ch. 0a, 16</td></tr>
-    <tr><td class="term">Dimensions</td><td>How many numbers are in an embedding vector (e.g. 1536 dimensions = a list of 1536 numbers). More dimensions can capture more nuance in meaning, at a storage/compute cost.</td><td class="chref">Ch. 16</td></tr>
-    <tr><td class="term">Vector space / embedding space</td><td>The imaginary multi-dimensional "map" where embeddings live — things with similar meaning end up positioned close together.</td><td class="chref">Ch. 0a, 16</td></tr>
-    <tr><td class="term">Cosine similarity</td><td>The standard way to measure "how close" two embedding vectors are (i.e. how similar their meaning is) — it measures the angle between them, not their distance. Score of 1 = identical direction/meaning, 0 = unrelated, -1 = opposite.</td><td class="chref">Ch. 16</td></tr>
-    <tr><td class="term">Attention</td><td>The mechanism that lets a model weigh how relevant every other token is when interpreting a given token (e.g. resolving what a pronoun refers to).</td><td class="chref">Ch. 0a</td></tr>
-    <tr><td class="term">Self-attention</td><td>Attention applied within a single sequence — tokens attending to other tokens in the same input, which is what regular "attention" in an LLM usually means.</td><td class="chref">Ch. 0a</td></tr>
-    <tr><td class="term">Transformer</td><td>The neural network architecture (built from stacked attention + feed-forward layers) that powers virtually every modern LLM, including Claude, GPT, and Gemini.</td><td class="chref">Ch. 0a</td></tr>
-    <tr><td class="term">Parameters / weights</td><td>The billions of internal numbers a model learns during training — they encode everything the model "knows." "70B parameters" means 70 billion of these numbers.</td><td class="chref">Ch. 0b</td></tr>
-    <tr><td class="term">Context window</td><td>The maximum number of tokens (input + output combined) a model can "see" at once in a single conversation/request.</td><td class="chref">Ch. 2</td></tr>
-    <tr><td class="term">Multimodal</td><td>A model that can accept more than one type of input (e.g. text + images), even if it only outputs one type (e.g. Claude reads images but only writes text back).</td><td class="chref">Ch. 0d, 7</td></tr>
+    <tr><td class="term">Token</td><td>The smallest unit of text a model processes — a word, part of a word, or punctuation mark. Not the same as a letter or a whole word.</td><td class="chref">Ch. 1</td></tr>
+    <tr><td class="term">Tokenization</td><td>The process of chopping text into tokens before feeding it to the model.</td><td class="chref">Ch. 1</td></tr>
+    <tr><td class="term">Embedding</td><td>A list of numbers (a vector) that represents the "meaning" of a token, word, sentence, or document as a position in space.</td><td class="chref">Ch. 1, 21</td></tr>
+    <tr><td class="term">Vector</td><td>Just a list of numbers — the mathematical form an embedding takes (e.g. <code>[0.12, -0.98, 0.44, ...]</code>).</td><td class="chref">Ch. 1, 21</td></tr>
+    <tr><td class="term">Dimensions</td><td>How many numbers are in an embedding vector (e.g. 1536 dimensions = a list of 1536 numbers). More dimensions can capture more nuance in meaning, at a storage/compute cost.</td><td class="chref">Ch. 21</td></tr>
+    <tr><td class="term">Vector space / embedding space</td><td>The imaginary multi-dimensional "map" where embeddings live — things with similar meaning end up positioned close together.</td><td class="chref">Ch. 1, 21</td></tr>
+    <tr><td class="term">Cosine similarity</td><td>The standard way to measure "how close" two embedding vectors are (i.e. how similar their meaning is) — it measures the angle between them, not their distance. Score of 1 = identical direction/meaning, 0 = unrelated, -1 = opposite.</td><td class="chref">Ch. 21</td></tr>
+    <tr><td class="term">Attention</td><td>The mechanism that lets a model weigh how relevant every other token is when interpreting a given token (e.g. resolving what a pronoun refers to).</td><td class="chref">Ch. 1</td></tr>
+    <tr><td class="term">Self-attention</td><td>Attention applied within a single sequence — tokens attending to other tokens in the same input, which is what regular "attention" in an LLM usually means.</td><td class="chref">Ch. 1</td></tr>
+    <tr><td class="term">Transformer</td><td>The neural network architecture (built from stacked attention + feed-forward layers) that powers virtually every modern LLM, including Claude, GPT, and Gemini.</td><td class="chref">Ch. 1</td></tr>
+    <tr><td class="term">Parameters / weights</td><td>The billions of internal numbers a model learns during training — they encode everything the model "knows." "70B parameters" means 70 billion of these numbers.</td><td class="chref">Ch. 2</td></tr>
+    <tr><td class="term">Context window</td><td>The maximum number of tokens (input + output combined) a model can "see" at once in a single conversation/request.</td><td class="chref">Ch. 7</td></tr>
+    <tr><td class="term">Multimodal</td><td>A model that can accept more than one type of input (e.g. text + images), even if it only outputs one type (e.g. Claude reads images but only writes text back).</td><td class="chref">Ch. 4, 12</td></tr>
   </tbody></table>
 
   <h2 id="sec-train">🎓 Training</h2>
   <table><tbody>
-    <tr><td class="term">Pretraining</td><td>The first, most expensive training stage — the model learns to predict the next token over trillions of words of text, absorbing language and knowledge as a side effect.</td><td class="chref">Ch. 0b</td></tr>
-    <tr><td class="term">Base model</td><td>A model that's only been pretrained, with no fine-tuning — knowledgeable, but doesn't behave like a well-mannered assistant yet.</td><td class="chref">Ch. 0b</td></tr>
-    <tr><td class="term">Fine-tuning / SFT (Supervised Fine-Tuning)</td><td>A lighter second training stage where the model is shown curated "question → ideal answer" examples, teaching it to act like a helpful assistant.</td><td class="chref">Ch. 0b</td></tr>
-    <tr><td class="term">RLHF (Reinforcement Learning from Human Feedback)</td><td>A training stage where humans (or a reward model standing in for them) rank multiple model answers, nudging the model toward the style people actually prefer.</td><td class="chref">Ch. 0b</td></tr>
-    <tr><td class="term">Reward model</td><td>A smaller model trained to predict how a human would rate a given answer, used to guide RLHF at scale without a human rating every single response.</td><td class="chref">Ch. 0b</td></tr>
-    <tr><td class="term">Constitutional AI</td><td>Anthropic's technique where a model critiques and revises its own answers against a written set of principles, reducing how much raw human labeling RLHF needs.</td><td class="chref">Ch. 0b</td></tr>
-    <tr><td class="term">Alignment</td><td>The general goal of making a model's behavior match human intentions and values — SFT and RLHF are both alignment techniques.</td><td class="chref">Ch. 0b</td></tr>
-    <tr><td class="term">Instruction tuning</td><td>Another name for the SFT process of teaching a base model to follow instructions rather than just continue text.</td><td class="chref">Ch. 0b</td></tr>
-    <tr><td class="term">LoRA (Low-Rank Adaptation)</td><td>A cheap way to fine-tune a model by training a small set of additional parameters instead of updating all of the model's original weights.</td><td class="chref">Ch. 21</td></tr>
-    <tr><td class="term">Hallucination</td><td>When a model confidently generates false or made-up information — a natural side effect of it being a probability-based text predictor, not a database.</td><td class="chref">Ch. 0b, 28</td></tr>
+    <tr><td class="term">Pretraining</td><td>The first, most expensive training stage — the model learns to predict the next token over trillions of words of text, absorbing language and knowledge as a side effect.</td><td class="chref">Ch. 2</td></tr>
+    <tr><td class="term">Base model</td><td>A model that's only been pretrained, with no fine-tuning — knowledgeable, but doesn't behave like a well-mannered assistant yet.</td><td class="chref">Ch. 2</td></tr>
+    <tr><td class="term">Fine-tuning / SFT (Supervised Fine-Tuning)</td><td>A lighter second training stage where the model is shown curated "question → ideal answer" examples, teaching it to act like a helpful assistant.</td><td class="chref">Ch. 2</td></tr>
+    <tr><td class="term">RLHF (Reinforcement Learning from Human Feedback)</td><td>A training stage where humans (or a reward model standing in for them) rank multiple model answers, nudging the model toward the style people actually prefer.</td><td class="chref">Ch. 2</td></tr>
+    <tr><td class="term">Reward model</td><td>A smaller model trained to predict how a human would rate a given answer, used to guide RLHF at scale without a human rating every single response.</td><td class="chref">Ch. 2</td></tr>
+    <tr><td class="term">Constitutional AI</td><td>Anthropic's technique where a model critiques and revises its own answers against a written set of principles, reducing how much raw human labeling RLHF needs.</td><td class="chref">Ch. 2</td></tr>
+    <tr><td class="term">Alignment</td><td>The general goal of making a model's behavior match human intentions and values — SFT and RLHF are both alignment techniques.</td><td class="chref">Ch. 2</td></tr>
+    <tr><td class="term">Instruction tuning</td><td>Another name for the SFT process of teaching a base model to follow instructions rather than just continue text.</td><td class="chref">Ch. 2</td></tr>
+    <tr><td class="term">LoRA (Low-Rank Adaptation)</td><td>A cheap way to fine-tune a model by training a small set of additional "adapter" parameters instead of updating all of the model's original weights. QLoRA is LoRA on top of a quantized base model.</td><td class="chref">Ch. 2, 26</td></tr>
+    <tr><td class="term">Quantization</td><td>Shrinking a trained model by storing its weights at lower numeric precision (e.g. 16-bit → 8-bit or 4-bit), so it uses less memory and runs faster, at a small cost to quality.</td><td class="chref">Ch. 2</td></tr>
+    <tr><td class="term">Hallucination</td><td>When a model confidently generates false or made-up information — a natural side effect of it being a probability-based text predictor, not a database.</td><td class="chref">Ch. 2, 33</td></tr>
   </tbody></table>
 
   <h2 id="sec-gen">🎲 Generation &amp; Sampling</h2>
   <table><tbody>
-    <tr><td class="term">Logits / probability distribution</td><td>The model's raw output at each step — a score (turned into a probability) for every possible next token.</td><td class="chref">Ch. 0c</td></tr>
-    <tr><td class="term">Sampling</td><td>The process of actually picking one token from that probability distribution to generate next.</td><td class="chref">Ch. 0c</td></tr>
-    <tr><td class="term">Temperature</td><td>A setting that reshapes the probability distribution before sampling: 0 = always pick the most likely token (deterministic), higher = more variety and risk.</td><td class="chref">Ch. 0c</td></tr>
-    <tr><td class="term">Top-p (nucleus sampling)</td><td>Only samples from the smallest set of top tokens whose probabilities add up to <code>p</code> (e.g. 0.9), excluding the improbable "long tail."</td><td class="chref">Ch. 0c</td></tr>
-    <tr><td class="term">Top-k</td><td>Only samples from the <code>k</code> highest-probability tokens by rank, ignoring everything else.</td><td class="chref">Ch. 0c</td></tr>
-    <tr><td class="term">Greedy decoding</td><td>The special case of temperature = 0 — always picking the single highest-probability token, giving fully deterministic output.</td><td class="chref">Ch. 0c</td></tr>
-    <tr><td class="term">max_tokens</td><td>An API parameter that hard-caps how many tokens a reply can contain, cutting it off if it hits the limit.</td><td class="chref">Ch. 0c, 15</td></tr>
-    <tr><td class="term">Stop sequence</td><td>A custom string that, if generated, immediately ends the model's output (e.g. stopping at a specific delimiter).</td><td class="chref">Ch. 0c</td></tr>
-    <tr><td class="term">Streaming</td><td>Receiving a model's response token-by-token as it's generated, instead of waiting for the entire reply to finish.</td><td class="chref">Ch. 13</td></tr>
+    <tr><td class="term">Logits / probability distribution</td><td>The model's raw output at each step — a score (turned into a probability) for every possible next token.</td><td class="chref">Ch. 3</td></tr>
+    <tr><td class="term">Sampling</td><td>The process of actually picking one token from that probability distribution to generate next.</td><td class="chref">Ch. 3</td></tr>
+    <tr><td class="term">Temperature</td><td>A setting that reshapes the probability distribution before sampling: 0 = always pick the most likely token (deterministic), higher = more variety and risk.</td><td class="chref">Ch. 3</td></tr>
+    <tr><td class="term">Top-p (nucleus sampling)</td><td>Only samples from the smallest set of top tokens whose probabilities add up to <code>p</code> (e.g. 0.9), excluding the improbable "long tail."</td><td class="chref">Ch. 3</td></tr>
+    <tr><td class="term">Top-k</td><td>Only samples from the <code>k</code> highest-probability tokens by rank, ignoring everything else.</td><td class="chref">Ch. 3</td></tr>
+    <tr><td class="term">Greedy decoding</td><td>The special case of temperature = 0 — always picking the single highest-probability token, giving fully deterministic output.</td><td class="chref">Ch. 3</td></tr>
+    <tr><td class="term">max_tokens</td><td>An API parameter that hard-caps how many tokens a reply can contain, cutting it off if it hits the limit.</td><td class="chref">Ch. 3, 20</td></tr>
+    <tr><td class="term">Stop sequence</td><td>A custom string that, if generated, immediately ends the model's output (e.g. stopping at a specific delimiter).</td><td class="chref">Ch. 3</td></tr>
+    <tr><td class="term">Streaming</td><td>Receiving a model's response token-by-token as it's generated, instead of waiting for the entire reply to finish.</td><td class="chref">Ch. 18</td></tr>
   </tbody></table>
 
   <h2 id="sec-prompt">✍️ Prompting</h2>
   <table><tbody>
-    <tr><td class="term">System prompt</td><td>Instructions given to the model before the conversation starts, setting its role, tone, and constraints for the whole session.</td><td class="chref">Ch. 8</td></tr>
-    <tr><td class="term">Few-shot / zero-shot</td><td>Few-shot = giving the model 2–3 worked examples in the prompt to show the exact output shape you want. Zero-shot = no examples, just instructions.</td><td class="chref">Ch. 8</td></tr>
-    <tr><td class="term">Prompt engineering</td><td>The practice of designing prompts (system prompts, examples, structure) to reliably steer a model's behavior without changing its weights.</td><td class="chref">Ch. 8</td></tr>
-    <tr><td class="term">Chain-of-thought</td><td>Prompting the model to reason step-by-step before giving a final answer, which often improves accuracy on complex problems.</td><td class="chref">Ch. 8, 12</td></tr>
-    <tr><td class="term">Extended thinking / reasoning</td><td>A model mode where it generates an internal "thinking" trace before answering, useful for harder problems at the cost of extra tokens/latency.</td><td class="chref">Ch. 12</td></tr>
-    <tr><td class="term">Structured output</td><td>Forcing a model's response into a specific format (usually JSON) matching a schema you define, so downstream code can parse it reliably.</td><td class="chref">Ch. 9</td></tr>
-    <tr><td class="term">Prompt caching</td><td>Reusing the processed representation of a repeated prompt prefix across requests, cutting cost and latency for large, unchanging context (like a big system prompt).</td><td class="chref">Ch. 10</td></tr>
+    <tr><td class="term">System prompt</td><td>Instructions given to the model before the conversation starts, setting its role, tone, and constraints for the whole session.</td><td class="chref">Ch. 13</td></tr>
+    <tr><td class="term">Few-shot / zero-shot</td><td>Few-shot = giving the model 2–3 worked examples in the prompt to show the exact output shape you want. Zero-shot = no examples, just instructions.</td><td class="chref">Ch. 13</td></tr>
+    <tr><td class="term">Prompt engineering</td><td>The practice of designing prompts (system prompts, examples, structure) to reliably steer a model's behavior without changing its weights.</td><td class="chref">Ch. 13</td></tr>
+    <tr><td class="term">Chain-of-thought</td><td>Prompting the model to reason step-by-step before giving a final answer, which often improves accuracy on complex problems.</td><td class="chref">Ch. 13, 17</td></tr>
+    <tr><td class="term">Extended thinking / reasoning</td><td>A model mode where it generates an internal "thinking" trace before answering, useful for harder problems at the cost of extra tokens/latency.</td><td class="chref">Ch. 17</td></tr>
+    <tr><td class="term">Structured output</td><td>Forcing a model's response into a specific format (usually JSON) matching a schema you define, so downstream code can parse it reliably.</td><td class="chref">Ch. 14</td></tr>
+    <tr><td class="term">Prompt caching</td><td>Reusing the processed representation of a repeated prompt prefix across requests, cutting cost and latency for large, unchanging context (like a big system prompt).</td><td class="chref">Ch. 15</td></tr>
   </tbody></table>
 
   <h2 id="sec-tools">🛠️ Tools &amp; Agents</h2>
   <table><tbody>
-    <tr><td class="term">Tool use / function calling</td><td>Giving a model a set of defined functions it can request to call (with arguments), letting it take actions or fetch live data beyond its training knowledge.</td><td class="chref">Ch. 11</td></tr>
-    <tr><td class="term">MCP (Model Context Protocol)</td><td>An open standard that packages tools/data/prompts into a portable "server" any compatible AI app can plug into — like a USB-C port for AI tools.</td><td class="chref">Ch. 4</td></tr>
-    <tr><td class="term">Agent loop</td><td>The repeating cycle of plan → act (use a tool) → observe the result → repeat, that lets a model complete multi-step tasks autonomously.</td><td class="chref">Ch. 14</td></tr>
-    <tr><td class="term">Subagent</td><td>A separate agent instance, with its own context window, delegated a specific sub-task by a parent agent — only the final summary comes back.</td><td class="chref">Ch. 5</td></tr>
-    <tr><td class="term">Claude Agent SDK</td><td>A library exposing the same agent engine that powers Claude Code (loop, tools, permissions, MCP) so you can build standalone agents outside the CLI.</td><td class="chref">Ch. 6</td></tr>
-    <tr><td class="term">Computer use</td><td>Letting a model operate a screen directly — screenshot in, click/type actions out — used when no clean API exists for a task.</td><td class="chref">Ch. 7</td></tr>
+    <tr><td class="term">Tool use / function calling</td><td>Giving a model a set of defined functions it can request to call (with arguments), letting it take actions or fetch live data beyond its training knowledge.</td><td class="chref">Ch. 16</td></tr>
+    <tr><td class="term">MCP (Model Context Protocol)</td><td>An open standard that packages tools/data/prompts into a portable "server" any compatible AI app can plug into — like a USB-C port for AI tools.</td><td class="chref">Ch. 9</td></tr>
+    <tr><td class="term">Agent loop</td><td>The repeating cycle of plan → act (use a tool) → observe the result → repeat, that lets a model complete multi-step tasks autonomously.</td><td class="chref">Ch. 19</td></tr>
+    <tr><td class="term">Subagent</td><td>A separate agent instance, with its own context window, delegated a specific sub-task by a parent agent — only the final summary comes back.</td><td class="chref">Ch. 10</td></tr>
+    <tr><td class="term">Claude Agent SDK</td><td>A library exposing the same agent engine that powers Claude Code (loop, tools, permissions, MCP) so you can build standalone agents outside the CLI.</td><td class="chref">Ch. 11</td></tr>
+    <tr><td class="term">Computer use</td><td>Letting a model operate a screen directly — screenshot in, click/type actions out — used when no clean API exists for a task.</td><td class="chref">Ch. 12</td></tr>
   </tbody></table>
 
   <h2 id="sec-rag">📚 RAG &amp; Retrieval</h2>
   <table><tbody>
-    <tr><td class="term">RAG (Retrieval-Augmented Generation)</td><td>Feeding a model relevant chunks of your own documents/data at query time, so it can answer using information it wasn't trained on.</td><td class="chref">Ch. 16–21</td></tr>
-    <tr><td class="term">Embedding model</td><td>A (usually smaller, specialized) model whose only job is to turn text into embedding vectors for search/retrieval, as opposed to generating text.</td><td class="chref">Ch. 16</td></tr>
-    <tr><td class="term">Chunking</td><td>Splitting a large document into smaller pieces before embedding/storing it, so retrieval can pull back just the relevant part instead of the whole document.</td><td class="chref">Ch. 17</td></tr>
-    <tr><td class="term">Vector database / vector store</td><td>A database optimized for storing embeddings and quickly finding the ones most similar to a query vector (e.g. pgvector, Pinecone, Chroma, Qdrant).</td><td class="chref">Ch. 18</td></tr>
-    <tr><td class="term">Semantic search</td><td>Searching by meaning (via embeddings/cosine similarity) rather than exact keyword matching.</td><td class="chref">Ch. 19</td></tr>
-    <tr><td class="term">Hybrid search</td><td>Combining semantic (vector) search with traditional keyword search to get the strengths of both.</td><td class="chref">Ch. 19</td></tr>
-    <tr><td class="term">Reranking</td><td>A second pass that re-scores an initial set of retrieved results with a more precise (but slower) model, pushing the truly best matches to the top.</td><td class="chref">Ch. 19</td></tr>
-    <tr><td class="term">Agentic RAG</td><td>RAG where the model itself decides when/what to retrieve, possibly across multiple rounds, instead of a single fixed retrieval step.</td><td class="chref">Ch. 20</td></tr>
-    <tr><td class="term">GraphRAG</td><td>A RAG variant that retrieves from a knowledge graph (entities + relationships) instead of, or alongside, flat document chunks.</td><td class="chref">Ch. 20</td></tr>
+    <tr><td class="term">RAG (Retrieval-Augmented Generation)</td><td>Feeding a model relevant chunks of your own documents/data at query time, so it can answer using information it wasn't trained on.</td><td class="chref">Ch. 21–26</td></tr>
+    <tr><td class="term">Embedding model</td><td>A (usually smaller, specialized) model whose only job is to turn text into embedding vectors for search/retrieval, as opposed to generating text.</td><td class="chref">Ch. 21</td></tr>
+    <tr><td class="term">Chunking</td><td>Splitting a large document into smaller pieces before embedding/storing it, so retrieval can pull back just the relevant part instead of the whole document.</td><td class="chref">Ch. 22</td></tr>
+    <tr><td class="term">Vector database / vector store</td><td>A database optimized for storing embeddings and quickly finding the ones most similar to a query vector (e.g. pgvector, Pinecone, Chroma, Qdrant).</td><td class="chref">Ch. 23</td></tr>
+    <tr><td class="term">Semantic search</td><td>Searching by meaning (via embeddings/cosine similarity) rather than exact keyword matching.</td><td class="chref">Ch. 24</td></tr>
+    <tr><td class="term">Hybrid search</td><td>Combining semantic (vector) search with traditional keyword search to get the strengths of both.</td><td class="chref">Ch. 24</td></tr>
+    <tr><td class="term">Reranking</td><td>A second pass that re-scores an initial set of retrieved results with a more precise (but slower) model, pushing the truly best matches to the top.</td><td class="chref">Ch. 24</td></tr>
+    <tr><td class="term">Agentic RAG</td><td>RAG where the model itself decides when/what to retrieve, possibly across multiple rounds, instead of a single fixed retrieval step.</td><td class="chref">Ch. 25</td></tr>
+    <tr><td class="term">GraphRAG</td><td>A RAG variant that retrieves from a knowledge graph (entities + relationships) instead of, or alongside, flat document chunks.</td><td class="chref">Ch. 25</td></tr>
   </tbody></table>
 
   <h2 id="sec-orch">🕸️ Orchestration Frameworks</h2>
   <table><tbody>
-    <tr><td class="term">LangChain</td><td>A framework providing pre-built abstractions (chains, memory, retrievers) for building LLM applications, overlapping with native tool-use patterns.</td><td class="chref">Ch. 22</td></tr>
-    <tr><td class="term">LangGraph</td><td>A graph-based orchestration framework for building agents as state machines, supporting cycles, branching, and human-in-the-loop steps.</td><td class="chref">Ch. 23</td></tr>
-    <tr><td class="term">Multi-agent system</td><td>Multiple specialized agents coordinating on a task, often with one orchestrator agent delegating to worker agents.</td><td class="chref">Ch. 24</td></tr>
-    <tr><td class="term">Orchestrator / worker pattern</td><td>A common multi-agent design where one "orchestrator" agent plans and delegates sub-tasks to specialized "worker" agents.</td><td class="chref">Ch. 24</td></tr>
+    <tr><td class="term">LangChain</td><td>A framework providing pre-built abstractions (chains, memory, retrievers) for building LLM applications, overlapping with native tool-use patterns.</td><td class="chref">Ch. 27</td></tr>
+    <tr><td class="term">LangGraph</td><td>A graph-based orchestration framework for building agents as state machines, supporting cycles, branching, and human-in-the-loop steps.</td><td class="chref">Ch. 28</td></tr>
+    <tr><td class="term">Multi-agent system</td><td>Multiple specialized agents coordinating on a task, often with one orchestrator agent delegating to worker agents.</td><td class="chref">Ch. 29</td></tr>
+    <tr><td class="term">Orchestrator / worker pattern</td><td>A common multi-agent design where one "orchestrator" agent plans and delegates sub-tasks to specialized "worker" agents.</td><td class="chref">Ch. 29</td></tr>
   </tbody></table>
 
   <h2 id="sec-safety">🛡️ Safety, Evaluation &amp; Production</h2>
   <table><tbody>
-    <tr><td class="term">Guardrails</td><td>Input/output checks (validation, filtering, schema enforcement) that constrain what a model is allowed to receive or produce.</td><td class="chref">Ch. 25</td></tr>
-    <tr><td class="term">Prompt injection</td><td>An attack where malicious text hidden in a document, webpage, or tool result tricks a model into ignoring its real instructions.</td><td class="chref">Ch. 7, 26</td></tr>
-    <tr><td class="term">PII redaction</td><td>Automatically detecting and removing/masking personally identifiable information (names, emails, SSNs) from text before it's stored or sent onward.</td><td class="chref">Ch. 27</td></tr>
-    <tr><td class="term">Eval (evaluation)</td><td>A structured test set + scoring method used to measure how well a model or pipeline performs, and to catch regressions when you change something.</td><td class="chref">Ch. 28</td></tr>
-    <tr><td class="term">LLM-as-judge</td><td>Using one model to automatically grade/score another model's outputs against criteria, as a scalable substitute for human review.</td><td class="chref">Ch. 28</td></tr>
-    <tr><td class="term">Observability / tracing</td><td>Logging and visualizing every step of an agent/LLM pipeline's execution (prompts, tool calls, latencies) to debug and monitor it in production.</td><td class="chref">Ch. 29</td></tr>
-    <tr><td class="term">Red-teaming</td><td>Deliberately attacking your own AI system to find safety and security weaknesses before real adversaries do.</td><td class="chref">Ch. 30</td></tr>
-    <tr><td class="term">Latency</td><td>The time it takes to get a response back from a model — a key production concern, especially for streaming/agentic workflows.</td><td class="chref">Ch. 15</td></tr>
-    <tr><td class="term">Rate limit</td><td>A cap on how many requests/tokens per minute an API account can send, which production systems must handle with retries/backoff.</td><td class="chref">Ch. 31</td></tr>
+    <tr><td class="term">Guardrails</td><td>Input/output checks (validation, filtering, schema enforcement) that constrain what a model is allowed to receive or produce.</td><td class="chref">Ch. 30</td></tr>
+    <tr><td class="term">Prompt injection</td><td>An attack where malicious text hidden in a document, webpage, or tool result tricks a model into ignoring its real instructions.</td><td class="chref">Ch. 12, 31</td></tr>
+    <tr><td class="term">PII redaction</td><td>Automatically detecting and removing/masking personally identifiable information (names, emails, SSNs) from text before it's stored or sent onward.</td><td class="chref">Ch. 32</td></tr>
+    <tr><td class="term">Eval (evaluation)</td><td>A structured test set + scoring method used to measure how well a model or pipeline performs, and to catch regressions when you change something.</td><td class="chref">Ch. 33</td></tr>
+    <tr><td class="term">LLM-as-judge</td><td>Using one model to automatically grade/score another model's outputs against criteria, as a scalable substitute for human review.</td><td class="chref">Ch. 33</td></tr>
+    <tr><td class="term">Golden dataset / test set</td><td>The curated, hand-verified set of <code>{input, expected}</code> cases an eval grades against — "golden" because its answers are trusted ground truth. Also called a gold-standard set.</td><td class="chref">Ch. 33</td></tr>
+    <tr><td class="term">Observability / tracing</td><td>Logging and visualizing every step of an agent/LLM pipeline's execution (prompts, tool calls, latencies) to debug and monitor it in production.</td><td class="chref">Ch. 34</td></tr>
+    <tr><td class="term">Red-teaming</td><td>Deliberately attacking your own AI system to find safety and security weaknesses before real adversaries do.</td><td class="chref">Ch. 35</td></tr>
+    <tr><td class="term">Latency</td><td>The time it takes to get a response back from a model — a key production concern, especially for streaming/agentic workflows.</td><td class="chref">Ch. 20</td></tr>
+    <tr><td class="term">Rate limit</td><td>A cap on how many requests/tokens per minute an API account can send, which production systems must handle with retries/backoff.</td><td class="chref">Ch. 36</td></tr>
   </tbody></table>
 
   <h2 id="sec-cc">⚙️ Claude Code Specific</h2>
   <table><tbody>
-    <tr><td class="term">CLAUDE.md</td><td>A markdown file Claude Code automatically loads every session, giving it persistent project context/instructions ("project memory").</td><td class="chref">Ch. 1</td></tr>
-    <tr><td class="term">Slash command</td><td>A saved, reusable prompt triggered by typing <code>/name</code>, stored in <code>.claude/commands/</code>.</td><td class="chref">Ch. 1</td></tr>
-    <tr><td class="term">Hook</td><td>A deterministic shell command that runs automatically on a Claude Code event (e.g. before a tool call) — a "guarantee" vs. CLAUDE.md's "suggestion."</td><td class="chref">Ch. 1</td></tr>
-    <tr><td class="term">Settings.json</td><td>Claude Code's configuration file for permissions, hooks, and environment variables, with user/project/local precedence layers.</td><td class="chref">Ch. 1</td></tr>
-    <tr><td class="term">Permission mode</td><td>The current operating mode governing what Claude Code can do without asking (default, acceptEdits, plan, bypassPermissions).</td><td class="chref">Ch. 1</td></tr>
-    <tr><td class="term">Skill</td><td>A single, on-demand capability defined in a <code>SKILL.md</code> file, loaded into context only when relevant (progressive disclosure).</td><td class="chref">Ch. 3</td></tr>
-    <tr><td class="term">Plugin</td><td>A distributable bundle that can package skills, slash commands, MCP servers, subagents, and hooks together.</td><td class="chref">Ch. 3</td></tr>
-    <tr><td class="term">Compaction</td><td>Lossy summarization of older conversation turns to free up context window space, triggered by <code>/compact</code> or automatically near the limit.</td><td class="chref">Ch. 2</td></tr>
+    <tr><td class="term">CLAUDE.md</td><td>A markdown file Claude Code automatically loads every session, giving it persistent project context/instructions ("project memory").</td><td class="chref">Ch. 6</td></tr>
+    <tr><td class="term">Slash command</td><td>A saved, reusable prompt triggered by typing <code>/name</code>, stored in <code>.claude/commands/</code>.</td><td class="chref">Ch. 6</td></tr>
+    <tr><td class="term">Hook</td><td>A deterministic shell command that runs automatically on a Claude Code event (e.g. before a tool call) — a "guarantee" vs. CLAUDE.md's "suggestion."</td><td class="chref">Ch. 6</td></tr>
+    <tr><td class="term">Settings.json</td><td>Claude Code's configuration file for permissions, hooks, and environment variables, with user/project/local precedence layers.</td><td class="chref">Ch. 6</td></tr>
+    <tr><td class="term">Permission mode</td><td>The current operating mode governing what Claude Code can do without asking (default, acceptEdits, plan, bypassPermissions).</td><td class="chref">Ch. 6</td></tr>
+    <tr><td class="term">Skill</td><td>A single, on-demand capability defined in a <code>SKILL.md</code> file, loaded into context only when relevant (progressive disclosure).</td><td class="chref">Ch. 8</td></tr>
+    <tr><td class="term">Plugin</td><td>A distributable bundle that can package skills, slash commands, MCP servers, subagents, and hooks together.</td><td class="chref">Ch. 8</td></tr>
+    <tr><td class="term">Compaction</td><td>Lossy summarization of older conversation turns to free up context window space, triggered by <code>/compact</code> or automatically near the limit.</td><td class="chref">Ch. 7</td></tr>
   </tbody></table>
 
   <div class="nav-bottom">
-    <a href="ch00d-beyond-text.html">← Chapter 0d</a>
-    <a class="next" href="ch01-claude-code-fundamentals.html">Part 0 complete → Chapter 1: Claude Code Fundamentals</a>
+    <a href="ch00d-beyond-text.html">← Chapter 4</a>
+    <a class="next" href="ch01-claude-code-fundamentals.html">Part 1 complete → Chapter 6: Claude Code Fundamentals</a>
   </div>
 </div>
 <script>

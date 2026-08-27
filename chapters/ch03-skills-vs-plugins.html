@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 3 — Skills vs. Plugins</title>
+<title>Ch 8 — Skills vs. Plugins</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -58,10 +58,10 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="3">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="8">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 1 · Chapter 3</div>
+  <div class="ch-meta">Part 2 · Chapter 8</div>
   <h1>Skills vs. Plugins</h1>
   <p><span class="badge cc">Claude Code</span> what each is · when to use which · structure &amp; packaging</p>
 
@@ -94,8 +94,8 @@ description: Extract line items from PDF invoices into JSON.
   <ul>
     <li><strong>Skills</strong> (knowledge)</li>
     <li><strong>Slash commands</strong> (saved prompts)</li>
-    <li><strong>MCP servers</strong> (new tools/integrations — Chapter 4)</li>
-    <li><strong>Subagents</strong> (specialist agents — Chapter 5)</li>
+    <li><strong>MCP servers</strong> (new tools/integrations — Chapter 9)</li>
+    <li><strong>Subagents</strong> (specialist agents — Chapter 10)</li>
     <li><strong>Hooks</strong> (automation)</li>
   </ul>
   <pre><code>my-plugin/
@@ -111,7 +111,7 @@ description: Extract line items from PDF invoices into JSON.
     <tr><th>You want to…</th><th>Reach for</th></tr>
     <tr><td>Teach Claude a repeatable procedure/knowledge</td><td>Skill</td></tr>
     <tr><td>Add a personal shortcut for a repeated prompt</td><td>Slash command (may live in a plugin)</td></tr>
-    <tr><td>Add a brand-new tool/integration (DB, API)</td><td>MCP server (Chapter 4)</td></tr>
+    <tr><td>Add a brand-new tool/integration (DB, API)</td><td>MCP server (Chapter 9)</td></tr>
     <tr><td>Share a whole toolkit with your team</td><td>Plugin bundling all of the above</td></tr>
   </table>
 
@@ -123,7 +123,7 @@ description: Extract line items from PDF invoices into JSON.
     <tr><td>Skill</td><td>Auto, when description matches</td><td>Larger task knowledge, loaded only when needed</td></tr>
     <tr><td>Plugin</td><td>Installed; its parts load per their own rules</td><td>Packaging &amp; sharing many of the above</td></tr>
   </table>
-  <p>Note the token angle (ties to Chapter 2): CLAUDE.md always costs tokens; a Skill costs almost nothing until triggered. So big knowledge belongs in a Skill, not CLAUDE.md.</p>
+  <p>Note the token angle (ties to Chapter 7): CLAUDE.md always costs tokens; a Skill costs almost nothing until triggered. So big knowledge belongs in a Skill, not CLAUDE.md.</p>
 
   <p class="label">Key takeaways</p>
   <ul>
@@ -150,8 +150,8 @@ description: Extract line items from PDF invoices into JSON.
   </details>
 
   <div class="nav-bottom">
-    <a href="ch02-context-management.html">← Chapter 2</a>
-    <a class="next" href="ch04-mcp.html">Chapter 4: MCP →</a>
+    <a href="ch02-context-management.html">← Chapter 7</a>
+    <a class="next" href="ch04-mcp.html">Chapter 9: MCP →</a>
   </div>
 </div>
 <script>

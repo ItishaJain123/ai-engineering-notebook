@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 19 — Retrieval Strategies</title>
+<title>Ch 24 — Retrieval Strategies</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -59,14 +59,18 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="19">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="24">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 3 · Chapter 19</div>
+  <div class="ch-meta">Part 4 · Chapter 24</div>
   <h1>Retrieval Strategies</h1>
   <p><span class="badge general">General AI Eng</span> hybrid search and reranking — getting the right chunks, not just similar ones</p>
 
-  <div class="callout"><strong>Why this matters.</strong> Pure vector/semantic search (Ch. 16-18) is powerful — it finds meaning, not just matching words. But it isn't perfect. It can miss exact keyword matches: a product SKU like <code>SKU-88213</code>, an exact error code like <code>ERR_CONN_RESET</code>, or a person's name — things a plain keyword search would catch instantly, but that an embedding model might blur into "something about products" or "something about errors." Real production retrieval systems usually combine multiple strategies instead of relying on vector search alone.</p>
+  <div class="callout"><strong>Why this matters.</strong> Pure vector/semantic search (Ch. 21-23) is powerful — it finds meaning, not just matching words. But it isn't perfect. It can miss exact keyword matches: a product SKU like <code>SKU-88213</code>, an exact error code like <code>ERR_CONN_RESET</code>, or a person's name — things a plain keyword search would catch instantly, but that an embedding model might blur into "something about products" or "something about errors." Real production retrieval systems usually combine multiple strategies instead of relying on vector search alone.</p>
+
+  <div class="callout"><strong>🟢 In plain words.</strong> Search-by-meaning is great at paraphrases but can miss exact things like an order number or error code. Hybrid search runs meaning-search and keyword-search together; a reranker then carefully re-orders a cheap shortlist. You retrieve broad and cheap, then narrow and precise.</div>
+
+  <div class="callout"><strong>🔍 The tricky part, in plain language.</strong> Vector search matches on <em>meaning</em>, which is great for "how do I return an item?" but bad for exact strings like a product code <code>SKU-88213</code> or a person's name — meaning-wise those are basically noise, so the right document may not rank near the top. The fix is <em>hybrid</em>: run a meaning search (vectors) <em>and</em> a keyword search (BM25, which literally matches the words), then combine them. After that, a <em>reranker</em> takes the ~50 candidates and re-scores them more carefully to float the best few to the top. Picture searching with both a "sounds like what I meant" filter and a "contains this exact word" filter, then having an expert re-sort the finalists. <em>Takeaway:</em> meaning-search and keyword-search miss different things — combine them, then rerank the shortlist.</div>
 
   <p class="label">Real-world analogy</p>
   <div class="analogy">Imagine house-hunting. Semantic search is telling an agent "find me neighborhoods that <em>feel</em> like this one I loved" — walkable, quiet, leafy. Keyword search is "it must have exactly 3 bedrooms and be under $500k" — no fuzziness allowed, exact match or nothing. A good agent uses both at once: narrow by the hard requirements, then rank by feel. Retrieval systems face the same split, and the best ones don't pick one — they combine them.</div>
@@ -75,7 +79,7 @@
   <table>
     <tr><th>Approach</th><th>How it works</th><th>Strengths</th><th>Weaknesses</th></tr>
     <tr><td><strong>Keyword / lexical search</strong><br>(e.g. BM25)</td><td>Scores documents by exact term overlap with the query, weighted by how rare/important each term is</td><td>Great for precise terms: product codes, error codes, names, acronyms. Cheap, fast, no model needed.</td><td>Fails on paraphrases — "automobile" won't match a document that only says "car"</td></tr>
-    <tr><td><strong>Semantic / vector search</strong><br>(Ch. 16-18)</td><td>Embeds the query, finds nearest chunk vectors by similarity</td><td>Great at meaning and paraphrase — finds relevant text even with zero shared words</td><td>Can miss exact terms — embeddings can blur specific codes, numbers, or rare names into "roughly similar" territory</td></tr>
+    <tr><td><strong>Semantic / vector search</strong><br>(Ch. 21-23)</td><td>Embeds the query, finds nearest chunk vectors by similarity</td><td>Great at meaning and paraphrase — finds relevant text even with zero shared words</td><td>Can miss exact terms — embeddings can blur specific codes, numbers, or rare names into "roughly similar" territory</td></tr>
     <tr><td><strong>Hybrid search</strong></td><td>Runs both, then combines the two ranked lists into one</td><td>Gets the best of both — catches exact terms <em>and</em> paraphrases</td><td>More moving parts: two systems to run and a fusion step to tune</td></tr>
   </table>
 
@@ -169,9 +173,19 @@ const reranked = await rerank({
     </ol>
   </details>
 
+  <details><summary>💬 Conceptual questions (the kind interviewers ask)</summary>
+    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 4px">Answer each out loud before peeking. These tie this chapter to real production concerns — cost, latency, failures, and quality.</p>
+    <ol>
+      <li><strong>A user searches for "SKU-88213" and vector search misses the exact document. Why, and what fixes it?</strong><br><em>Embeddings blur exact codes into "roughly about products" rather than matching the precise token. Keyword/BM25 search catches exact tokens instantly — run both (hybrid search) so you catch codes <u>and</u> paraphrases.</em></li>
+      <li><strong>Why rerank only the top ~50 candidates instead of your whole corpus?</strong><br><em>A reranker scores the query together with each candidate — very accurate but expensive. It's affordable on 50 candidates and hopelessly slow on millions. That's the point of the funnel: cheap-and-broad retrieval first, expensive-and-precise reranking on the shortlist.</em></li>
+      <li><strong>When is hybrid search + reranking <u>not</u> worth the added complexity?</strong><br><em>On small, low-stakes datasets (a few hundred chunks) where plain vector search already works — two indexes, a fusion step to tune, an extra reranker call, and added latency don't pay for themselves. Add complexity only to fix an observed failure.</em></li>
+      <li><strong>How does the fusion step combine two ranked lists, and why might you prefer RRF?</strong><br><em>Weighted scoring blends the two normalized scores; reciprocal rank fusion (RRF) combines by <u>rank position</u>, which is more robust when the keyword and vector scoring scales don't line up. Either way you get one merged ranking to feed the reranker.</em></li>
+    </ol>
+  </details>
+
   <div class="nav-bottom">
-    <a href="ch18-vector-stores.html">← Chapter 18</a>
-    <a class="next" href="ch20-advanced-rag.html">Chapter 20: Advanced RAG →</a>
+    <a href="ch18-vector-stores.html">← Chapter 23</a>
+    <a class="next" href="ch20-advanced-rag.html">Chapter 25: Advanced RAG →</a>
   </div>
 </div>
 <script>

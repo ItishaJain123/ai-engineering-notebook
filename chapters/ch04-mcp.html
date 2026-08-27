@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 4 — MCP (Model Context Protocol)</title>
+<title>Ch 9 — MCP (Model Context Protocol)</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -58,10 +58,10 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="4">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="9">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 1 · Chapter 4</div>
+  <div class="ch-meta">Part 2 · Chapter 9</div>
   <h1>MCP — Model Context Protocol</h1>
   <p><span class="badge general">General AI Eng</span><span class="badge cc">Claude Code</span> build a server from scratch · connect it to Claude Code</p>
 
@@ -131,7 +131,7 @@ server.registerTool(
 const transport = new StdioServerTransport();
 await server.connect(transport);</code></pre>
 
-  <p>Three things every tool needs: a <strong>name</strong>, an <strong>inputSchema</strong> (so the model knows what args to send — validated for you), and a <strong>handler</strong> that returns a <code>content</code> array. This mirrors the raw tool-use shape you'll meet in Chapter 11.</p>
+  <p>Three things every tool needs: a <strong>name</strong>, an <strong>inputSchema</strong> (so the model knows what args to send — validated for you), and a <strong>handler</strong> that returns a <code>content</code> array. This mirrors the raw tool-use shape you'll meet in Chapter 16.</p>
 
   <h2>Connect it to Claude Code</h2>
   <p>Register the server (writes to your MCP config):</p>
@@ -160,7 +160,7 @@ await server.connect(transport);</code></pre>
     <tr><td>Reuse across apps</td><td>No — locked to your app</td><td>Yes — any MCP client</td></tr>
     <tr><td>Tool discovery</td><td>You hardcode the tool list</td><td>Client asks the server "what do you offer?"</td></tr>
   </table>
-  <div class="callout"><strong>The punchline:</strong> MCP is usually built <em>on top of</em> raw API tool use. An MCP client still relies on the model's function-calling ability under the hood — MCP just standardizes <em>where tools come from and how they're delivered</em>, making them portable instead of bespoke. So it's not "API <em>or</em> MCP" — it's "handle tools myself in one app" vs. "expose tools through a standard any app can reuse." (You'll build raw tool use directly in Chapter 11.)</div>
+  <div class="callout"><strong>The punchline:</strong> MCP is usually built <em>on top of</em> raw API tool use. An MCP client still relies on the model's function-calling ability under the hood — MCP just standardizes <em>where tools come from and how they're delivered</em>, making them portable instead of bespoke. So it's not "API <em>or</em> MCP" — it's "handle tools myself in one app" vs. "expose tools through a standard any app can reuse." (You'll build raw tool use directly in Chapter 16.)</div>
 
   <h2>🟢 "AI vs. MCP" — the question people actually mean to ask</h2>
   <p>"AI vs MCP" isn't really a fair fight — the AI is the <strong>brain</strong>, MCP is a <strong>plug for its hands</strong>. They're different layers, not alternatives. But there <em>is</em> a real, useful comparison hiding inside that question: <strong>"should the AI just wing it itself (e.g. by clicking around a website), or should it use an MCP tool built for the job?"</strong> That's the comparison worth learning.</p>
@@ -168,7 +168,7 @@ await server.connect(transport);</code></pre>
   <div class="analogy">
     <strong>Think of it as: doing a task yourself by hand vs. using a proper tool for it.</strong>
     <ul>
-      <li><strong>AI acting alone / driving a browser</strong> (Chapter 7's "Claude in Chrome") = a person walking into a kitchen with no recipe, reading the menu on the wall, and cooking it themselves by trial and error. Works <em>anywhere</em>, even with no instructions — but slow, and easy to knock something over.</li>
+      <li><strong>AI acting alone / driving a browser</strong> (Chapter 12's "Claude in Chrome") = a person walking into a kitchen with no recipe, reading the menu on the wall, and cooking it themselves by trial and error. Works <em>anywhere</em>, even with no instructions — but slow, and easy to knock something over.</li>
       <li><strong>AI using an MCP tool</strong> = calling the restaurant and ordering exactly what you want by name. Fast, precise, and the restaurant (the tool) does the actual work correctly every time.</li>
     </ul>
   </div>
@@ -176,7 +176,7 @@ await server.connect(transport);</code></pre>
   <h3>Worked example: using GitHub with Claude</h3>
   <p>Say you want Claude to manage issues on your GitHub repo. You have two real options:</p>
   <ol>
-    <li><strong>Log into GitHub in Chrome</strong> and let Claude click around the website — the <em>Claude in Chrome</em> approach from Chapter 7.</li>
+    <li><strong>Log into GitHub in Chrome</strong> and let Claude click around the website — the <em>Claude in Chrome</em> approach from Chapter 12.</li>
     <li><strong>Connect a GitHub MCP server</strong> that talks straight to GitHub's API.</li>
   </ol>
   <p>Both technically "work." Here's why the MCP wins almost every time:</p>
@@ -184,12 +184,12 @@ await server.connect(transport);</code></pre>
     <tr><th></th><th>Claude in Chrome (clicking GitHub.com)</th><th>GitHub MCP server</th></tr>
     <tr><td>How it works</td><td>Looks at the page, finds buttons, clicks, screenshots, repeats</td><td>Calls GitHub's API directly: "give me all open issues"</td></tr>
     <tr><td>Speed for 20 issues</td><td>20 rounds of screenshot → find button → click → wait</td><td>A handful of direct calls, no screenshots</td></tr>
-    <tr><td>Token cost (Ch. 2)</td><td>High — every screenshot is expensive</td><td>Low — just structured data</td></tr>
+    <tr><td>Token cost (Ch. 7)</td><td>High — every screenshot is expensive</td><td>Low — just structured data</td></tr>
     <tr><td>Reliability</td><td>Breaks when GitHub redesigns a button/page</td><td>Stable — talks to the underlying data, not pixels</td></tr>
-    <tr><td>Safety</td><td>Has your <em>whole logged-in account</em>; a malicious page could try to trick it (prompt injection, Ch. 26)</td><td>Uses a <strong>scoped token</strong> — e.g. "read issues only," can't delete a repo even by mistake</td></tr>
+    <tr><td>Safety</td><td>Has your <em>whole logged-in account</em>; a malicious page could try to trick it (prompt injection, Ch. 31)</td><td>Uses a <strong>scoped token</strong> — e.g. "read issues only," can't delete a repo even by mistake</td></tr>
     <tr><td>Use when…</td><td>No API exists, or it's a quick one-off, or you need a visual check</td><td>An API exists — which GitHub has, so use it</td></tr>
   </table>
-  <div class="callout"><strong>The rule that ties it all together:</strong> if a clean tool/API already exists for the job (like GitHub's), give Claude an <strong>MCP tool</strong> for it — faster, more reliable, and you can limit exactly what it's allowed to do. Only fall back to driving a browser by hand (Chapter 7) when <em>no API exists</em> for that website.</div>
+  <div class="callout"><strong>The rule that ties it all together:</strong> if a clean tool/API already exists for the job (like GitHub's), give Claude an <strong>MCP tool</strong> for it — faster, more reliable, and you can limit exactly what it's allowed to do. Only fall back to driving a browser by hand (Chapter 12) when <em>no API exists</em> for that website.</div>
 
   <h2>🛠️ Step by step: add any MCP server (not just one you built)</h2>
   <p>You don't have to write your own server every time — most MCP servers already exist (GitHub, Playwright, Slack, etc.). Here's the general recipe:</p>
@@ -232,7 +232,7 @@ claude mcp get github  <span>// details on one server</span></code></pre>
   <table>
     <tr><th>Approach</th><th>Reuse across clients</th><th>Best for</th></tr>
     <tr><td>MCP server</td><td>High — any MCP client</td><td>Integrations you'll reuse or share</td></tr>
-    <tr><td>Raw API tool-use (Chapter 11)</td><td>Locked to your app</td><td>One app, tight control</td></tr>
+    <tr><td>Raw API tool-use (Chapter 16)</td><td>Locked to your app</td><td>One app, tight control</td></tr>
     <tr><td>CC slash command / skill</td><td>Claude Code only</td><td>Prompt-level helpers, not live integrations</td></tr>
   </table>
 
@@ -270,8 +270,8 @@ claude mcp get github  <span>// details on one server</span></code></pre>
   </details>
 
   <div class="nav-bottom">
-    <a href="ch03-skills-vs-plugins.html">← Chapter 3</a>
-    <a class="next" href="ch05-subagents.html">Chapter 5: Subagents →</a>
+    <a href="ch03-skills-vs-plugins.html">← Chapter 8</a>
+    <a class="next" href="ch05-subagents.html">Chapter 10: Subagents →</a>
   </div>
 </div>
 <script>

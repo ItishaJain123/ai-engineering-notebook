@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 14 — Agent Loop Engineering</title>
+<title>Ch 19 — Agent Loop Engineering</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -59,18 +59,22 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="14">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="19">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 2 · Chapter 14</div>
+  <div class="ch-meta">Part 3 · Chapter 19</div>
   <h1>Agent Loop Engineering</h1>
-  <p><span class="badge general">General AI Eng</span> the pattern that turns single tool calls (Ch. 11) into an agent that completes real multi-step tasks</p>
+  <p><span class="badge general">General AI Eng</span> the pattern that turns single tool calls (Ch. 16) into an agent that completes real multi-step tasks</p>
 
   <div class="callout"><strong>Why this matters.</strong> Every "AI agent" you've used — Claude Code included — is built around one core pattern repeated over and over: <strong>plan, act, observe, repeat</strong>. Understanding this loop demystifies what an "agent" actually is (it's not magic — it's a while-loop around a model with tools) and is the foundation for building your own.</p>
 
+  <div class="callout"><strong>🟢 In plain words.</strong> An "agent" is just a loop: the model plans, your code runs a tool, the result goes back to the model, repeat — until it says it's done. No magic. It's a while-loop wrapped around a model that has tools.</div>
+
+  <div class="callout"><strong>🔍 The tricky part, in plain language.</strong> The "agent" is just a loop, and the model never runs anything itself. The loop is: you send the prompt → the model replies "please call <code>get_weather('Paris')</code>" → <strong>your code</strong> actually runs that function → you send the result back as a new message → the model reads it and continues. Repeat until the model stops asking for tools. Picture a chess coach who can only <em>say</em> moves out loud while a helper physically moves the pieces and reports back the new board. One more thing: every turn, the whole conversation (plus each tool result) gets re-sent, so the context keeps growing. <em>Takeaway:</em> the model decides, your code acts, and the transcript grows a little with every loop.</div>
+
   <p class="label">Real-world analogy</p>
   <div class="analogy">
-    Think of a chef cooking a dish they've never made before, from a recipe card with steps but no fixed order guaranteed to work: taste (observe), decide what's missing (plan), add an ingredient (act), taste again (observe), repeat — until the dish is done. A single tool call (Ch. 11) is one "taste and add ingredient." The agent loop is the chef doing that <em>repeatedly</em>, using each result to decide the next move, until the dish is actually finished.
+    Think of a chef cooking a dish they've never made before, from a recipe card with steps but no fixed order guaranteed to work: taste (observe), decide what's missing (plan), add an ingredient (act), taste again (observe), repeat — until the dish is done. A single tool call (Ch. 16) is one "taste and add ingredient." The agent loop is the chef doing that <em>repeatedly</em>, using each result to decide the next move, until the dish is actually finished.
   </div>
 
   <h2>1. The loop, step by step</h2>
@@ -128,23 +132,23 @@
     <tr><th>Condition</th><th>Why it matters</th></tr>
     <tr><td><strong>Max steps</strong> (like <code>MAX_STEPS</code> above)</td><td>Prevents infinite loops from a confused or stuck agent — always set a hard ceiling</td></tr>
     <tr><td><strong>No tool_use in response</strong></td><td>The natural "done" signal — the model believes it has a final answer</td></tr>
-    <tr><td><strong>Max token/cost budget</strong></td><td>Caps runaway spending on a single task (ties into Ch. 15)</td></tr>
+    <tr><td><strong>Max token/cost budget</strong></td><td>Caps runaway spending on a single task (ties into Ch. 20)</td></tr>
     <tr><td><strong>Explicit "give up" tool</strong></td><td>Some agents get a tool like <code>ask_human</code> or <code>report_blocked</code> so they can stop gracefully instead of looping uselessly</td></tr>
   </table>
 
   <h2>4. Context engineering: the loop's context grows every step</h2>
-  <p>Notice that <code>messages</code> keeps growing — every tool call and result gets appended. Left unmanaged, a long-running agent will eventually blow through the context window (Chapter 2). "Context engineering" is the practice of deliberately managing what stays in that growing list: summarizing old steps, dropping large tool outputs once they're no longer needed, or compacting history — the same ideas from Chapter 2, applied specifically to an agent's working memory instead of a chat conversation.</p>
+  <p>Notice that <code>messages</code> keeps growing — every tool call and result gets appended. Left unmanaged, a long-running agent will eventually blow through the context window (Chapter 7). "Context engineering" is the practice of deliberately managing what stays in that growing list: summarizing old steps, dropping large tool outputs once they're no longer needed, or compacting history — the same ideas from Chapter 7, applied specifically to an agent's working memory instead of a chat conversation.</p>
 
   <h2>5. This is what Claude Code and subagents already do for you</h2>
-  <div class="callout">You've been using an agent loop this whole time without writing one — Claude Code's own interaction model <em>is</em> this loop (plan → call a tool like Read/Edit/Bash → observe the result → repeat), and subagents (Ch. 5) run their own independent copy of it. This chapter is what's happening under the hood every time Claude Code reads a file, runs a command, and decides what to do next based on the result.</p>
+  <div class="callout">You've been using an agent loop this whole time without writing one — Claude Code's own interaction model <em>is</em> this loop (plan → call a tool like Read/Edit/Bash → observe the result → repeat), and subagents (Ch. 10) run their own independent copy of it. This chapter is what's happening under the hood every time Claude Code reads a file, runs a command, and decides what to do next based on the result.</p>
 
   <p class="label">Key takeaways</p>
   <ul>
-    <li>The agent loop is <strong>plan → act → observe → repeat</strong> — a while-loop wrapped around the single tool-use round trip from Chapter 11.</li>
+    <li>The agent loop is <strong>plan → act → observe → repeat</strong> — a while-loop wrapped around the single tool-use round trip from Chapter 16.</li>
     <li>The loop ends when the model responds with no further tool requests, or when a stopping condition (max steps, budget) is hit.</li>
     <li>Always set a <strong>hard step/cost ceiling</strong> — an unattended loop can run indefinitely or expensively without one.</li>
     <li><strong>Context engineering</strong> — managing the growing message history — becomes essential for any agent that runs more than a few steps.</li>
-    <li>Claude Code itself, and every subagent (Ch. 5) it spawns, is an implementation of exactly this loop.</li>
+    <li>Claude Code itself, and every subagent (Ch. 10) it spawns, is an implementation of exactly this loop.</li>
   </ul>
 
   <div class="exercise">
@@ -163,9 +167,19 @@
     </ol>
   </details>
 
+  <details><summary>💬 Conceptual questions (the kind interviewers ask)</summary>
+    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 4px">Answer each out loud before peeking. These tie this chapter to real production concerns — cost, latency, failures, and safety.</p>
+    <ol>
+      <li><strong>Give a realistic way an agent with no max-step limit fails.</strong><br><em>On an ambiguous or impossible task it loops forever — re-calling tools, never converging — burning time and money with no natural stopping point. Always set a hard step/cost ceiling.</em></li>
+      <li><strong>Why does a 10-step agent cost far more than 10 separate one-shot calls?</strong><br><em>The whole growing message history is resent every step, so tokens compound — step 10 pays to reprocess steps 1–9's context too. That's exactly why context engineering (Ch. 7) matters here.</em></li>
+      <li><strong>A long-running agent starts "forgetting" its early instructions mid-task. What's happening, and how do you fix it?</strong><br><em>The growing history is overflowing the context window — early content gets pushed out. Fix it by summarizing/compacting old steps and dropping large, stale tool outputs once they're no longer needed.</em></li>
+      <li><strong>Where's the latency in a multi-step agent, and what actually helps?</strong><br><em>Each step is a full model round trip run in series, so the number of steps dominates. Cutting unnecessary tool calls, parallelizing independent steps, and using a smaller model for easy steps help far more than streaming.</em></li>
+    </ol>
+  </details>
+
   <div class="nav-bottom">
-    <a href="ch13-streaming.html">← Chapter 13</a>
-    <a class="next" href="ch15-cost-latency.html">Chapter 15: Cost & Latency Optimization →</a>
+    <a href="ch13-streaming.html">← Chapter 18</a>
+    <a class="next" href="ch15-cost-latency.html">Chapter 20: Cost & Latency Optimization →</a>
   </div>
 </div>
 <script>

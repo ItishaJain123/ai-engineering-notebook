@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 0a — How LLMs Actually Work</title>
+<title>Ch 1 — How LLMs Actually Work</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -59,10 +59,10 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="100">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="1">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 0 · Chapter 0a</div>
+  <div class="ch-meta">Part 1 · Chapter 1</div>
   <h1>How LLMs Actually Work</h1>
   <p><span class="badge general">General AI Eng</span> tokens, embeddings, and the transformer — explained with zero jargon first</p>
 
@@ -102,7 +102,7 @@ function toyTokenize(text, vocab) {
   }
   return tokens;
 }</code></pre>
-  <p>This is also literally what you're paying for and budgeting when we talk about "tokens" in Chapter 2 (context management) and Chapter 15 (cost optimization) — every token in your prompt <em>and</em> every token in the reply costs money and counts against the context window.</p>
+  <p>This is also literally what you're paying for and budgeting when we talk about "tokens" in Chapter 7 (context management) and Chapter 20 (cost optimization) — every token in your prompt <em>and</em> every token in the reply costs money and counts against the context window.</p>
 
   <h2>2. Each token becomes a list of numbers ("embedding")</h2>
   <p>Computers don't understand the word "cat" — they understand numbers. So every token gets converted into a long list of numbers (usually hundreds to thousands of them) called an <strong>embedding</strong> or <strong>vector</strong>. Think of it as coordinates that place the word in a giant "meaning space."</p>
@@ -118,7 +118,7 @@ function toyTokenize(text, vocab) {
   king is close to queen in this space, far from pizza.
   Famous trick: king − man + woman ≈ queen  (the math of meaning!)</div>
 
-  <p>This is the exact same idea used in Chapter 16 (Embeddings Deep-Dive) for RAG/search — a search engine that finds documents "similar in meaning" to your question is just measuring distance between embedding vectors.</p>
+  <p>This is the exact same idea used in Chapter 21 (Embeddings Deep-Dive) for RAG/search — a search engine that finds documents "similar in meaning" to your question is just measuring distance between embedding vectors.</p>
 
   <h2>3. The transformer: every word "looks at" every other word</h2>
   <p>Now for the actual engine: the <strong>transformer</strong> architecture. Its key trick is called <strong>attention</strong> — for every token, the model asks "which other tokens in this text are relevant to understanding <em>me</em> right now?" and weighs them accordingly.</p>
@@ -171,12 +171,12 @@ Step 2:  "I love eating"         → predicts → "pizza"
 Step 3:  "I love eating pizza"   → predicts → "."
 Step 4:  "I love eating pizza."  → predicts → &lt;stop&gt;</div>
 
-  <p>This is why streaming responses (Chapter 13) look the way they do — you're literally watching this loop happen live, one token at a time. It's also why longer replies take proportionally longer: each token requires a full pass through the whole network.</p>
+  <p>This is why streaming responses (Chapter 18) look the way they do — you're literally watching this loop happen live, one token at a time. It's also why longer replies take proportionally longer: each token requires a full pass through the whole network.</p>
 
   <p class="label">Key takeaways</p>
   <ul>
     <li><strong>Tokens</strong>, not words or letters, are the model's smallest unit — this explains token costs and "letter counting" failures.</li>
-    <li><strong>Embeddings</strong> turn tokens into numbers that encode meaning as position in space — the same concept powers RAG/search (Ch. 16).</li>
+    <li><strong>Embeddings</strong> turn tokens into numbers that encode meaning as position in space — the same concept powers RAG/search (Ch. 21).</li>
     <li><strong>Attention</strong> lets every token weigh every other token's relevance — this is what lets the model resolve context like pronouns.</li>
     <li>The model generates <strong>one token at a time</strong>, feeding its own output back in as input — this is why responses stream token-by-token.</li>
     <li>None of this is Claude-specific — every modern LLM (GPT, Gemini, Llama) is built on this same transformer idea.</li>
@@ -201,7 +201,7 @@ Step 4:  "I love eating pizza."  → predicts → &lt;stop&gt;</div>
 
   <div class="nav-bottom">
     <a href="../index.html">← All chapters</a>
-    <a class="next" href="ch00b-training-lifecycle.html">Chapter 0b: Training Lifecycle →</a>
+    <a class="next" href="ch00b-training-lifecycle.html">Chapter 2: Training Lifecycle →</a>
   </div>
 </div>
 <script>

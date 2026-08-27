@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 17 — Chunking Strategies</title>
+<title>Ch 22 — Chunking Strategies</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -59,29 +59,33 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="17">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="22">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 3 · Chapter 17</div>
+  <div class="ch-meta">Part 4 · Chapter 22</div>
   <h1>Chunking Strategies</h1>
   <p><span class="badge general">General AI Eng</span> splitting documents into pieces small enough to embed and precise enough to retrieve</p>
 
-  <div class="callout"><strong>Why this matters.</strong> Chapter 16 showed how to turn text into a vector so meaning-similar text ends up numerically close. But you can't hand a 50-page PDF to an embedding model as one unit — most models have a max input length, and even if they didn't, one giant vector representing an entire document is useless for retrieval: it can't tell you <em>which paragraph</em> answers the user's question. So before anything gets embedded, it first gets <strong>chunked</strong> — split into smaller, self-contained pieces. Chunking quality is one of the biggest levers on RAG accuracy, often bigger than which embedding model you pick.</p>
+  <div class="callout"><strong>Why this matters.</strong> Chapter 21 showed how to turn text into a vector so meaning-similar text ends up numerically close. But you can't hand a 50-page PDF to an embedding model as one unit — most models have a max input length, and even if they didn't, one giant vector representing an entire document is useless for retrieval: it can't tell you <em>which paragraph</em> answers the user's question. So before anything gets embedded, it first gets <strong>chunked</strong> — split into smaller, self-contained pieces. Chunking quality is one of the biggest levers on RAG accuracy, often bigger than which embedding model you pick.</p>
+
+  <div class="callout"><strong>🟢 In plain words.</strong> You can't embed a whole 50-page document as one blob — it's too big, and one vector for the whole thing can't point at the right paragraph. Chunking is cutting the document into small, self-contained pieces so search can return just the passage that answers the question.</div>
+
+  <div class="callout"><strong>🔍 The tricky part, in plain language.</strong> You can't embed a whole 50-page document as one vector — you'd blur every topic into a single averaged "mush" point that matches nothing well. So you cut the document into chunks and embed each one separately. The hard question is <em>where</em> to cut: too big and each chunk covers many topics (fuzzy matches); too small and you slice a single idea in half, so neither piece makes sense alone. Picture cutting a movie into scenes — cut at scene boundaries and each clip is coherent; cut blindly every 10 seconds and you get half-sentences. That's why you chunk on natural boundaries (paragraphs, headings) and add a little overlap so ideas aren't severed. <em>Takeaway:</em> chunking decides what a "unit of meaning" is — get it wrong and even a perfect embedding model retrieves junk.</div>
 
   <p class="label">Real-world analogy</p>
   <div class="analogy">Think about indexing a book. You wouldn't hand a reader the entire book and say "the answer is in here somewhere" — you'd break it into chapters, then sections, then paragraphs, so a reader (or a search index) can point to the exact passage that answers a question. Cut the book into pieces too large (whole chapters) and the reader still has to hunt. Cut it too small (individual words) and each piece loses all context. Chunking is deciding <em>where to make the cuts</em> so each piece is both findable and still makes sense on its own — like slicing a cake so every slice has some frosting, not just crumbs from a mid-slice cut.</div>
 
   <h2>1. Why chunking has to happen before embedding</h2>
-  <p>Retrieval works by comparing a query's vector against many stored vectors and returning the closest ones (Ch. 16). If each vector represents an entire document, the best you can retrieve is "this whole 50-page document is somewhat relevant" — not useful when a user needs one specific fact. Chunking splits the document into smaller units first, embeds <em>each chunk separately</em>, and stores them individually. Now retrieval can return just the two or three paragraphs that actually answer the question, instead of dumping the whole document into the model's context window.</p>
+  <p>Retrieval works by comparing a query's vector against many stored vectors and returning the closest ones (Ch. 21). If each vector represents an entire document, the best you can retrieve is "this whole 50-page document is somewhat relevant" — not useful when a user needs one specific fact. Chunking splits the document into smaller units first, embeds <em>each chunk separately</em>, and stores them individually. Now retrieval can return just the two or three paragraphs that actually answer the question, instead of dumping the whole document into the model's context window.</p>
   <div class="diagram">50-page policy document
         │
         ▼  chunking
 [chunk 1] [chunk 2] [chunk 3] ... [chunk 140]
         │
-        ▼  embed each chunk (Ch. 16)
+        ▼  embed each chunk (Ch. 21)
 [vector 1] [vector 2] [vector 3] ... [vector 140]
         │
-        ▼  store in a vector index (Ch. 18)
+        ▼  store in a vector index (Ch. 23)
 
 User query: "What's the refund window?"
         │
@@ -116,7 +120,7 @@ With ~15% overlap:
   <table>
     <tr><th>Chunk size</th><th>Problem</th></tr>
     <tr><td><strong>Too small</strong></td><td>Each chunk loses surrounding context (a sentence like "it costs $50" is meaningless without knowing what "it" is); you also end up with far more chunks to search through and store.</td></tr>
-    <tr><td><strong>Too large</strong></td><td>The chunk's embedding blurs together multiple unrelated ideas, diluting relevance for any single query; when retrieved, a large chunk wastes context window space (Ch. 15's cost/latency tradeoffs apply directly here); it may also exceed the embedding model's max input length (Ch. 16), causing silent truncation.</td></tr>
+    <tr><td><strong>Too large</strong></td><td>The chunk's embedding blurs together multiple unrelated ideas, diluting relevance for any single query; when retrieved, a large chunk wastes context window space (Ch. 20's cost/latency tradeoffs apply directly here); it may also exceed the embedding model's max input length (Ch. 21), causing silent truncation.</td></tr>
   </table>
   <p>There's no universal "correct" size — it depends on the embedding model's sweet spot, the document type, and how much surrounding context a good answer typically needs. Many teams start around 300-800 tokens per chunk with ~15% overlap, then tune based on retrieval quality.</p>
 
@@ -190,9 +194,19 @@ function splitFixedSize(text, maxChars, overlap) {
     </ol>
   </details>
 
+  <details><summary>💬 Conceptual questions (the kind interviewers ask)</summary>
+    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 4px">Answer each out loud before peeking. These tie this chapter to real production concerns — cost, latency, failures, and quality.</p>
+    <ol>
+      <li><strong>People say chunking often matters more than which embedding model you pick. Why?</strong><br><em>If a chunk splits one idea in half or mixes several unrelated ideas together, no embedding model can retrieve it cleanly — it's garbage in. Chunk boundaries decide what "a retrievable unit of meaning" even is, so they cap the whole system's accuracy.</em></li>
+      <li><strong>How do you choose chunk size, and what fails at each extreme?</strong><br><em>Too small loses context ("it costs $50" — what's "it"?) and multiplies the vectors you store and search; too large blurs multiple ideas into one vector, wastes context-window space, and can exceed the embedding model's max input (silent truncation). Start around 300–800 tokens with ~15% overlap, then tune on retrieval quality.</em></li>
+      <li><strong>Why do chunks usually overlap, and what does zero overlap cost you?</strong><br><em>A fact sitting on a boundary gets split so neither chunk contains it fully and neither matches the query. Roughly 10–20% overlap keeps boundary content whole in at least one chunk.</em></li>
+      <li><strong>You use one chunk size for code, prose, and tables alike. What goes wrong?</strong><br><em>A size tuned for prose slices code mid-function and cuts tables mid-row, producing nonsensical chunks that hurt retrieval. Match the strategy to the document type — structure-aware splitting for code and markdown.</em></li>
+    </ol>
+  </details>
+
   <div class="nav-bottom">
-    <a href="ch16-embeddings.html">← Chapter 16</a>
-    <a class="next" href="ch18-vector-stores.html">Chapter 18: Vector Stores →</a>
+    <a href="ch16-embeddings.html">← Chapter 21</a>
+    <a class="next" href="ch18-vector-stores.html">Chapter 23: Vector Stores →</a>
   </div>
 </div>
 <script>

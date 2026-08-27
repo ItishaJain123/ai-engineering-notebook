@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 0d — Beyond Text</title>
+<title>Ch 4 — Beyond Text</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -59,14 +59,14 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="103">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="4">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 0 · Chapter 0d</div>
+  <div class="ch-meta">Part 1 · Chapter 4</div>
   <h1>Beyond Text: Images, Audio, and Other Modalities</h1>
   <p><span class="badge general">General AI Eng</span> a map of the wider GenAI landscape — diffusion models, multimodal models, and where Claude fits</p>
 
-  <div class="callout"><strong>Why this matters.</strong> "GenAI" is bigger than chatbots. Image generators (Midjourney, DALL-E), voice assistants, and video generators (Sora) are all "generative AI" too — but they work on a <em>different core mechanism</em> than the token-by-token prediction from Chapter 0a. You don't need to build these, but you should recognize the landscape, and understand how Claude's own image/vision abilities (used in Chapter 7, Computer Use) fit in.</p>
+  <div class="callout"><strong>Why this matters.</strong> "GenAI" is bigger than chatbots. Image generators (Midjourney, DALL-E), voice assistants, and video generators (Sora) are all "generative AI" too — but they work on a <em>different core mechanism</em> than the token-by-token prediction from Chapter 1. You don't need to build these, but you should recognize the landscape, and understand how Claude's own image/vision abilities (used in Chapter 12, Computer Use) fit in.</p>
 
   <h2>1. Text generation vs. image generation — different core idea</h2>
   <table>
@@ -100,7 +100,7 @@ less noisy version." Repeat ~20-50 times.</div>
   </table>
 
   <h2>4. Multimodal models — one model, several input/output types</h2>
-  <p>Claude itself is <strong>multimodal</strong>: it can <em>read</em> images (screenshots, diagrams, photos) as input, even though it only <em>generates</em> text as output. This is different from an image generator — Claude isn't drawing pictures, it's understanding ones you show it, using the same transformer/attention mechanism from Chapter 0a, just with images converted into tokens the same way text is.</p>
+  <p>Claude itself is <strong>multimodal</strong>: it can <em>read</em> images (screenshots, diagrams, photos) as input, even though it only <em>generates</em> text as output. This is different from an image generator — Claude isn't drawing pictures, it's understanding ones you show it, using the same transformer/attention mechanism from Chapter 1, just with images converted into tokens the same way text is.</p>
 
   <div class="diagram">Image input  →  chopped into patches  →  each patch becomes a "token"
                                                      │
@@ -110,15 +110,15 @@ less noisy version." Repeat ~20-50 times.</div>
                                                      ▼
                                           text output ("I see a golden retriever...")</div>
 
-  <p>This is exactly what powers Chapter 7 (Computer Use) — when Claude looks at a screenshot and decides where to click, it's using this image-understanding path, not a separate "vision AI." One model, multiple input types, single reasoning process.</p>
+  <p>This is exactly what powers Chapter 12 (Computer Use) — when Claude looks at a screenshot and decides where to click, it's using this image-understanding path, not a separate "vision AI." One model, multiple input types, single reasoning process.</p>
 
-  <div class="callout"><strong>Terminology check:</strong> "Claude can see images" (multimodal <em>understanding</em>) is a completely different capability from "generate me an image" (image <em>generation</em>, like DALL-E). Claude does the former, not the latter — if you want Claude to produce images, you'd have it call out to an image-generation API as a tool (Chapter 11: Tool Use), not generate pixels itself.</p>
+  <div class="callout"><strong>Terminology check:</strong> "Claude can see images" (multimodal <em>understanding</em>) is a completely different capability from "generate me an image" (image <em>generation</em>, like DALL-E). Claude does the former, not the latter — if you want Claude to produce images, you'd have it call out to an image-generation API as a tool (Chapter 16: Tool Use), not generate pixels itself.</p>
 
   <h2>5. Where this fits in your curriculum</h2>
   <ul>
     <li><strong>You will build with text models</strong> (Claude) for the vast majority of this course — Parts 1–5 are all about that.</li>
-    <li><strong>You may call image/audio APIs as tools</strong> from an agent (e.g., "generate a thumbnail" → calls an image-gen API) — that's Chapter 11 territory, not a new modality skill you need to learn from scratch.</li>
-    <li><strong>Multimodal input</strong> (showing Claude images/screenshots) is something you already use in Chapter 7 — now you know the mechanism behind it.</li>
+    <li><strong>You may call image/audio APIs as tools</strong> from an agent (e.g., "generate a thumbnail" → calls an image-gen API) — that's Chapter 16 territory, not a new modality skill you need to learn from scratch.</li>
+    <li><strong>Multimodal input</strong> (showing Claude images/screenshots) is something you already use in Chapter 12 — now you know the mechanism behind it.</li>
   </ul>
 
   <p class="label">Key takeaways</p>
@@ -134,7 +134,7 @@ less noisy version." Repeat ~20-50 times.</div>
     <strong>🎯 Your exercise</strong>
     <ol>
       <li>Explain in your own words why "starting from noise and removing it" can produce a coherent image, using the sculptor analogy or your own.</li>
-      <li>Look up (or recall from Chapter 7) how Claude in Chrome takes a screenshot and reasons about it — which capability from this chapter does that use?</li>
+      <li>Look up (or recall from Chapter 12) how Claude in Chrome takes a screenshot and reasons about it — which capability from this chapter does that use?</li>
       <li><em>Reflect:</em> if you wanted an agent that both writes a blog post <em>and</em> generates a header image for it, would that need one model or two? Why?</li>
     </ol>
   </div>
@@ -147,8 +147,8 @@ less noisy version." Repeat ~20-50 times.</div>
   </details>
 
   <div class="nav-bottom">
-    <a href="ch00c-sampling-generation.html">← Chapter 0c</a>
-    <a class="next" href="ch00e-glossary.html">Chapter 0e: Glossary of Terms →</a>
+    <a href="ch00c-sampling-generation.html">← Chapter 3</a>
+    <a class="next" href="ch00e-glossary.html">Chapter 5: Glossary of Terms →</a>
   </div>
 </div>
 <script>

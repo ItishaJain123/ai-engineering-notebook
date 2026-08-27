@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 13 — Streaming</title>
+<title>Ch 18 — Streaming</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -59,14 +59,18 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="13">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="18">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 2 · Chapter 13</div>
+  <div class="ch-meta">Part 3 · Chapter 18</div>
   <h1>Streaming</h1>
   <p><span class="badge general">General AI Eng</span> showing the response as it's generated, instead of making users stare at a blank spinner</p>
 
-  <div class="callout"><strong>Why this matters.</strong> Remember from Chapter 0a: the model generates one token at a time. Without streaming, your app waits for <em>all</em> of those tokens before showing anything — for a long response, that can be a 10-30 second blank wait. Streaming sends each token (or small batch of tokens) to your UI the moment it's generated, which is why every modern AI chat interface shows text appearing progressively.</p>
+  <div class="callout"><strong>Why this matters.</strong> Remember from Chapter 1: the model generates one token at a time. Without streaming, your app waits for <em>all</em> of those tokens before showing anything — for a long response, that can be a 10-30 second blank wait. Streaming sends each token (or small batch of tokens) to your UI the moment it's generated, which is why every modern AI chat interface shows text appearing progressively.</p>
+
+  <div class="callout"><strong>🟢 In plain words.</strong> The model writes one word at a time. Streaming shows each word the instant it's ready, instead of making the user wait for the whole answer to finish — so it <em>feels</em> fast even though the total time is exactly the same.</div>
+
+  <div class="callout"><strong>🔍 The tricky part, in plain language.</strong> Streaming does <em>not</em> make the model faster — the total time to finish the answer is the same. It just shows you each token <em>the instant it's generated</em> instead of making you wait for the whole thing. The tokens arrive as a series of little events (Server-Sent Events), one small chunk at a time, and your UI paints them as they land. Picture a printer that prints each line as it's ready versus one that waits to spit out the whole page at once — same total time, but one <em>feels</em> dramatically faster because you see progress immediately. <em>Takeaway:</em> streaming improves <em>perceived</em> speed (time-to-first-word), not the total time to finish.</div>
 
   <p class="label">Real-world analogy</p>
   <div class="analogy">
@@ -118,14 +122,14 @@ const finalMessage = await stream.finalMessage(); <span class="tok-com">// full 
   </table>
 
   <h2>4. Streaming with tool use — it gets trickier</h2>
-  <p>When a model streams a <em>tool call</em> (Chapter 11), the tool's input arguments arrive incrementally as partial JSON fragments, not as one clean object. Most SDKs handle the buffering/reassembly for you, but it's worth knowing: you generally can't act on a streamed tool call until you've received the full <code>content_block_stop</code> for it — you need the complete, valid JSON before you can safely execute the tool.</p>
+  <p>When a model streams a <em>tool call</em> (Chapter 16), the tool's input arguments arrive incrementally as partial JSON fragments, not as one clean object. Most SDKs handle the buffering/reassembly for you, but it's worth knowing: you generally can't act on a streamed tool call until you've received the full <code>content_block_stop</code> for it — you need the complete, valid JSON before you can safely execute the tool.</p>
 
   <h2>5. When streaming matters (and when it doesn't)</h2>
   <table>
     <tr><th>Streaming helps a lot</th><th>Streaming matters less</th></tr>
     <tr><td>Chat UIs — users perceive the app as much faster</td><td>Backend batch jobs with no one watching in real time</td></tr>
     <tr><td>Long-form generation (articles, long code files)</td><td>Very short responses (a single word, a classification label)</td></tr>
-    <tr><td>Anything where perceived latency matters more than total time</td><td>Structured-output extraction (Ch. 9) you need fully parsed before use anyway</td></tr>
+    <tr><td>Anything where perceived latency matters more than total time</td><td>Structured-output extraction (Ch. 14) you need fully parsed before use anyway</td></tr>
   </table>
 
   <div class="callout"><strong>Important nuance:</strong> streaming improves <em>perceived</em> latency (time to first visible token), not <em>total</em> generation time — the model still takes the same amount of time to generate all the tokens. It's a UX win, not a raw speed win.</div>
@@ -155,9 +159,19 @@ const finalMessage = await stream.finalMessage(); <span class="tok-com">// full 
     </ol>
   </details>
 
+  <details><summary>💬 Conceptual questions (the kind interviewers ask)</summary>
+    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 4px">Answer each out loud before peeking. These tie this chapter to real production concerns — cost, latency, failures, and safety.</p>
+    <ol>
+      <li><strong>Streaming makes the app feel faster — does it reduce actual cost or total time?</strong><br><em>No. Same tokens, same total generation time, same cost. It only improves <u>perceived</u> latency (time to first visible token). It's a UX win, not a speed win.</em></li>
+      <li><strong>When is streaming pointless or even counterproductive?</strong><br><em>Backend batch jobs (no human watching), very short outputs, and structured extraction (Ch. 14) you must fully parse before use — you gain nothing and add reassembly complexity.</em></li>
+      <li><strong>A stream drops halfway through. What must your client handle?</strong><br><em>The partial output already shown to the user, plus reconnect/retry logic, plus knowing you never received <code>message_stop</code> — so you must not treat a half-finished stream as a complete answer.</em></li>
+      <li><strong>Why can't you execute a streamed tool call as its arguments arrive?</strong><br><em>Tool inputs stream in as partial JSON fragments; until the content block closes you may hold invalid or incomplete arguments. Acting early risks calling the tool with garbage.</em></li>
+    </ol>
+  </details>
+
   <div class="nav-bottom">
-    <a href="ch12-extended-thinking.html">← Chapter 12</a>
-    <a class="next" href="ch14-agent-loop.html">Chapter 14: Agent Loop Engineering →</a>
+    <a href="ch12-extended-thinking.html">← Chapter 17</a>
+    <a class="next" href="ch14-agent-loop.html">Chapter 19: Agent Loop Engineering →</a>
   </div>
 </div>
 <script>

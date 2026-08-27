@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 21 — RAG vs. Fine-tuning vs. Prompting</title>
+<title>Ch 26 — RAG vs. Fine-tuning vs. Prompting</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -59,14 +59,18 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="21">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="26">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 3 · Chapter 21</div>
+  <div class="ch-meta">Part 4 · Chapter 26</div>
   <h1>RAG vs. Fine-tuning vs. Prompting</h1>
   <p><span class="badge general">General AI Eng</span> a decision framework for picking the cheapest option that actually solves the problem</p>
 
-  <div class="callout"><strong>Why this matters.</strong> By now you have three big tools for getting an LLM to behave the way you want or know what it needs to know: prompting (Ch. 8-15), RAG (Ch. 16-20), and fine-tuning (mentioned back in Ch. 0b as part of the training pipeline). Beginners often reach for the most complex option first — fine-tuning sounds impressive — when a better prompt would have solved the problem in five minutes. This capstone chapter is a decision framework for choosing correctly.</p>
+  <div class="callout"><strong>Why this matters.</strong> By now you have three big tools for getting an LLM to behave the way you want or know what it needs to know: prompting (Ch. 13-20), RAG (Ch. 21-25), and fine-tuning (mentioned back in Ch. 2 as part of the training pipeline). Beginners often reach for the most complex option first — fine-tuning sounds impressive — when a better prompt would have solved the problem in five minutes. This capstone chapter is a decision framework for choosing correctly.</p>
+
+  <div class="callout"><strong>🟢 In plain words.</strong> Three ways to get a model to do what you want: <em>prompting</em> (change your words — free and instant), <em>RAG</em> (give it a filing cabinet of facts to look things up in), and <em>fine-tuning</em> (retrain it so a behavior is baked in — slow and pricey). Try them in that order.</div>
+
+  <div class="callout"><strong>🔍 The tricky part, in plain language.</strong> The three options fix <em>different</em> problems, and people mix them up. <strong>Prompting</strong> changes the <em>instructions</em> (cheap, instant — but the model still only knows what's in the prompt). <strong>RAG</strong> changes the <em>knowledge</em> by looking things up at answer-time (great when facts change often — you update the documents, not the model). <strong>Fine-tuning</strong> changes the <em>behavior/style</em> by retraining on examples (great for consistent tone or format, but expensive, and stale the moment the facts change). Picture a new employee: prompting = clearer instructions, RAG = handing them a searchable manual, fine-tuning = sending them to weeks of training. <em>Takeaway:</em> changing facts → RAG; changing style → fine-tuning; changing instructions → prompting — and it's very common to combine prompting + RAG.</div>
 
   <p class="label">Real-world analogy</p>
   <div class="analogy">Think of a new employee at a company. <strong>Prompting</strong> is giving them clear instructions for one task — "write this email in a formal tone, keep it under 200 words." <strong>RAG</strong> is giving them a reference manual and a filing cabinet they can look things up in whenever they need a fact they don't have memorized. <strong>Fine-tuning</strong> is sending them through months of specialized retraining so a skill or style becomes second nature, baked into how they instinctively work. Each has a real cost — instructions are free and instant, the filing cabinet takes some setup, months of retraining is a major investment — and each is the right call in a different situation. You wouldn't send someone through months of retraining just to answer one question they could've looked up.</div>
@@ -75,7 +79,7 @@
   <p>The key to choosing correctly is understanding that these three tools change fundamentally different things about the system.</p>
   <ul>
     <li><strong>Prompting</strong> changes nothing about the model itself — you're steering behavior per-request through the words you send. It's the cheapest option, the fastest to iterate on (edit text, try again), and needs no persistent storage or infrastructure.</li>
-    <li><strong>RAG</strong> gives the model access to information it doesn't have memorized — fresh, private, or too-large-to-fit-in-training data, retrieved at query time (Ch. 16-20). It doesn't change the model's behavior or style at all — only what facts it can reference when answering.</li>
+    <li><strong>RAG</strong> gives the model access to information it doesn't have memorized — fresh, private, or too-large-to-fit-in-training data, retrieved at query time (Ch. 21-25). It doesn't change the model's behavior or style at all — only what facts it can reference when answering.</li>
     <li><strong>Fine-tuning</strong> actually adjusts the model's weights on a custom dataset — it changes behavior, style, or output format in a way that's baked in, not just what facts are available. It's the most expensive option, the slowest to iterate (retrain, re-evaluate, redeploy), and requires a real labeled training dataset.</li>
   </ul>
 
@@ -87,7 +91,7 @@ Fine-tuning:  DIFFERENT model weights                  →  same words in      �
   <table>
     <tr><th>Dimension</th><th>Prompting</th><th>RAG</th><th>Fine-tuning</th></tr>
     <tr><td><strong>What it solves</strong></td><td>Steering tone, format, instructions per request</td><td>Model doesn't know a specific fact/document</td><td>Model needs consistently different behavior/style/format</td></tr>
-    <tr><td><strong>Cost to set up</strong></td><td>Very low — just write text</td><td>Moderate — chunking, embeddings, vector store, retrieval pipeline (Ch. 16-20)</td><td>High — labeled dataset, training run, evaluation infra</td></tr>
+    <tr><td><strong>Cost to set up</strong></td><td>Very low — just write text</td><td>Moderate — chunking, embeddings, vector store, retrieval pipeline (Ch. 21-25)</td><td>High — labeled dataset, training run, evaluation infra</td></tr>
     <tr><td><strong>Iteration speed</strong></td><td>Seconds — edit and re-run</td><td>Minutes to hours — re-chunk/re-index, retest retrieval</td><td>Hours to days — retrain, re-evaluate, redeploy</td></tr>
     <tr><td><strong>Keeps data fresh?</strong></td><td>N/A — no external data</td><td>Yes — re-index anytime, data can update continuously</td><td>No — frozen at training time; stale facts need retraining</td></tr>
     <tr><td><strong>Needs training data?</strong></td><td>No</td><td>No (needs a document corpus, not labeled examples)</td><td>Yes — a real labeled dataset</td></tr>
@@ -97,7 +101,7 @@ Fine-tuning:  DIFFERENT model weights                  →  same words in      �
   <h2>3. A decision flowchart</h2>
   <div class="diagram">Is this just about phrasing, tone, or instructions?
   │
-  ├─ Yes ──────────────────────────────────► Prompting. Always try this first (Ch. 8).
+  ├─ Yes ──────────────────────────────────► Prompting. Always try this first (Ch. 13).
   │
   └─ No — the model gets facts wrong or doesn't know something
       │
@@ -105,7 +109,7 @@ Fine-tuning:  DIFFERENT model weights                  →  same words in      �
       │  it just needs the right facts (fresh, private,
       │  or too large to fit in training data)?
       │     │
-      │     └─ Yes ─────────────────────────► RAG (Ch. 16-20).
+      │     └─ Yes ─────────────────────────► RAG (Ch. 21-25).
       │
       └─ Does the model need to consistently BEHAVE or
          FORMAT differently, in a way words alone haven't fixed
@@ -117,8 +121,8 @@ Fine-tuning:  DIFFERENT model weights                  →  same words in      �
 
   <h2>4. The practical order most teams should try things in</h2>
   <div class="callout">
-    <strong>1. Prompting first.</strong> Cheap, fast, and often sufficient on its own (Ch. 8). Most "the model won't do X" problems are solved by a clearer, more specific prompt — few-shot examples, explicit format instructions, or a better system prompt.<br><br>
-    <strong>2. Add RAG if the failure is "doesn't know this specific fact or document."</strong> If the model is confidently wrong or has no way to know something (Ch. 16-20), that's a retrieval problem, not a prompting or training problem.<br><br>
+    <strong>1. Prompting first.</strong> Cheap, fast, and often sufficient on its own (Ch. 13). Most "the model won't do X" problems are solved by a clearer, more specific prompt — few-shot examples, explicit format instructions, or a better system prompt.<br><br>
+    <strong>2. Add RAG if the failure is "doesn't know this specific fact or document."</strong> If the model is confidently wrong or has no way to know something (Ch. 21-25), that's a retrieval problem, not a prompting or training problem.<br><br>
     <strong>3. Only consider fine-tuning if failures persist and are about consistent behavior, format, or style</strong> that extensive prompting and RAG genuinely couldn't fix. And even then — try it only after you've quantified the failure rate you're trying to fix, so you can tell afterward whether the expensive investment actually helped.
   </div>
 
@@ -152,9 +156,19 @@ Fine-tuning:  DIFFERENT model weights                  →  same words in      �
     </ol>
   </details>
 
+  <details><summary>💬 Conceptual questions (the kind interviewers ask)</summary>
+    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 4px">This is a decision-making chapter, and interviewers love decision questions. Answer each out loud before peeking.</p>
+    <ol>
+      <li><strong>The model keeps citing an outdated return policy that changes weekly. Which tool, and why not fine-tuning?</strong><br><em>RAG — it's a missing/fresh-fact problem, and RAG lets you re-index anytime. Fine-tuning bakes facts in at training time, so they'd go stale immediately and need a full retrain every week.</em></li>
+      <li><strong>You need a consistent empathetic tone across thousands of replies and prompting hasn't nailed it. Which tool?</strong><br><em>Consider fine-tuning — persistent behavior/style/format is exactly what it changes. But first quantify the failure rate and exhaust strong prompting/few-shot, so you can actually tell whether the expensive investment helped.</em></li>
+      <li><strong>Rank the three by cost and iteration speed — and why does that ordering matter?</strong><br><em>Prompting is cheapest and iterates in seconds; RAG is moderate setup, minutes to hours; fine-tuning is high cost, hours to days, and needs labeled data. Trying the cheaper, faster levers first means you fail fast and rarely need the expensive one.</em></li>
+      <li><strong>What's the most common production pattern, and why is fine-tuning comparatively rare?</strong><br><em>Prompting + RAG together — a good system prompt with retrieved context injected — handles the large majority of use cases cheaply. Fine-tuning is rare because the first two solve most problems for a fraction of the cost; reach for it only with clear evidence they weren't enough.</em></li>
+    </ol>
+  </details>
+
   <div class="nav-bottom">
-    <a href="ch20-advanced-rag.html">← Chapter 20</a>
-    <a class="next" href="../index.html">Part 3 complete → Back to index</a>
+    <a href="ch20-advanced-rag.html">← Chapter 25</a>
+    <a class="next" href="ch22-langchain.html">Chapter 27: LangChain →</a>
   </div>
 </div>
 <script>

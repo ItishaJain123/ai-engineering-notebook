@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 5 — Subagents / Agent Tool</title>
+<title>Ch 10 — Subagents / Agent Tool</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -58,17 +58,17 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="5">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="10">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 1 · Chapter 5</div>
+  <div class="ch-meta">Part 2 · Chapter 10</div>
   <h1>Subagents / Agent (Task) Tool</h1>
   <p><span class="badge cc">Claude Code</span> how delegation works · when to delegate vs. do inline</p>
 
   <div class="callout"><strong>The one-line idea.</strong> A subagent is a helper AI you send off to do a chunk of work in its <em>own</em> separate workspace. It only reports back the final answer — not everything it did to get there.</p></div>
 
   <p class="label">Think of your chat as a whiteboard</p>
-  <div class="analogy">Your conversation with Claude is like a whiteboard with limited space (Chapter 2). If you ask "search my whole codebase for every place X is used," reading 50 files onto that whiteboard fills it up fast — no room left for the work you actually care about. A subagent reads those 50 files on <em>its own</em> whiteboard, in a separate room, and hands you back one clean summary.</div>
+  <div class="analogy">Your conversation with Claude is like a whiteboard with limited space (Chapter 7). If you ask "search my whole codebase for every place X is used," reading 50 files onto that whiteboard fills it up fast — no room left for the work you actually care about. A subagent reads those 50 files on <em>its own</em> whiteboard, in a separate room, and hands you back one clean summary.</div>
 
   <p class="label">The manager & intern analogy</p>
   <div class="analogy">You're a <strong>manager</strong> on a deadline. Instead of reading 500 pages yourself, you send an <strong>intern</strong> to read them and come back with one paragraph. You never touch the 500 pages — your desk stays clear.<br><br>The catch: you have to brief the intern clearly, because they can't read your mind or see what's already in your head. And getting a paragraph back instead of doing it yourself takes a bit of extra time — so you don't send an intern to fetch you one coffee. Only worth it for big jobs.</div>
@@ -161,7 +161,7 @@ claude --agent code-reviewer</code></pre>
       <pre><code>@code-reviewer review src/auth.js for SQL injection risks</code></pre>
       Everything after the mention becomes that subagent's <strong>entire</strong> prompt — its whole context. It can't see the rest of your conversation, so be as specific as you'd be briefing someone who just walked in.
     </li>
-    <li><strong>From your own code</strong> (Agent SDK, Chapter 6): pass the prompt as a string param when spawning it, e.g. <code>Agent({ description: "...", prompt: "Review src/auth.js for SQL injection, focus on the login handler at line 40" })</code>.</li>
+    <li><strong>From your own code</strong> (Agent SDK, Chapter 11): pass the prompt as a string param when spawning it, e.g. <code>Agent({ description: "...", prompt: "Review src/auth.js for SQL injection, focus on the login handler at line 40" })</code>.</li>
   </ul>
   <table>
     <tr><th>Bad brief</th><th>Good brief</th></tr>
@@ -206,7 +206,7 @@ one the client hypothesis. Have them challenge each other's findings."</code></p
 
   <h2>The one thing to remember</h2>
   <p>Subagents are <strong>blind to your conversation</strong>. If your prompt to them is vague, their answer will be vague or wrong — because they have literally nothing else to go on. A good brief is the whole game.</p>
-  <p>This same pattern — one "manager" agent delegating to several "worker" agents — scales up into full <strong>multi-agent systems</strong>, which you'll see in Chapter 24.</p>
+  <p>This same pattern — one "manager" agent delegating to several "worker" agents — scales up into full <strong>multi-agent systems</strong>, which you'll see in Chapter 29.</p>
 
   <p class="label">Key takeaways</p>
   <ul>
@@ -233,8 +233,8 @@ one the client hypothesis. Have them challenge each other's findings."</code></p
   </details>
 
   <div class="nav-bottom">
-    <a href="ch04-mcp.html">← Chapter 4</a>
-    <a class="next" href="ch06-agent-sdk.html">Chapter 6: Claude Agent SDK →</a>
+    <a href="ch04-mcp.html">← Chapter 9</a>
+    <a class="next" href="ch06-agent-sdk.html">Chapter 11: Claude Agent SDK →</a>
   </div>
 </div>
 <script>

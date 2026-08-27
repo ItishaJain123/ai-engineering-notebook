@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 27 — LangChain</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+  @media (max-width:640px){
+    .wrap{padding:20px 16px 90px}
+    .topbar{padding:10px 14px}
+    .topbar .left{font-size:.78rem}
+    h1{font-size:1.5rem}
+    h2{font-size:1.12rem;margin:1.5em 0 .4em}
+    h3{font-size:1rem}
+    .diagram,pre{font-size:.72rem;padding:10px 12px}
+    table{display:block;overflow-x:auto;white-space:nowrap}
+    .nav-bottom{flex-direction:column}
+    .analogy,.exercise,.callout{padding:10px 12px}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../index.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="27">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 5 · Chapter 27</div>
+  <h1>LangChain</h1>
+  <p><span class="badge general">General AI Eng</span> the toolkit that glues models, prompts, memory, and tools into one pipeline</p>
+
+  <div class="callout"><strong>Why this matters.</strong> Everything you've built so far — calling a model, adding tools (Ch. 16), doing RAG (Part 4) — you wrote by hand, wiring each piece together yourself. <strong>LangChain</strong> is a framework that gives you ready-made building blocks for all of those pieces and a standard way to snap them together. You don't <em>need</em> it, but on a big project it can save you from re-inventing the plumbing. This chapter teaches you what it is, when it helps, and — just as importantly — when the native SDK you already know is the better choice.</p>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">Think of building a PC. You <em>can</em> buy each part loose — motherboard, RAM, cables — and wire it yourself (that's using the raw SDK). LangChain is like a <strong>barebones kit</strong>: the case, slots, and cables are pre-fitted and standardized, so you just drop parts in. The kit is faster to assemble and easy to swap parts in — but it also adds bulk you might not need for a simple build.</div>
+
+  <h2>1. What LangChain actually is</h2>
+  <p>LangChain is an open-source framework (available in <strong>Python</strong> and <strong>JavaScript/TypeScript</strong>) for building LLM-powered apps. Its core idea is to wrap every moving part of an AI app behind a <strong>standard interface</strong>, so you can mix and match without rewriting glue code:</p>
+  <table>
+    <tr><th>Building block</th><th>What it wraps</th></tr>
+    <tr><td><strong>Models</strong></td><td>A uniform way to call Claude, GPT, Gemini, a local model — swap providers by changing one line.</td></tr>
+    <tr><td><strong>Prompt templates</strong></td><td>Reusable prompt strings with <code>{placeholders}</code> you fill in at runtime.</td></tr>
+    <tr><td><strong>Output parsers</strong></td><td>Turn the model's raw text into structured data (JSON, a list, a typed object).</td></tr>
+    <tr><td><strong>Retrievers &amp; vector stores</strong></td><td>The RAG pieces from Part 4, behind one interface — swap Chroma for Pinecone in one line.</td></tr>
+    <tr><td><strong>Memory</strong></td><td>Automatically carry conversation history between turns.</td></tr>
+    <tr><td><strong>Tools &amp; agents</strong></td><td>Give the model functions to call and let it loop (the agent pattern from Ch. 19).</td></tr>
+  </table>
+
+  <h2>2. The one idea that ties it together: chains</h2>
+  <p>The name is literal. A <strong>chain</strong> is a sequence of steps where the output of one feeds the input of the next: <em>prompt → model → parser</em>. Modern LangChain expresses this with a pipe-style syntax (called <strong>LCEL</strong>, the LangChain Expression Language) that reads left to right.</p>
+  <div class="diagram">user input
+     │
+     ▼
+[ prompt template ]   fills "{question}" into a full prompt
+     │
+     ▼
+[    model     ]      sends it to Claude, gets a reply
+     │
+     ▼
+[ output parser ]     extracts clean text / JSON
+     │
+     ▼
+final answer</div>
+
+  <h2>3. A minimal chain in JavaScript</h2>
+  <pre><code>import { ChatAnthropic } from "@langchain/anthropic";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { StringOutputParser } from "@langchain/core/output_parsers";
+
+<span class="tok-com">// 1. the model — swapping to another provider is a one-line change</span>
+const model = new ChatAnthropic({ model: "claude-sonnet-4-6" });
+
+<span class="tok-com">// 2. a reusable prompt with a placeholder</span>
+const prompt = ChatPromptTemplate.fromTemplate(
+  "Explain {topic} to a beginner in two sentences."
+);
+
+<span class="tok-com">// 3. a parser that gives us plain text back</span>
+const parser = new StringOutputParser();
+
+<span class="tok-com">// 4. pipe them into one chain, then run it</span>
+const chain = prompt.pipe(model).pipe(parser);
+const answer = await chain.invoke({ topic: "embeddings" });
+console.log(answer);</code></pre>
+  <div class="callout"><strong>Read the <code>.pipe()</code> calls.</strong> That's the whole philosophy: each stage is a Lego brick with the same shape of connector, so <code>prompt.pipe(model).pipe(parser)</code> just clicks them in order. Want to add RAG? Pipe a retriever in front of the prompt. Want JSON out? Swap the parser. Nothing else changes.</div>
+
+  <h2>4. Memory &amp; retrievers, for free-ish</h2>
+  <p>Two things you built by hand earlier come pre-packaged:</p>
+  <ul>
+    <li><strong>Memory</strong> — instead of manually appending each turn to a messages array, LangChain can wrap your chain so history is stored and re-injected automatically every turn (in newer versions this lives in LangGraph, the subject of Ch. 28).</li>
+    <li><strong>Retrievers</strong> — the entire Part 4 pipeline (embed the query → search the vector store → return top-k docs) becomes <code>vectorStore.asRetriever()</code>, one object you pipe into a RAG chain.</li>
+  </ul>
+
+  <h2>5. The honest part: overlap with native tool use</h2>
+  <p>Here's the tension you should understand clearly. The Claude SDK <em>already</em> gives you tool calling, streaming, structured output, and a clean message API. So LangChain often wraps things you can already do directly — sometimes adding a helpful standard, sometimes adding a layer you have to learn and debug on top of the real thing.</p>
+  <table>
+    <tr><th></th><th>Native SDK (what you know)</th><th>LangChain</th></tr>
+    <tr><td><strong>Learning curve</strong></td><td>Just the provider's API</td><td>The API <em>plus</em> LangChain's abstractions</td></tr>
+    <tr><td><strong>Swapping providers</strong></td><td>Rewrite the call</td><td>Change one line — big win if you switch a lot</td></tr>
+    <tr><td><strong>Debugging</strong></td><td>You see the raw request/response</td><td>Extra layers can hide what's actually sent</td></tr>
+    <tr><td><strong>Boilerplate on big apps</strong></td><td>You write the glue (memory, RAG wiring)</td><td>Pre-built blocks save real time</td></tr>
+    <tr><td><strong>Best fit</strong></td><td>Focused apps, one provider, full control</td><td>Complex multi-component apps, many integrations, teams standardizing</td></tr>
+  </table>
+  <div class="callout"><strong>Rule of thumb.</strong> Reach for LangChain when your app has <em>many</em> interchangeable parts (multiple models, several vector stores, lots of pre-built integrations) and you value a common vocabulary across a team. Stick with the native SDK when you want a small footprint, minimal dependencies, and to see exactly what hits the API. Neither is "more advanced" — they're different trade-offs.</div>
+
+  <h2>6. Where it goes next: LangGraph</h2>
+  <p>Simple chains run straight through: A → B → C, done. But real agents need to <em>loop</em> ("call a tool, look at the result, maybe call another"), <em>branch</em> ("if the answer is uncertain, retrieve more"), and pause for a human. Plain chains can't express those cleanly. That's exactly the gap <strong>LangGraph</strong> fills — and it's the next chapter.</p>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>LangChain is a framework that wraps models, prompts, parsers, memory, retrievers, and tools behind <strong>standard interfaces</strong> so you can snap them together.</li>
+    <li>A <strong>chain</strong> pipes one step's output into the next: <em>prompt → model → parser</em>, written with <code>.pipe()</code>.</li>
+    <li>Its biggest wins are <strong>swappability</strong> (change providers/stores in one line) and <strong>pre-built blocks</strong> that cut boilerplate on large apps.</li>
+    <li>It heavily <strong>overlaps with native tool use</strong> — the cost is an extra layer to learn and debug, so it's not automatically the right choice.</li>
+    <li>Use it for complex, many-part apps; prefer the native SDK for focused apps where you want full visibility and a small footprint.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>Take the minimal chain in §3 and describe, in words, what you'd add to turn it into a RAG chain. Which brick goes <em>before</em> the prompt, and what does it output?</li>
+      <li>Your app calls Claude only, has one prompt, and returns plain text. Would you use LangChain here? Justify your answer using the trade-off table.</li>
+      <li><em>Reflect:</em> "swap providers in one line" sounds great — but name one real reason you might <em>not</em> want your prompts to be provider-agnostic. (Hint: think about provider-specific features like prompt caching from Ch. 15.)</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>What does the <code>.pipe()</code> syntax express? <em>A chain — each step's output becomes the next step's input, run left to right (prompt → model → parser).</em></li>
+      <li>Give one concrete reason to <em>skip</em> LangChain and use the native SDK. <em>Fewer dependencies and full visibility into the exact request/response — no extra abstraction layer to learn or debug — which suits focused, single-provider apps.</em></li>
+    </ol>
+  </details>
+
+  <div class="nav-bottom">
+    <a href="ch21-rag-vs-alternatives.html">← Chapter 26</a>
+    <a class="next" href="ch23-langgraph.html">Chapter 28: LangGraph →</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

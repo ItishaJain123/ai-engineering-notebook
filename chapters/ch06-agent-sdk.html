@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 6 — Claude Agent SDK</title>
+<title>Ch 11 — Claude Agent SDK</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -58,10 +58,10 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="6">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="11">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 1 · Chapter 6</div>
+  <div class="ch-meta">Part 2 · Chapter 11</div>
   <h1>Claude Agent SDK</h1>
   <p><span class="badge cc">Claude Code</span><span class="badge general">General AI Eng</span> building standalone agents outside the CLI</p>
 
@@ -81,7 +81,7 @@
   <ul>
     <li>The <strong>agentic loop</strong>, already built: plan → call a tool → look at the result → repeat until done.</li>
     <li>The same <strong>built-in tools</strong> Claude Code uses — reading/writing files, running shell commands, searching.</li>
-    <li>Everything you've already learned: <strong>MCP</strong> (Chapter 4), <strong>subagents</strong> (Chapter 5), permission controls, and automatic context/compaction handling.</li>
+    <li>Everything you've already learned: <strong>MCP</strong> (Chapter 9), <strong>subagents</strong> (Chapter 10), permission controls, and automatic context/compaction handling.</li>
     <li>It runs <strong>headless</strong> — no chat window, no human needed — which is exactly what a server, a CI pipeline, or a nightly cron job needs.</li>
   </ul>
 
@@ -115,17 +115,17 @@ for await (const msg of response) {
   <p><strong>What's happening, in order:</strong></p>
   <ol>
     <li><code>prompt</code> is the job — plain English, exactly like what you'd type into Claude Code.</li>
-    <li><code>allowedTools</code> is a safety leash — this agent is only allowed to <em>read</em> and <em>search</em> files, never edit or run shell commands. This is the same "least privilege" idea as scoping an MCP server (Chapter 4) or a subagent's <code>tools</code> field (Chapter 5).</li>
+    <li><code>allowedTools</code> is a safety leash — this agent is only allowed to <em>read</em> and <em>search</em> files, never edit or run shell commands. This is the same "least privilege" idea as scoping an MCP server (Chapter 9) or a subagent's <code>tools</code> field (Chapter 10).</li>
     <li>Calling <code>query(...)</code> kicks off the loop: it may read a file, look at the result, decide to read another, and so on — all without you writing that loop yourself.</li>
     <li>The <code>for await</code> loop is how you watch it work in real time, message by message, instead of waiting silently until it's fully done.</li>
   </ol>
   <div class="callout"><strong>Understanding check yourself:</strong> if you changed <code>allowedTools</code> to just <code>["Read"]</code> (dropped <code>Glob</code> and <code>Grep</code>), the agent could open a file you name — but it could no longer <em>search</em> for which files exist. Same idea as taking away someone's ability to browse a filing cabinet, while still letting them read any specific folder you hand them.</div>
 
-  <h2>Give your agent an MCP tool (reusing Chapter 4)</h2>
-  <p>Remember the little MCP math server you could build in Chapter 4? It drops straight into an SDK agent — no rewrite needed. That's the whole payoff of MCP being a standard: build a tool once, plug it in anywhere.</p>
+  <h2>Give your agent an MCP tool (reusing Chapter 9)</h2>
+  <p>Remember the little MCP math server you could build in Chapter 9? It drops straight into an SDK agent — no rewrite needed. That's the whole payoff of MCP being a standard: build a tool once, plug it in anywhere.</p>
   <pre><code>options: {
   mcpServers: {
-    math: { command: "node", args: ["./math-mcp/server.js"] }  <span>// reuse Ch.4!</span>
+    math: { command: "node", args: ["./math-mcp/server.js"] }  <span>// reuse Ch.9!</span>
   }
 }</code></pre>
 
@@ -154,7 +154,7 @@ for await (const msg of response) {
     <ol>
       <li>Write the <code>options</code> object for an agent that may only <em>read</em> files and search — never write, never run shell commands. Which <code>allowedTools</code> array does that?</li>
       <li>For each of these, pick raw API / Agent SDK / CLI and say why: (a) a nightly job that fixes lint errors and opens a PR, (b) a function that classifies a support email's sentiment in one call, (c) you refactoring code live in your terminal right now.</li>
-      <li><em>Stretch:</em> if you built the Ch.4 MCP math server, wire it into an SDK agent via <code>mcpServers</code> and have it actually call your tool.</li>
+      <li><em>Stretch:</em> if you built the Ch.9 MCP math server, wire it into an SDK agent via <code>mcpServers</code> and have it actually call your tool.</li>
     </ol>
   </div>
 
@@ -167,8 +167,8 @@ for await (const msg of response) {
   </details>
 
   <div class="nav-bottom">
-    <a href="ch05-subagents.html">← Chapter 5</a>
-    <a class="next" href="ch07-computer-use.html">Chapter 7: Computer Use →</a>
+    <a href="ch05-subagents.html">← Chapter 10</a>
+    <a class="next" href="ch07-computer-use.html">Chapter 12: Computer Use →</a>
   </div>
 </div>
 <script>

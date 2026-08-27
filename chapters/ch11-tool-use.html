@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 11 — Tool Use / Function Calling</title>
+<title>Ch 16 — Tool Use / Function Calling</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -59,14 +59,18 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="11">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="16">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 2 · Chapter 11</div>
+  <div class="ch-meta">Part 3 · Chapter 16</div>
   <h1>Tool Use / Function Calling</h1>
   <p><span class="badge general">General AI Eng</span> giving a model the ability to actually <em>do</em> things, not just talk about them</p>
 
-  <div class="callout"><strong>Why this matters.</strong> Everything up to this chapter has been about getting good <em>text</em> out of a model. Tool use is what turns a model into an <strong>agent</strong> — something that can look up live data, run calculations, call your APIs, or take actions in the world. It's also the foundation both MCP (Ch. 4) and the agent loop (Ch. 14) are built on top of.</p>
+  <div class="callout"><strong>Why this matters.</strong> Everything up to this chapter has been about getting good <em>text</em> out of a model. Tool use is what turns a model into an <strong>agent</strong> — something that can look up live data, run calculations, call your APIs, or take actions in the world. It's also the foundation both MCP (Ch. 9) and the agent loop (Ch. 19) are built on top of.</p>
+
+  <div class="callout"><strong>🟢 In plain words.</strong> The model can't actually run anything itself — it can only <em>say</em> "please call <code>get_weather</code> with city = Austin." Your code runs it and hands the result back. Tool use is that back-and-forth: the model asks, you do it, you report what happened.</div>
+
+  <div class="callout"><strong>🔍 The tricky part, in plain language.</strong> When the model streams a tool call, the tool's arguments don't arrive all together — they dribble in as tiny fragments of text. So instead of a clean <code>{ "to": "sam@acme.com", "subject": "Invoice" }</code>, you receive it in broken pieces, like someone dictating one syllable at a time: <code>{ "to": "sa</code> … <code>m@acme.</code> … <code>com", "subj</code> … At any moment mid-stream, what you're holding is <em>incomplete, invalid JSON</em> — you can't parse it, and you definitely can't act on it (imagine sending an email when you've only got <code>"to": "sa</code>). So you wait for the "this tool call is finished" signal — the <code>content_block_stop</code> event — and only <em>then</em> parse and run the tool. The good news: most SDKs buffer and reassemble the fragments for you. <em>Takeaway:</em> streamed tool arguments arrive in pieces — collect them all, wait for "stop", then execute.</div>
 
   <p class="label">Real-world analogy</p>
   <div class="analogy">
@@ -134,7 +138,7 @@ if (toolUse) {
 }
 console.log(response.content[0].text); <span class="tok-com">// final answer, informed by the tool result</span></code></pre>
 
-  <p>This is exactly the mechanism the <strong>agent loop</strong> (Chapter 14) repeats over and over for multi-step tasks — this chapter is the single-round-trip building block.</p>
+  <p>This is exactly the mechanism the <strong>agent loop</strong> (Chapter 19) repeats over and over for multi-step tasks — this chapter is the single-round-trip building block.</p>
 
   <h2>4. Writing good tool descriptions</h2>
   <div class="callout"><strong>The model chooses tools based almost entirely on the description text.</strong> A vague description ("does stuff with dates") leads to the model either never using it, or using it at the wrong times. Be as specific as you'd be briefing a new employee: what it does, when to use it, and any constraints.</div>
@@ -159,7 +163,7 @@ console.log(response.content[0].text); <span class="tok-com">// final answer, in
 }</code></pre>
 
   <h2>6. Tool use vs. MCP — quick refresher</h2>
-  <p>Tool use is the underlying <em>mechanism</em>; MCP (Chapter 4) is a <em>standard packaging format</em> for tools so they're portable across different AI apps, instead of hardcoded into one codebase. Every MCP tool call ultimately becomes a tool-use round trip like the one above.</p>
+  <p>Tool use is the underlying <em>mechanism</em>; MCP (Chapter 9) is a <em>standard packaging format</em> for tools so they're portable across different AI apps, instead of hardcoded into one codebase. Every MCP tool call ultimately becomes a tool-use round trip like the one above.</p>
 
   <p class="label">Key takeaways</p>
   <ul>
@@ -167,7 +171,7 @@ console.log(response.content[0].text); <span class="tok-com">// final answer, in
     <li>The model <strong>never executes code itself</strong> — it only decides when and how to ask for a tool call.</li>
     <li>Tool <strong>descriptions</strong> are what the model uses to decide when to reach for a tool — write them like you're briefing a new hire.</li>
     <li>Always send <strong>errors back as tool results</strong> (not silent failures) so the model can recover.</li>
-    <li>This single round trip is the building block the full <strong>agent loop</strong> (Ch. 14) repeats for multi-step tasks.</li>
+    <li>This single round trip is the building block the full <strong>agent loop</strong> (Ch. 19) repeats for multi-step tasks.</li>
   </ul>
 
   <div class="exercise">
@@ -186,9 +190,19 @@ console.log(response.content[0].text); <span class="tok-com">// final answer, in
     </ol>
   </details>
 
+  <details><summary>💬 Conceptual questions (the kind interviewers ask)</summary>
+    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 4px">Answer each out loud before peeking. These tie this chapter to real production concerns — cost, latency, failures, and safety.</p>
+    <ol>
+      <li><strong>An external API a tool depends on times out. What's the right thing to do, and why not just crash?</strong><br><em>Send the error back as a <code>tool_result</code> with <code>is_error: true</code> so the model can retry, try a different tool, or ask the user. Crashing the pipeline throws away every step done so far and gives the user nothing.</em></li>
+      <li><strong>Your agent has 20 tools and keeps picking the wrong one. Most likely cause and fix?</strong><br><em>The descriptions are vague or overlapping — the model chooses almost entirely on the description text. Rewrite them to say exactly when (and when <u>not</u>) to use each one.</em></li>
+      <li><strong>Why is a <code>send_email</code> or <code>delete_record</code> tool riskier than <code>get_weather</code>, and how do you handle it?</strong><br><em>It has real side effects and can be triggered by prompt injection hidden in the data the agent reads (Ch. 31). Gate irreversible tools behind explicit user confirmation and least-privilege access — never let them fire automatically.</em></li>
+      <li><strong>Each tool call is a full extra round trip. How should that shape your tool design?</strong><br><em>Favor fewer, higher-value tools and batch related data into one call rather than many chatty tools — every round trip adds latency and tokens (the whole conversation history is resent each time).</em></li>
+    </ol>
+  </details>
+
   <div class="nav-bottom">
-    <a href="ch10-prompt-caching.html">← Chapter 10</a>
-    <a class="next" href="ch12-extended-thinking.html">Chapter 12: Extended Thinking / Reasoning →</a>
+    <a href="ch10-prompt-caching.html">← Chapter 15</a>
+    <a class="next" href="ch12-extended-thinking.html">Chapter 17: Extended Thinking / Reasoning →</a>
   </div>
 </div>
 <script>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ch 36 — Deployment Patterns</title>
+<style>
+  :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+  [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--bg-alt);border-bottom:1px solid var(--border)}
+  .topbar .left{font-size:.85rem}
+  .topbar button{cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;padding:6px 12px;font-size:.8rem}
+  .complete-btn.done{background:var(--done-soft);border-color:var(--done);color:var(--done)}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 28px 120px}
+  .ch-meta{font-size:.78rem;color:var(--muted)}
+  h1{font-size:1.9rem;margin:.1em 0 .3em}
+  h2{font-size:1.3rem;margin:1.8em 0 .4em;padding-top:.3em;border-top:1px solid var(--border)}
+  h3{font-size:1.05rem;margin:1.3em 0 .3em}
+  .badge{display:inline-block;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:6px}
+  .badge.cc{background:#fff1e5;color:#bc4c00}.badge.general{background:#e7f3ff;color:#0969da}
+  [data-theme="dark"] .badge.cc{background:#3a2008;color:#f0883e}[data-theme="dark"] .badge.general{background:#0c2d48;color:#6cb6ff}
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin:22px 0 6px}
+  .analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:6px;margin:10px 0}
+  .exercise{background:var(--done-soft);border-left:3px solid var(--done);padding:14px 18px;border-radius:6px;margin:12px 0}
+  .callout{background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;overflow-x:auto;font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace;font-size:.82rem;line-height:1.5;white-space:pre}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  code{font-family:"SF Mono","Cascadia Code",Consolas,Menlo,monospace}
+  p code,li code,td code{background:var(--code-bg);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:.88em}
+  .tok-kw{color:#cf222e;font-weight:600}.tok-str{color:#0a3069}.tok-com{color:#6e7781;font-style:italic}
+  .tok-fn{color:#8250df}.tok-num{color:#0550ae}
+  [data-theme="dark"] .tok-kw{color:#ff7b72}[data-theme="dark"] .tok-str{color:#a5d6ff}
+  [data-theme="dark"] .tok-com{color:#8b949e}[data-theme="dark"] .tok-fn{color:#d2a8ff}[data-theme="dark"] .tok-num{color:#79c0ff}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--bg-alt)}
+  ul,ol{padding-left:22px}li{margin:4px 0}
+  .nav-bottom{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+  .nav-bottom a{flex:1;border:1px solid var(--border);border-radius:8px;padding:12px 16px;background:var(--bg-alt)}
+  .nav-bottom a.next{text-align:right}
+  details{border:1px solid var(--border);border-radius:8px;padding:0 14px;margin:10px 0}
+  summary{cursor:pointer;padding:10px 0;font-weight:600}
+  @media (max-width:640px){
+    .wrap{padding:20px 16px 90px}
+    .topbar{padding:10px 14px}
+    .topbar .left{font-size:.78rem}
+    h1{font-size:1.5rem}
+    h2{font-size:1.12rem;margin:1.5em 0 .4em}
+    h3{font-size:1rem}
+    .diagram,pre{font-size:.72rem;padding:10px 12px}
+    table{display:block;overflow-x:auto;white-space:nowrap}
+    .nav-bottom{flex-direction:column}
+    .analogy,.exercise,.callout{padding:10px 12px}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="left"><a href="../index.html">← All chapters</a></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="36">Mark complete</button></div>
+</div>
+<div class="wrap">
+  <div class="ch-meta">Part 6 · Chapter 36 · Final chapter</div>
+  <h1>Deployment Patterns</h1>
+  <p><span class="badge general">General AI Eng</span> the production plumbing that keeps your AI app fast, reliable, and affordable under real traffic</p>
+
+  <div class="callout"><strong>Why this matters.</strong> Everything so far makes a <em>good</em> AI app. This final chapter makes it a <em>dependable</em> one. Real production traffic is unforgiving: providers rate-limit you, calls occasionally fail or time out, latency spikes, and costs balloon. <strong>Deployment patterns</strong> are the well-worn techniques — retries, fallbacks, rate-limit handling, caching, streaming — that keep your app standing when things go wrong. This is the last mile between a working prototype and something users can actually rely on.</p>
+
+  <p class="label">Real-world analogy</p>
+  <div class="analogy">Think of a restaurant kitchen at dinner rush. One great chef (your model) isn't enough — you need a queue system for orders (rate limiting), a backup plan when an ingredient runs out (fallbacks), dishes remade when they come back wrong (retries), and appetizers sent out fast so diners aren't staring at an empty table (streaming). Deployment patterns are the kitchen's operating procedures under pressure.</div>
+
+  <h2>1. Retries — handle the calls that fail</h2>
+  <p>Network blips, provider hiccups, and transient <code>429</code>/<code>500</code> errors are normal at scale. Don't crash — retry, but do it politely with <strong>exponential backoff</strong> (wait a bit, then longer, then longer) so you don't hammer a struggling provider.</p>
+  <pre><code>async function callWithRetry(fn, max = 3) {
+  for (let attempt = 0; attempt &lt; max; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (!isRetryable(err) || attempt === max - 1) throw err;
+      const wait = 2 ** attempt * 1000 + Math.random() * 250;  <span class="tok-com">// backoff + jitter</span>
+      await sleep(wait);
+    }
+  }
+}</code></pre>
+  <div class="callout"><strong>Two rules.</strong> (1) Only retry <em>retryable</em> errors — a rate-limit or timeout, yes; a "bad request" won't fix itself. (2) Add <strong>jitter</strong> (a little randomness) so many clients don't all retry in sync and stampede the provider at the same instant.</div>
+
+  <h2>2. Rate limits — stay under the ceiling</h2>
+  <p>Providers cap how many requests/tokens per minute you may send. Exceed it and you get <code>429 Too Many Requests</code>. Handle it on both ends:</p>
+  <ul>
+    <li><strong>React:</strong> on a 429, back off and retry (§1). Providers often send a <code>Retry-After</code> hint — respect it.</li>
+    <li><strong>Prevent:</strong> throttle your own outgoing calls with a queue or token-bucket limiter so you rarely hit the ceiling in the first place.</li>
+    <li><strong>Scale up:</strong> for real production volume, request higher limits from the provider ahead of launch.</li>
+  </ul>
+
+  <h2>3. Fallbacks — a plan B when the primary path fails</h2>
+  <table>
+    <tr><th>Failure</th><th>Fallback</th></tr>
+    <tr><td>Primary model is down / overloaded</td><td>Route to a secondary model (or a different provider)</td></tr>
+    <tr><td>Big model too slow or rate-limited</td><td>Drop to a smaller, faster model for that request</td></tr>
+    <tr><td>The model call fails entirely</td><td>Return a safe cached answer or a graceful "try again shortly" message</td></tr>
+  </table>
+  <div class="callout"><strong>Degrade gracefully.</strong> A slightly worse answer beats an error page. Design the failure path deliberately — decide <em>now</em> what happens when the model is unreachable, rather than showing users a stack trace later.</div>
+
+  <h2>4. Latency &amp; cost patterns (a recap you now own)</h2>
+  <table>
+    <tr><th>Pattern</th><th>What it buys you</th><th>Chapter</th></tr>
+    <tr><td><strong>Streaming</strong></td><td>Send tokens as they generate → far better <em>perceived</em> speed (time-to-first-token)</td><td>Ch. 20</td></tr>
+    <tr><td><strong>Prompt caching</strong></td><td>Reuse a long static prefix at ~0.1× cost and lower latency</td><td>Ch. 15</td></tr>
+    <tr><td><strong>Response caching</strong></td><td>Identical/similar request came before? Serve the stored answer, skip the call entirely</td><td>Ch. 15, 20</td></tr>
+    <tr><td><strong>Model right-sizing</strong></td><td>Use the smallest model that passes your evals — don't pay Opus prices for a Haiku job</td><td>Ch. 20, 33</td></tr>
+    <tr><td><strong>Batching</strong></td><td>Group non-urgent jobs into batch calls for big cost savings</td><td>Ch. 20</td></tr>
+  </table>
+
+  <h2>5. Managing secrets &amp; config</h2>
+  <ul>
+    <li><strong>API keys in env vars / a secrets manager</strong> — never hard-coded, never committed to git.</li>
+    <li><strong>Prompts &amp; model IDs as versioned config</strong> — so you can change a prompt or bump the model without redeploying code, and roll back if evals drop (Ch. 33).</li>
+    <li><strong>Separate staging &amp; production</strong> keys and environments — test changes safely before real users see them.</li>
+  </ul>
+
+  <h2>6. Rolling out changes safely</h2>
+  <p>Model and prompt changes are risky because behavior can shift subtly. Ship them the same careful way you'd ship any production change:</p>
+  <ul>
+    <li><strong>Run your eval set first</strong> (Ch. 33) — never ship a change that regresses your scores.</li>
+    <li><strong>Canary / gradual rollout</strong> — send the new version to 1% → 10% → 100% of traffic, watching metrics (Ch. 34) at each step.</li>
+    <li><strong>A/B test</strong> when you're unsure — compare two versions on live traffic before committing.</li>
+    <li><strong>Keep rollback easy</strong> — config-driven prompts/models mean reverting is one setting, not a redeploy.</li>
+  </ul>
+
+  <h2>7. The production readiness checklist</h2>
+  <div class="callout">
+    Before you call an LLM app "production-ready," you should be able to check every box — and each traces back to a chapter in this notebook:
+    <ul>
+      <li>☑ <strong>Guardrails</strong> on input &amp; output (Ch. 30)</li>
+      <li>☑ <strong>Injection &amp; abuse defenses</strong>, least privilege on tools (Ch. 31)</li>
+      <li>☑ <strong>PII redaction</strong> &amp; data governance, incl. in logs (Ch. 32)</li>
+      <li>☑ <strong>Eval set</strong> gating every change (Ch. 33)</li>
+      <li>☑ <strong>Observability</strong> — traces, cost, latency, errors (Ch. 34)</li>
+      <li>☑ <strong>Red-teaming</strong> findings turned into eval cases (Ch. 35)</li>
+      <li>☑ <strong>Retries, rate-limit handling, fallbacks</strong> (this chapter)</li>
+      <li>☑ <strong>Caching, streaming, right-sized models</strong> for cost &amp; latency (Ch. 15, 20)</li>
+      <li>☑ <strong>Secrets secured</strong>, config versioned, safe rollout plan</li>
+    </ul>
+  </div>
+
+  <p class="label">Key takeaways</p>
+  <ul>
+    <li>Production traffic <em>will</em> hit failures, rate limits, and cost/latency pressure — deployment patterns keep the app standing anyway.</li>
+    <li><strong>Retry</strong> transient failures with exponential backoff + jitter; only retry errors that can actually succeed on a second try.</li>
+    <li>Handle <strong>rate limits</strong> both ways: back off when you hit them, and throttle proactively so you rarely do.</li>
+    <li><strong>Fallbacks</strong> (secondary model, smaller model, cached/graceful response) let you degrade gracefully instead of erroring out.</li>
+    <li>Ship changes safely: <strong>eval-gate, canary rollout, easy rollback</strong> — and use the readiness checklist to confirm you've covered all of Part 6.</li>
+  </ul>
+
+  <div class="exercise">
+    <strong>🎯 Your exercise</strong>
+    <ol>
+      <li>Your app calls Claude and sometimes gets a 429 and occasionally a 500. Design your retry + rate-limit strategy: what do you retry, how long do you wait, and how do you avoid hitting the limit in the first place?</li>
+      <li>Design a fallback chain for a customer-facing chatbot: primary model → ? → ? → last resort. Justify each hop.</li>
+      <li><em>Capstone reflection:</em> pick any AI app idea and walk it through the §7 checklist. Which box is the <em>hardest</em> to satisfy for your idea, and why? This is the mindset that turns a prototype into a product.</li>
+    </ol>
+  </div>
+
+  <details><summary>Understanding check</summary>
+    <ol>
+      <li>Why add jitter to retry backoff, and why only retry certain errors? <em>Jitter spreads out retries so many clients don't all retry in sync and stampede the provider; and only transient errors (429/timeout/500) can succeed on a retry — a malformed request will just fail again, so retrying it wastes calls.</em></li>
+      <li>What does "degrade gracefully" mean and why prefer it? <em>When the primary path fails, fall back to a smaller/secondary model or a cached/graceful message rather than showing an error — a slightly worse but working response beats an error page for users.</em></li>
+    </ol>
+  </details>
+
+  <div class="callout"><strong>🎓 You've reached the end.</strong> That's all 36 chapters — from what a token is, through prompting, tools, agents, and RAG, to shipping a safe, observable, resilient system. The through-line of this whole notebook is <em>harness engineering</em>: the model is only the engine; everything you've learned is how to build the rest of the car around it. Go build something — and let your eval set tell you it's good.</div>
+
+  <div class="nav-bottom">
+    <a href="ch30-red-teaming.html">← Chapter 35</a>
+    <a class="next" href="../index.html">🎉 Course complete → Back to index</a>
+  </div>
+</div>
+<script>
+  const LS_DONE="aien_done_v1",LS_THEME="aien_theme_v1";
+  function applyTheme(t){document.documentElement.setAttribute("data-theme",t);document.getElementById("themeBtn").textContent=t==="dark"?"☀️":"🌙";localStorage.setItem(LS_THEME,t)}
+  document.getElementById("themeBtn").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+  applyTheme(localStorage.getItem(LS_THEME)||"light");
+  (function highlightCode(){
+    const RE=/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|(\b\d+\.?\d*\b)|(\b(?:const|let|var|function|async|await|return|if|else|for|while|new|import|from|export|default|class|extends|try|catch|throw|typeof|instanceof|of|in|true|false|null|undefined|this|switch|case|break|continue|do|yield|static)\b)|(\b[A-Za-z_$][\w$]*(?=\())/g;
+    document.querySelectorAll("pre code").forEach(el=>{
+      const esc=el.textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      el.innerHTML=esc.replace(RE,(m,c,s,n,k,f)=>c?`<span class="tok-com">${c}</span>`:s?`<span class="tok-str">${s}</span>`:n?`<span class="tok-num">${n}</span>`:k?`<span class="tok-kw">${k}</span>`:f?`<span class="tok-fn">${f}</span>`:m);
+    });
+  })();
+  const btn=document.getElementById("completeBtn"),ch=+btn.dataset.ch;let done=JSON.parse(localStorage.getItem(LS_DONE)||"[]");
+  function paint(){const d=done.includes(ch);btn.classList.toggle("done",d);btn.textContent=d?"✓ Completed":"Mark complete"}
+  btn.onclick=()=>{done.includes(ch)?done=done.filter(x=>x!==ch):done.push(ch);localStorage.setItem(LS_DONE,JSON.stringify(done));paint()};paint();
+</script>
+</body>
+</html>

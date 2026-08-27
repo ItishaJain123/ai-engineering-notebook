@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 10 — Prompt Caching</title>
+<title>Ch 15 — Prompt Caching</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -59,14 +59,18 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="10">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="15">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 2 · Chapter 10</div>
+  <div class="ch-meta">Part 3 · Chapter 15</div>
   <h1>Prompt Caching</h1>
   <p><span class="badge general">General AI Eng</span> stop paying full price to re-process the same large context on every request</p>
 
   <div class="callout"><strong>Why this matters.</strong> Real agents and apps often send a large, mostly-unchanging block of context on every single request — a big system prompt, a full codebase, a long document, tool definitions. Without caching, you pay full processing cost and latency for that same content, over and over, on every turn. Prompt caching fixes both.</p>
+
+  <div class="callout"><strong>🟢 In plain words.</strong> If you send the same big chunk of context on every call — a huge system prompt, a whole document, a long list of tools — caching lets the model <em>remember</em> it instead of re-reading it from scratch each time. Much cheaper and faster for the repeated part.</div>
+
+  <div class="callout"><strong>🔍 The tricky part, in plain language.</strong> Caching does <em>not</em> save the model's answer. It saves the <em>work of reading the beginning of your prompt</em>. When the model reads a long prompt, it processes every token into an internal state; caching stores that processed state for the front part so it can skip re-reading it next time. Two catches: the cached beginning must be <strong>byte-for-byte identical</strong> (one changed character = cache miss), and it expires after a few minutes. Picture a chef who pre-chops the same base ingredients every dish starts with — only helps if every recipe starts the same way. <em>Takeaway:</em> put your big, unchanging stuff (system prompt, tool defs, reference docs) at the <em>front</em>, and the changing stuff (the user's question) at the <em>end</em>.</div>
 
   <p class="label">Real-world analogy</p>
   <div class="analogy">
@@ -109,11 +113,36 @@ Request 2 (same doc, new question, within cache lifetime):
 // or cache_read_input_tokens (subsequent calls) — cached reads are
 // billed at a fraction of the normal input token price</span></code></pre>
 
+  <h2>2b. What does "ephemeral" actually mean?</h2>
+  <p><strong>Ephemeral</strong> just means "short-lived / temporary" — it expires on its own after a while instead of being stored permanently. When you write <code>cache_control: { type: "ephemeral" }</code>, you're telling the API: "cache this content, but only for a short, auto-expiring window" — not "cache this forever."</p>
+  <div class="analogy"><strong>Everyday version of the same word:</strong> a Snapchat message is ephemeral — it disappears after you view it. A cached prompt breakpoint works the same way: useful while it's active, gone once the window passes.</div>
+
+  <h2>2c. Are there other <code>cache_control</code> types?</h2>
+  <p><code>"ephemeral"</code> is currently the <strong>only</strong> value <code>type</code> can take — there's no permanent/persistent cache type. What you <em>can</em> control is <strong>how long</strong> that ephemeral cache lasts, via an optional <code>ttl</code> field:</p>
+  <table>
+    <tr><th><code>ttl</code> value</th><th>Duration</th><th>Cost vs. normal input tokens</th></tr>
+    <tr><td><code>"5m"</code> (default if omitted)</td><td>5 minutes, refreshed each time it's reused</td><td>Cache write: 1.25× · Cache read: 0.1×</td></tr>
+    <tr><td><code>"1h"</code></td><td>1 hour</td><td>Cache write: 2× · Cache read: 0.1×</td></tr>
+  </table>
+  <pre><code>{
+  type: "text",
+  text: hugeSystemPromptWithFullCodebaseContext,
+  cache_control: { type: "ephemeral", ttl: "1h" }  <span class="tok-com">// opt into the longer, paid window</span>
+}</code></pre>
+  <div class="callout"><strong>A few limits worth knowing:</strong>
+    <ul style="margin:6px 0 0">
+      <li>You can set at most <strong>4 cache breakpoints</strong> per request.</li>
+      <li>Content below a minimum token count won't actually get cached — the threshold depends on the model (e.g. 1,024 tokens for Sonnet 5, 512 for smaller/newer models) — so caching a tiny prompt does nothing.</li>
+      <li>Reads are dramatically cheaper than a fresh call (<strong>0.1×</strong> the normal input price) — that's the entire reason this feature exists.</li>
+      <li>The cache breaks (misses) if anything before the breakpoint changes — including tool definitions, images, or settings, not just the text itself.</li>
+    </ul>
+  </div>
+
   <h2>3. When caching helps (and when it doesn't)</h2>
   <table>
     <tr><th>Good fit for caching</th><th>Not a good fit</th></tr>
     <tr><td>Large, stable system prompt reused across many requests</td><td>A prompt that's different on every single call</td></tr>
-    <tr><td>Agent with a big set of tool definitions (Ch. 11) sent every turn</td><td>Short prompts where the content itself is cheap already</td></tr>
+    <tr><td>Agent with a big set of tool definitions (Ch. 16) sent every turn</td><td>Short prompts where the content itself is cheap already</td></tr>
     <tr><td>Multi-turn chat over one large document (RAG context, codebase)</td><td>One-off requests that won't be repeated</td></tr>
     <tr><td>High-volume production traffic hitting the same context repeatedly</td><td>Low-volume or highly personalized-per-request content</td></tr>
   </table>
@@ -125,7 +154,7 @@ Request 2 (same doc, new question, within cache lifetime):
     <tr><th></th><th>Prompt caching (this chapter)</th><th>Semantic caching</th></tr>
     <tr><td>What's cached</td><td>The model's internal processing of an exact, repeated prompt prefix</td><td>Entire past <em>responses</em>, looked up by meaning-similarity (embeddings) of the question</td></tr>
     <tr><td>Match requirement</td><td>Exact prefix match</td><td>"Close enough" question, even if worded differently</td></tr>
-    <tr><td>Built into the API?</td><td>Yes — a native Claude API feature</td><td>No — you build it yourself with an embedding lookup (Ch. 16, 19) in front of your app</td></tr>
+    <tr><td>Built into the API?</td><td>Yes — a native Claude API feature</td><td>No — you build it yourself with an embedding lookup (Ch. 21, 24) in front of your app</td></tr>
     <tr><td>Risk</td><td>Low — it's still generating a real, fresh response</td><td>Higher — a "similar enough" cached answer might not actually fit the new question</td></tr>
   </table>
 
@@ -154,9 +183,19 @@ Request 2 (same doc, new question, within cache lifetime):
     </ol>
   </details>
 
+  <details><summary>💬 Conceptual questions (the kind interviewers ask)</summary>
+    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 4px">Answer each out loud before peeking. These tie this chapter to real production concerns — cost, latency, failures, and safety.</p>
+    <ol>
+      <li><strong>You add caching but your bill barely drops. What are the likely reasons?</strong><br><em>Your cached prefix keeps changing (any edit above the breakpoint = a cache miss), the content is below the model's minimum token threshold, or your requests are too far apart and the cache already expired. Caching only pays off for large, <u>stable</u>, <u>frequently reused</u> prefixes.</em></li>
+      <li><strong>How does caching help <u>latency</u>, not just cost?</strong><br><em>The cached prefix isn't reprocessed, so time-to-first-token drops on large-context requests — the model skips straight to the new part instead of re-reading the whole prefix.</em></li>
+      <li><strong>An agent sends 15,000 tokens of tool definitions every turn. Where do you place the breakpoint, and why there?</strong><br><em>Right after the stable tool definitions / system prompt and before the changing conversation — so the big unchanging block is a cache hit and only the new turn is processed fresh.</em></li>
+      <li><strong>When would caching actively <u>not</u> help, or even waste effort?</strong><br><em>Short, unique, one-off prompts with no shared prefix — e.g. every user asks a different tiny question. There's nothing repeated to reuse, and tiny prompts fall below the cache threshold anyway.</em></li>
+    </ol>
+  </details>
+
   <div class="nav-bottom">
-    <a href="ch09-structured-output.html">← Chapter 9</a>
-    <a class="next" href="ch11-tool-use.html">Chapter 11: Tool Use / Function Calling →</a>
+    <a href="ch09-structured-output.html">← Chapter 14</a>
+    <a class="next" href="ch11-tool-use.html">Chapter 16: Tool Use / Function Calling →</a>
   </div>
 </div>
 <script>

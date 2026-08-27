@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 12 — Extended Thinking / Reasoning</title>
+<title>Ch 17 — Extended Thinking / Reasoning</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -59,18 +59,22 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="12">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="17">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 2 · Chapter 12</div>
+  <div class="ch-meta">Part 3 · Chapter 17</div>
   <h1>Extended Thinking / Reasoning</h1>
   <p><span class="badge general">General AI Eng</span> giving the model a scratchpad to reason in before it commits to an answer</p>
 
-  <div class="callout"><strong>Why this matters.</strong> Chapter 8 showed that asking a model to "think step by step" in the prompt improves accuracy on hard problems. <strong>Extended thinking</strong> is a built-in, more powerful version of that same idea — the model generates a visible reasoning trace in a dedicated "thinking" block before its actual answer, with a controllable token budget. It's the right tool for genuinely hard problems, and the wrong tool (too slow, too expensive) for simple ones.</p>
+  <div class="callout"><strong>Why this matters.</strong> Chapter 13 showed that asking a model to "think step by step" in the prompt improves accuracy on hard problems. <strong>Extended thinking</strong> is a built-in, more powerful version of that same idea — the model generates a visible reasoning trace in a dedicated "thinking" block before its actual answer, with a controllable token budget. It's the right tool for genuinely hard problems, and the wrong tool (too slow, too expensive) for simple ones.</p>
+
+  <div class="callout"><strong>🟢 In plain words.</strong> Hard problems get better answers if the model works them out on scratch paper first. Extended thinking is a built-in scratchpad with a size limit you set — great for tough reasoning, but wasteful (slow and pricey) for easy questions.</div>
+
+  <div class="callout"><strong>🔍 The tricky part, in plain language.</strong> "Thinking" isn't magic — it's the model generating a hidden scratchpad of tokens <em>before</em> it writes the real answer. Those thinking tokens are real: you pay for them and you wait for them, even though the user usually never sees them. Picture a student working a hard problem out on scratch paper before writing the final answer — more scratch paper often means a better answer, but it takes longer and uses more paper. That's what <code>budget_tokens</code> controls: it's the size limit on the scratch paper. <em>Takeaway:</em> thinking buys accuracy on hard problems by spending extra time and tokens — turn it up for tough reasoning, leave it off for simple chat.</div>
 
   <p class="label">Real-world analogy</p>
   <div class="analogy">
-    Chain-of-thought prompting (Ch. 8) is like asking someone to "show your work" on a math test — they write it in the same notebook as their final answer. Extended thinking is more like giving them dedicated scratch paper explicitly separate from their answer sheet, and telling them how much scratch paper they're allowed to use before they must commit to a final answer.
+    Chain-of-thought prompting (Ch. 13) is like asking someone to "show your work" on a math test — they write it in the same notebook as their final answer. Extended thinking is more like giving them dedicated scratch paper explicitly separate from their answer sheet, and telling them how much scratch paper they're allowed to use before they must commit to a final answer.
   </div>
 
   <h2>1. What actually happens</h2>
@@ -113,22 +117,22 @@ const answer = response.content.find(b => b.type === "text");</code></pre>
     <tr><th>Good fit</th><th>Not worth it</th></tr>
     <tr><td>Multi-step math, logic puzzles, complex planning</td><td>Simple factual lookups ("what's the capital of X")</td></tr>
     <tr><td>Code that requires reasoning through edge cases</td><td>Short creative writing or casual chat</td></tr>
-    <tr><td>Ambiguous requests needing careful disambiguation</td><td>High-volume, latency-sensitive endpoints (Ch. 15)</td></tr>
+    <tr><td>Ambiguous requests needing careful disambiguation</td><td>High-volume, latency-sensitive endpoints (Ch. 20)</td></tr>
     <tr><td>Tasks where being wrong is costly (financial, legal analysis)</td><td>Anything where a fast, "good enough" answer is fine</td></tr>
   </table>
 
   <div class="callout"><strong>The tradeoff, in one line:</strong> extended thinking spends more tokens (cost) and time (latency) to buy higher accuracy on hard problems. Turning it on for every request is like hiring a careful auditor to double-check your grocery list — technically thorough, but wasteful for the task.</div>
 
-  <h2>4. Extended thinking vs. the agent loop (Ch. 14)</h2>
-  <p>Don't confuse these: extended thinking is reasoning <em>within a single model turn</em>, before it writes its answer. The agent loop (Chapter 14) is reasoning <em>across multiple turns</em>, interleaved with actual tool calls and real-world observations. A complex agent can use both — thinking carefully within each step, while also looping across several steps.</p>
+  <h2>4. Extended thinking vs. the agent loop (Ch. 19)</h2>
+  <p>Don't confuse these: extended thinking is reasoning <em>within a single model turn</em>, before it writes its answer. The agent loop (Chapter 19) is reasoning <em>across multiple turns</em>, interleaved with actual tool calls and real-world observations. A complex agent can use both — thinking carefully within each step, while also looping across several steps.</p>
 
   <p class="label">Key takeaways</p>
   <ul>
     <li>Extended thinking gives the model a dedicated reasoning trace, generated before its final answer, with a controllable <code>budget_tokens</code>.</li>
-    <li>It's a more structured, built-in version of "think step by step" chain-of-thought prompting (Ch. 8).</li>
+    <li>It's a more structured, built-in version of "think step by step" chain-of-thought prompting (Ch. 13).</li>
     <li>Use it for genuinely hard, multi-step, or high-stakes problems — not for simple lookups or casual chat.</li>
     <li>The cost is real: more tokens spent, more latency — always a deliberate tradeoff, not a default-on setting.</li>
-    <li>It reasons within one turn; the agent loop (Ch. 14) reasons across multiple turns with real tool calls.</li>
+    <li>It reasons within one turn; the agent loop (Ch. 19) reasons across multiple turns with real tool calls.</li>
   </ul>
 
   <div class="exercise">
@@ -147,9 +151,19 @@ const answer = response.content.find(b => b.type === "text");</code></pre>
     </ol>
   </details>
 
+  <details><summary>💬 Conceptual questions (the kind interviewers ask)</summary>
+    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 4px">Answer each out loud before peeking. These tie this chapter to real production concerns — cost, latency, failures, and safety.</p>
+    <ol>
+      <li><strong>You turn thinking on for every request "to be safe." Why is that a mistake?</strong><br><em>It spends extra tokens and adds latency on every call, including trivial ones where it changes nothing. Both cost and speed suffer for zero accuracy gain on the easy majority of requests.</em></li>
+      <li><strong>Why is extended thinking usually the wrong choice for a real-time chat widget?</strong><br><em>The thinking tokens are generated <u>before</u> the answer, so time-to-first-useful-token balloons and the widget feels like it's hanging. Save it for offline or high-stakes work where the wait is justified.</em></li>
+      <li><strong>How do you decide the <code>budget_tokens</code> value?</strong><br><em>Match it to problem difficulty — enough room to actually reason through the steps, capped so a runaway trace doesn't blow cost and latency. Tune it against an eval set (Ch. 33) rather than guessing forever.</em></li>
+      <li><strong>How is this different from just handing the task to the agent loop?</strong><br><em>Thinking reasons <u>within one turn</u> before answering; the agent loop (Ch. 19) reasons <u>across turns</u> with real tool calls. Hard single-answer problem → thinking; multi-step task with actions → loop.</em></li>
+    </ol>
+  </details>
+
   <div class="nav-bottom">
-    <a href="ch11-tool-use.html">← Chapter 11</a>
-    <a class="next" href="ch13-streaming.html">Chapter 13: Streaming →</a>
+    <a href="ch11-tool-use.html">← Chapter 16</a>
+    <a class="next" href="ch13-streaming.html">Chapter 18: Streaming →</a>
   </div>
 </div>
 <script>

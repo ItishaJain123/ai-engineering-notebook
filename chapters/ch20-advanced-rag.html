@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 20 — Advanced RAG</title>
+<title>Ch 25 — Advanced RAG</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -59,20 +59,24 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="20">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="25">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 3 · Chapter 20</div>
+  <div class="ch-meta">Part 4 · Chapter 25</div>
   <h1>Advanced RAG</h1>
   <p><span class="badge general">General AI Eng</span> when one retrieval pass isn't enough</p>
 
-  <div class="callout"><strong>Why this matters.</strong> Everything in Chapters 16-19 was "naive RAG" — embed the query, retrieve once, hand the results to the model, get an answer. That works well for simple lookups, but it breaks down on harder questions: <strong>multi-hop</strong> questions that need several pieces of evidence combined, questions where the first retrieval attempt just returns irrelevant chunks, or questions that hinge on how entities <em>relate</em> to each other rather than which text looks similar. Advanced RAG patterns exist to fix specific failure modes of naive RAG — not to replace it wholesale.</p>
+  <div class="callout"><strong>Why this matters.</strong> Everything in Chapters 21-24 was "naive RAG" — embed the query, retrieve once, hand the results to the model, get an answer. That works well for simple lookups, but it breaks down on harder questions: <strong>multi-hop</strong> questions that need several pieces of evidence combined, questions where the first retrieval attempt just returns irrelevant chunks, or questions that hinge on how entities <em>relate</em> to each other rather than which text looks similar. Advanced RAG patterns exist to fix specific failure modes of naive RAG — not to replace it wholesale.</p>
+
+  <div class="callout"><strong>🟢 In plain words.</strong> Plain ("naive") RAG retrieves once and answers. Advanced RAG is for when one lookup isn't enough: <em>agentic RAG</em> retrieves, checks whether it's enough, and tries again; <em>GraphRAG</em> pre-builds a map of how entities connect so it can follow relationships across documents.</div>
+
+  <div class="callout"><strong>🔍 The tricky part, in plain language.</strong> Naive RAG always retrieves exactly once and then answers — no matter how good or bad the results were. Agentic RAG adds one thing: an <em>evaluate</em> step. After retrieving, the model asks "do these actually answer the question?" — and if not, it reformulates the query and retrieves again, looping until it has enough (or gives up). That single "is this enough?" check is the whole difference. Picture a researcher who, instead of grabbing the first book and answering, skims it, thinks "this doesn't cover it," and goes back to the shelf. The cost: each extra loop is another search plus another model call — more time and money. <em>Takeaway:</em> agentic RAG = naive RAG + "check if it's enough, retry if not" — more accurate on hard questions, but slower and pricier, so cap the loops.</div>
 
   <p class="label">Real-world analogy</p>
   <div class="analogy">Naive RAG is looking up one fact in an index, once, and reporting back whatever you find. Agentic RAG is a researcher who looks something up, realizes that answer alone doesn't settle the question, figures out what piece is still missing, looks <em>that</em> up too, and keeps going until they actually have enough to answer — an iterative investigation, not a single lookup. GraphRAG is like that researcher having a pre-built map of how every person, company, and citation connects to every other one, so instead of re-discovering relationships from scratch each time, they can just trace a line on the map.</div>
 
   <h2>1. Agentic RAG: retrieval inside an agent loop</h2>
-  <p>Recall the agent loop from Chapter 14: the model decides an action, observes the result, and decides again — looping until it's done. Agentic RAG is exactly that loop, with "retrieve from the index" as one of the available actions. Instead of a fixed pipeline (retrieve once → stuff into context → answer), the model can retrieve, look at what came back, judge whether that's actually enough to answer, and if not, reformulate the query and retrieve again.</p>
+  <p>Recall the agent loop from Chapter 19: the model decides an action, observes the result, and decides again — looping until it's done. Agentic RAG is exactly that loop, with "retrieve from the index" as one of the available actions. Instead of a fixed pipeline (retrieve once → stuff into context → answer), the model can retrieve, look at what came back, judge whether that's actually enough to answer, and if not, reformulate the query and retrieve again.</p>
   <div class="diagram">        ┌─────────────────────────┐
         │        user query        │
         └────────────┬─────────────┘
@@ -139,8 +143,8 @@ Knowledge graph (built ahead of time):
 
   <p class="label">Key takeaways</p>
   <ul>
-    <li><strong>Naive RAG</strong> (Ch. 16-19) does one retrieve-then-answer pass — simple and fast, but it can't recover from a bad first retrieval or combine evidence across multiple lookups.</li>
-    <li><strong>Agentic RAG</strong> wraps retrieval in an agent loop (Ch. 14): retrieve, evaluate whether that's enough, reformulate and retrieve again if not, and only answer once there's sufficient evidence.</li>
+    <li><strong>Naive RAG</strong> (Ch. 21-24) does one retrieve-then-answer pass — simple and fast, but it can't recover from a bad first retrieval or combine evidence across multiple lookups.</li>
+    <li><strong>Agentic RAG</strong> wraps retrieval in an agent loop (Ch. 19): retrieve, evaluate whether that's enough, reformulate and retrieve again if not, and only answer once there's sufficient evidence.</li>
     <li><strong>Query decomposition</strong> breaks a multi-hop question into sequential sub-questions, retrieving separately for each before combining into a final answer.</li>
     <li><strong>GraphRAG</strong> pre-builds a knowledge graph of entities and relationships so retrieval can traverse connections, not just match similar text — powerful but costly to build and maintain.</li>
     <li>Add complexity to solve an <em>observed</em> failure mode of naive RAG, not a hypothetical one — start simple.</li>
@@ -162,9 +166,19 @@ Knowledge graph (built ahead of time):
     </ol>
   </details>
 
+  <details><summary>💬 Conceptual questions (the kind interviewers ask)</summary>
+    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 4px">Answer each out loud before peeking. These tie this chapter to real production concerns — cost, latency, failures, and engineering discipline.</p>
+    <ol>
+      <li><strong>Agentic RAG is more accurate on hard questions — what does that accuracy cost?</strong><br><em>Every extra loop is another embedding call, another vector search, and often another LLM call to decide the next move — more latency and cost per answer. You're buying "recover from a bad first guess" with round trips, so always cap the number of loops.</em></li>
+      <li><strong>When does naive RAG genuinely fail, justifying the jump to advanced patterns?</strong><br><em>On multi-hop questions that need facts combined across documents, and on relationship questions ("who ultimately owns X"). If the answer can't exist inside any single chunk, one retrieval pass can't find it — that's the signal.</em></li>
+      <li><strong>Why not just build a knowledge graph for every RAG system?</strong><br><em>Extracting entities and relationships and keeping the graph in sync as documents change is real, ongoing engineering. It pays off in relationship-rich domains (corporate ownership, citation networks) but is overkill for a "what does X mean" FAQ.</em></li>
+      <li><strong>What's the risk of reaching for agentic RAG or GraphRAG too early?</strong><br><em>You add cost, latency, and maintenance to solve a hypothetical problem before you've even shipped a baseline. Start naive, measure which questions actually fail, then add exactly the complexity that fixes an <u>observed</u> failure.</em></li>
+    </ol>
+  </details>
+
   <div class="nav-bottom">
-    <a href="ch19-retrieval.html">← Chapter 19</a>
-    <a class="next" href="ch21-rag-vs-alternatives.html">Chapter 21: RAG vs. Fine-tuning vs. Prompting →</a>
+    <a href="ch19-retrieval.html">← Chapter 24</a>
+    <a class="next" href="ch21-rag-vs-alternatives.html">Chapter 26: RAG vs. Fine-tuning vs. Prompting →</a>
   </div>
 </div>
 <script>

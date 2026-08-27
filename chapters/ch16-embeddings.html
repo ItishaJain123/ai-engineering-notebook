@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ch 16 — Embeddings Deep-Dive</title>
+<title>Ch 21 — Embeddings Deep-Dive</title>
 <style>
   :root{--bg:#fff;--bg-alt:#f6f8fa;--text:#1f2328;--muted:#656d76;--border:#d0d7de;--accent:#6b4fbb;--accent-soft:#efeaff;--code-bg:#f6f8fa;--done:#1a7f37;--done-soft:#dafbe1;--radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08)}
   [data-theme="dark"]{--bg:#0d1117;--bg-alt:#161b22;--text:#e6edf3;--muted:#8b949e;--border:#30363d;--accent:#a78bfa;--accent-soft:#1e1b32;--code-bg:#161b22;--done:#3fb950;--done-soft:#10281a;--shadow:0 1px 3px rgba(0,0,0,.4)}
@@ -59,14 +59,18 @@
 <body>
 <div class="topbar">
   <div class="left"><a href="../index.html">← All chapters</a></div>
-  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="16">Mark complete</button></div>
+  <div><button id="themeBtn">🌙</button><button class="complete-btn" id="completeBtn" data-ch="21">Mark complete</button></div>
 </div>
 <div class="wrap">
-  <div class="ch-meta">Part 3 · Chapter 16</div>
+  <div class="ch-meta">Part 4 · Chapter 21</div>
   <h1>Embeddings Deep-Dive</h1>
   <p><span class="badge general">General AI Eng</span> the numerical representation that makes search-by-meaning possible</p>
 
-  <div class="callout"><strong>Why this matters.</strong> Every RAG system (Chapters 16-21) starts with the same question: "given a user's question, which of my 10,000 documents are actually relevant?" Keyword search misses paraphrases ("car" vs "automobile"). Embeddings solve this by turning text into <strong>vectors</strong> (Ch. 0a taught the basics) placed so that meaning-similar text ends up numerically close — this chapter goes deeper on how to actually pick and use them well.</p>
+  <div class="callout"><strong>Why this matters.</strong> Every RAG system (Chapters 21-26) starts with the same question: "given a user's question, which of my 10,000 documents are actually relevant?" Keyword search misses paraphrases ("car" vs "automobile"). Embeddings solve this by turning text into <strong>vectors</strong> (Ch. 1 taught the basics) placed so that meaning-similar text ends up numerically close — this chapter goes deeper on how to actually pick and use them well.</p>
+
+  <div class="callout"><strong>🟢 In plain words.</strong> An embedding turns a piece of text into a list of numbers that captures its <em>meaning</em>. Text that means similar things gets similar numbers — so you can find related text by comparing numbers, instead of hoping the exact same words appear.</div>
+
+  <div class="callout"><strong>🔍 The tricky part, in plain language.</strong> An embedding is just a long list of numbers (a "vector") that captures the <em>meaning</em> of a piece of text as a point in space. Similar meanings land near each other <em>even with zero shared words</em> — "car" and "automobile" sit close together; "car" and "carpet" sit far apart despite sharing letters. The computer never compares words; it compares positions in this meaning-space by measuring the angle between two vectors (cosine similarity). Picture a giant library where books are shelved by topic instead of alphabetically, so related ideas end up on nearby shelves. <em>Takeaway:</em> embeddings turn the fuzzy question "do these mean the same thing?" into the exact question "are these two points close?" — which a computer can answer instantly.</div>
 
   <p class="label">Real-world analogy</p>
   <div class="analogy">Imagine every sentence gets plotted as a dot on a giant map, where dots close together mean similar meaning. "I love dogs" and "I adore puppies" land near each other; "I love dogs" and "the stock market fell" land far apart. An embedding model is the cartographer that decides where each dot goes — a <em>better</em> cartographer places dots more accurately, which is the whole game.</div>
@@ -93,7 +97,7 @@
     <tr><th>Factor</th><th>Why it matters</th></tr>
     <tr><td><strong>Dimensionality</strong></td><td>Higher = potentially more nuance, but more storage + slower search. Many modern models offer <em>Matryoshka</em> embeddings — you can truncate to fewer dimensions and lose only a little accuracy.</td></tr>
     <tr><td><strong>Domain fit</strong></td><td>A general-purpose model trained mostly on web text may underperform on legal, medical, or code-heavy text — domain-specific or code-specific embedding models exist for a reason.</td></tr>
-    <tr><td><strong>Max input length</strong></td><td>Every model has a token limit for what it can embed in one call — this interacts directly with your chunking strategy (Ch. 17).</td></tr>
+    <tr><td><strong>Max input length</strong></td><td>Every model has a token limit for what it can embed in one call — this interacts directly with your chunking strategy (Ch. 22).</td></tr>
     <tr><td><strong>Cost &amp; latency</strong></td><td>You'll call this on every document at ingest time <em>and</em> on every user query — cheap and fast matters at scale.</td></tr>
     <tr><td><strong>Consistency</strong></td><td>Never mix vectors from two different embedding models in one index — their number spaces aren't comparable, even if dimensions happen to match.</td></tr>
   </table>
@@ -143,7 +147,7 @@ const vectors = result.data.map(d =&gt; d.embedding);  <span class="tok-com">// 
     <li>Model choice depends on dimensionality, domain fit, max input length, cost, and — critically — consistency across your whole pipeline.</li>
     <li><strong>Cosine similarity</strong> is the standard metric for text; it compares direction (meaning), not magnitude.</li>
     <li>Never mix vectors from different embedding models or versions in the same index.</li>
-    <li>Embeddings are the foundation the rest of Part 3 (chunking, vector stores, retrieval) builds on.</li>
+    <li>Embeddings are the foundation the rest of Part 4 (chunking, vector stores, retrieval) builds on.</li>
   </ul>
 
   <div class="exercise">
@@ -162,9 +166,19 @@ const vectors = result.data.map(d =&gt; d.embedding);  <span class="tok-com">// 
     </ol>
   </details>
 
+  <details><summary>💬 Conceptual questions (the kind interviewers ask)</summary>
+    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 4px">Answer each out loud before peeking. These tie this chapter to real production concerns — cost, latency, failures, and safety.</p>
+    <ol>
+      <li><strong>You embed 5 million chunks once, then embed every user query. Where's the cost, and how does dimensionality affect it?</strong><br><em>Ingest is a one-time bulk cost; every query is an ongoing per-request embedding call plus a search over all those vectors. Higher dimensions mean more storage and slightly slower search on <u>every</u> query — pick the smallest dimension that keeps accuracy (Matryoshka truncation helps).</em></li>
+      <li><strong>You upgrade your embedding model but only re-embed new documents. What silently breaks?</strong><br><em>Old and new vectors now live in different number spaces and aren't comparable — similarity scores become meaningless and retrieval quietly degrades. Any model or version change means re-embedding the <u>entire</u> index.</em></li>
+      <li><strong>Retrieval quality is poor on your legal corpus even with a big general-purpose model. Likely cause and fix?</strong><br><em>Domain mismatch — a general web-trained model blurs specialized legal terms. Try a domain- or code-specific embedding model, and test on your <u>actual</u> data rather than assuming bigger always wins.</em></li>
+      <li><strong>Why is cosine similarity the default for text, and why does <code>inputType</code> (query vs. document) matter?</strong><br><em>Cosine compares direction (meaning) while ignoring length — the right default for text. Setting <code>inputType</code> matches how the model was trained to encode queries vs. documents, quietly protecting retrieval accuracy.</em></li>
+    </ol>
+  </details>
+
   <div class="nav-bottom">
-    <a href="ch15-cost-latency.html">← Chapter 15</a>
-    <a class="next" href="ch17-chunking.html">Chapter 17: Chunking Strategies →</a>
+    <a href="ch15-cost-latency.html">← Chapter 20</a>
+    <a class="next" href="ch17-chunking.html">Chapter 22: Chunking Strategies →</a>
   </div>
 </div>
 <script>
