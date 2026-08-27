@@ -68,6 +68,10 @@
 
   <div class="callout"><strong>Why this matters.</strong> A plain chain (Ch. 27) runs straight through: step A, then B, then C, done. But real agents need to <em>loop</em> ("use a tool, look at the result, maybe use another"), <em>branch</em> ("if unsure, go retrieve more"), remember <em>state</em> across steps, and sometimes <em>pause for a human</em> to approve. LangGraph is the tool for exactly that — it lets you draw your agent as a <strong>graph of nodes and edges</strong>, which is the honest shape of how agents actually think.</p>
 
+  <div class="callout"><strong>🟢 In plain words.</strong> LangGraph lets you draw your agent as a graph — boxes (steps) connected by arrows (what happens next) — instead of one straight line. Because arrows can loop back, it can repeat steps (retry, re-plan) and even pause to ask a human before continuing. It's for workflows too twisty for a simple chain.</div>
+
+  <div class="callout"><strong>🔍 The tricky part, in plain language.</strong> A plain chain runs straight through, start to finish, once. Real agents need to loop ("that didn't work, try again"), branch ("if X do this, else that"), and sometimes stop and wait for a human. LangGraph models this as a <em>state machine</em>: there's a shared "state" object that each node (step) reads and updates, and edges (arrows) decide which node runs next — including edges that point <em>backward</em> to form a cycle. Picture a board game where a card can send you back three spaces or make you skip a turn, instead of a straight racetrack. <em>Takeaway:</em> use LangGraph when your flow has loops, branches, or human-approval pauses that a linear chain can't express — and always cap the cycles so a loop can't run forever.</div>
+
   <p class="label">Real-world analogy</p>
   <div class="analogy">A chain is a <strong>factory conveyor belt</strong>: parts move one way, station to station, no going back. LangGraph is a <strong>board-game board</strong>: you have squares (nodes), and rules for which square you move to next (edges) — including "roll again," "go back three spaces," and "if you land here, the banker (a human) decides." That ability to loop and branch is the whole point.</div>
 
@@ -210,6 +214,16 @@ graph.addConditionalEdges("grade", routeAfterCheck, {
     <ol>
       <li>What is the one capability an edge in LangGraph has that a step in a plain chain does not? <em>An edge can be conditional and can point backward — letting the flow loop and branch, instead of only moving forward in a straight line.</em></li>
       <li>What does a checkpointer give you? <em>Two things: durable memory (resume a conversation later via a thread_id) and crash-resume (continue from the last saved node instead of restarting the whole run).</em></li>
+    </ol>
+  </details>
+
+  <details><summary>💬 Conceptual questions (the kind interviewers ask)</summary>
+    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 4px">These probe whether you understand why linear chains break down and how to keep graphs safe. Answer each out loud before peeking.</p>
+    <ol>
+      <li><strong>What can LangGraph express that a plain LangChain chain can't?</strong><br><em>Cycles, branching, and pausing. A chain is a straight line that runs once; LangGraph is a graph whose edges can loop back or fork, so it can retry, re-plan, take conditional paths, and pause for human approval mid-run. If your flow ever needs to "go back and try again," a chain can't model it.</em></li>
+      <li><strong>LangGraph agents can loop — what's the production danger and the fix?</strong><br><em>A cycle with no exit condition burns tokens and money forever (and can hang the request). You cap it: a max-iterations/recursion limit plus a clear termination condition on the state, so the graph stops once the goal is met or the budget is spent.</em></li>
+      <li><strong>What is the "state" in LangGraph, and why does it matter for cost?</strong><br><em>It's a shared object every node reads and writes — the running record of the work. It matters because it's what gets fed back into the model each step, so a bloated state means bigger prompts, higher cost, and slower calls. Keep state lean; store only what later nodes actually need.</em></li>
+      <li><strong>Where does human-in-the-loop fit, and why is it a safety feature?</strong><br><em>LangGraph can pause at a node and wait for a person to approve or edit before continuing — useful before irreversible actions (sending email, spending money, deleting data). It turns "the agent did something bad autonomously" into "a human checked the risky step first."</em></li>
     </ol>
   </details>
 

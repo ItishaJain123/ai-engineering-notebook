@@ -68,6 +68,10 @@
 
   <div class="callout"><strong>Why this matters.</strong> So far, "agent" meant one model in a loop with some tools (Ch. 19, Ch. 28). A <strong>multi-agent system</strong> is several of those working together, each with its own job, its own tools, and its own prompt. You already met a version of this with subagents (Ch. 10) — this chapter gives you the general patterns for <em>how</em> multiple agents coordinate, communicate, and hand off work, and — crucially — <strong>when the added complexity is actually worth it.</strong></p>
 
+  <div class="callout"><strong>🟢 In plain words.</strong> A multi-agent system splits a big job across several specialized agents instead of one agent doing everything. Usually one "orchestrator" breaks the task into pieces, hands them to "worker" agents, then combines their results. It helps when a job has clearly separable parts — but every agent is another set of model calls, so it costs more.</div>
+
+  <div class="callout"><strong>🔍 The tricky part, in plain language.</strong> A multi-agent system isn't magic — it's just several LLM calls with a coordinator deciding who does what and passing messages between them. The orchestrator reads the goal, splits it into subtasks, sends each to a worker (a focused prompt or agent), and merges the answers. The "communication" is literally text: one agent's output becomes another's input — there's no shared brain. Picture a manager assigning tickets to specialists and stitching their work into one deliverable. The catch: coordination has overhead — more calls, more latency, more places to go wrong — so it only pays off when subtasks are genuinely independent and benefit from specialization. <em>Takeaway:</em> use multiple agents when a task cleanly decomposes into parallel or specialized parts; a single well-prompted agent is cheaper and simpler for everything else.</div>
+
   <p class="label">Real-world analogy</p>
   <div class="analogy">One agent is a <strong>freelancer</strong> doing everything themselves. A multi-agent system is a <strong>small company</strong>: a manager takes the request and delegates, a researcher digs up facts, a writer drafts, an editor reviews. Each person is better because they focus on one thing — but now you also need someone coordinating them, and meetings (communication) cost time. That trade-off is the entire subject of this chapter.</div>
 
@@ -176,6 +180,16 @@ function route(state) {
     <ol>
       <li>What is the main difference between the orchestrator/worker and network patterns? <em>In orchestrator/worker, one central agent delegates and combines results (high control, easy to debug); in a network, agents talk directly and decide among themselves (flexible but hard to steer and trace).</em></li>
       <li>Why should you pass summaries rather than raw work between agents? <em>To keep each agent's context clean and costs down — forwarding everything defeats the whole point of splitting the work and bloats the shared log.</em></li>
+    </ol>
+  </details>
+
+  <details><summary>💬 Conceptual questions (the kind interviewers ask)</summary>
+    <p style="font-size:.85rem;color:var(--muted);margin:8px 0 4px">Interviewers use multi-agent questions to check that you weigh coordination cost, not just add agents for their own sake. Answer each out loud before peeking.</p>
+    <ol>
+      <li><strong>A single agent handles your task fine. Why might splitting it into five agents make things worse?</strong><br><em>Each agent is its own set of model calls, so you multiply cost and latency, and add coordination points where information gets lost or garbled between hand-offs. Multi-agent shines only when subtasks are genuinely separable; otherwise it's overhead for no benefit.</em></li>
+      <li><strong>In an orchestrator/worker setup, what actually flows between agents?</strong><br><em>Plain text (or structured messages). One agent's output is stuffed into another's prompt as input — there's no shared memory. So the orchestrator must pass enough context for each worker to succeed, and every hand-off adds tokens.</em></li>
+      <li><strong>Where does latency come from in a multi-agent system, and how do you cut it?</strong><br><em>Sequential hand-offs — each agent waits on the previous one. If subtasks are independent, run the workers in parallel instead of in a chain, then merge; that collapses many sequential calls into roughly one round's worth of wall-clock time.</em></li>
+      <li><strong>What's a failure mode unique to multi-agent systems, and how do you contain it?</strong><br><em>Errors compound across hand-offs — a worker's wrong or hallucinated output becomes the next agent's "fact" and propagates silently. Contain it by validating each agent's output (schemas, checks) before passing it on, and by making the orchestrator sanity-check results rather than blindly merging them.</em></li>
     </ol>
   </details>
 
